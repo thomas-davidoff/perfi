@@ -1,5 +1,5 @@
 from flask import Flask
-from initializers import init_app
+from initializers import init_app, app_logger
 
 
 def create_app(config):
@@ -14,5 +14,11 @@ def create_app(config):
         from . import routes
 
         app.register_blueprint(routes.main_bp)
+
+        # from cli import CLI_GROUPS
+        from app.cli import CLI_GROUPS
+
+        for g in CLI_GROUPS:
+            app.cli.add_command(g)
 
     return app
