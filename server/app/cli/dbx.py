@@ -1,12 +1,11 @@
 # app/cli.py
-import click
 from flask.cli import AppGroup
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import ProgrammingError, OperationalError
 import os
-from urllib import parse
-
-from initializers import db
+import os
+import subprocess
+from flask import current_app
+from flask.cli import with_appcontext
+from sqlalchemy.engine.url import make_url
 
 # TODO: Flask cli already has a db instance. Nest these commands under that db instance, by importing the existing commands and registering them here.
 dbx_cli_group = AppGroup("dbx")
@@ -26,3 +25,28 @@ def seed():
 def create():
     """Read models and create all."""
     raise NotImplementedError
+
+
+# Usage: `Flask dbx shell`
+@dbx_cli_group.command("shell")
+# @with_appcontext
+def psql_shell():
+    """Opens a psql shell connected to the database."""
+    # parse the uri to make sure it doesn't misinterpret literal @ symbols
+    database_uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+
+    url = make_url(database_uri)
+
+    db_name = url.database
+    user = url.username
+    password = url.password
+    host = url.host
+    port = str(url.port)
+
+    command = ["psql", f"-h{host}", f"-p{port}", f"-U{user}", db_name]
+
+    # copy env for subprocess and set PGPASSWORD (it's expected to pass the prompt)
+    env = {**os.environ.copy(), **{"PGPASSWORD": password}}
+
+    # Run the psql command
+    subprocess.call(command, env=env)
