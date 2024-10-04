@@ -25,3 +25,4 @@ def seed():
 @dbx_cli_group.command("create")
 def create():
     """Read models and create all."""
+    raise NotImplementedError

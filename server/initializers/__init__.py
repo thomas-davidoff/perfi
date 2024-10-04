@@ -1,6 +1,6 @@
-from .database import db
 from .migrate import migrate
 from .app_logger import create_logger
+from database import db
 
 
 app_logger = create_logger("APP_LOGGER")
