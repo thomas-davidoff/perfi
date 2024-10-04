@@ -43,6 +43,6 @@ To create a new configuration:
 
 
 # Get the flask environment
-environment = os.environ["FlASK_ENV"]
+environment = os.environ["FLASK_ENV"]
 load_env(environment)
 configuration = load_configuration(environment)
