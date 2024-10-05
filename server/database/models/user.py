@@ -1,8 +1,11 @@
-from database import db
-from werkzeug.security import generate_password_hash, check_password_hash
+# database/models/user.py
+
+from initializers import db, bcrypt
 from flask_login import UserMixin
 from config import logger
 from sqlalchemy import Text
+
+from initializers import bcrypt
 
 
 # Just a basic table for now to test things.
@@ -24,9 +27,9 @@ class User(UserMixin, db.Model):
 
     @password.setter
     def password(self, plain_text_password):
-        logger.debug("password setter")
-        self._password_hash = generate_password_hash(plain_text_password)
+        self._password_hash = bcrypt.generate_password_hash(plain_text_password).decode(
+            "utf-8"
+        )
 
     def verify_password(self, password):
-        logger.debug("verify password")
-        return check_password_hash(self._password_hash, password)
+        return bcrypt.check_password_hash(self._password_hash, password)

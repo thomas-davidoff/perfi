@@ -1,11 +1,12 @@
-# app/cli.py
+# app/cli/groups/dbx.py
 from app.cli.aliased_group import AliasedGroup
 import os
 import os
 import subprocess
 from flask import current_app
 from sqlalchemy.engine.url import make_url
-from database import db, seed_all, unseed_all
+from database import seed_all, unseed_all
+from extensions import db
 
 
 # These commands used for setting up or tearing down the database internally, and for detecting and performing migrations.

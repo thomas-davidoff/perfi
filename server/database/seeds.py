@@ -1,5 +1,7 @@
-from database.models.models import User
-from .instance import db
+# database/seeds.py
+
+from .models import User
+from initializers import db
 import json
 import os
 
