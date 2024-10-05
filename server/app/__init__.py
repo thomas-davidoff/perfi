@@ -1,6 +1,5 @@
 from flask import Flask
 from initializers import init_app, app_logger
-import app.models
 
 
 def create_app(config):
