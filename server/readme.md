@@ -11,3 +11,12 @@ Database setup
 
 Testing
 Contributing (as if anyone's gonna contribute lmao)
+
+
+`pip install -r requirements.txt`
+Set up pre-commits for Black formatting
+`pre-commit install`
+Will set up the pre-commit hook for formatting. Whitespace, yml, black.
+
+Run the hooks when adding:
+`pre-commit run --all-files`
