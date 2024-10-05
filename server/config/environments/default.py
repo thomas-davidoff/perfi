@@ -1,9 +1,11 @@
 import os
 from urllib.parse import quote_plus as url_quote_plus
+from config import logger
 
 
 class Config:
     def __init__(self) -> None:
+        logger.debug("Loading default config...")
         # misc secrets
         self.SECRET_KEY = os.environ["SECRET_KEY"]
 

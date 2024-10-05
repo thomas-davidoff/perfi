@@ -1,7 +1,3 @@
-# Make sure to look into rotating log files, so one logger can be defined but use custom destinations.
-#
-# # logger_setup.py
-
 import logging
 from colorama import Fore, Style
 import os
@@ -32,6 +28,7 @@ class CustomFormatter(logging.Formatter):
 def create_logger(logger_name: str):
     # set log level in .env.{env} file.
     log_level = os.getenv("LOG_LEVEL", "DEBUG").upper()
+
     # Configure loggers
     logging.basicConfig(level=log_level)
 
@@ -40,3 +37,6 @@ def create_logger(logger_name: str):
         handler.setFormatter(CustomFormatter())
 
     return logging.getLogger(logger_name)
+
+
+logger = create_logger("app")

@@ -34,7 +34,7 @@ def seed_users():
 
 
 def unseed_users():
-    users_data = load_seed_file("database/seed_data/users.json")
+    users_data = load_seed_file("seed_data/users.json")
 
     for user in users_data:
         exists = User.query.filter_by(username=user["username"]).first()

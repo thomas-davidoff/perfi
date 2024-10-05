@@ -1,10 +1,12 @@
 from flask import Flask
-from initializers import init_app, app_logger
+from initializers import init_app
+from config import logger, configuration
 
 
-def create_app(config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config)
+    app.config.from_object(configuration)
+    app.logger = logger
 
     # Initialize extensions
     init_app(app)

@@ -1,12 +1,9 @@
 from .migrate import migrate
-from .app_logger import create_logger
 from database import db
-
-
-app_logger = create_logger("APP_LOGGER")
+from config import logger
 
 
 def init_app(app):
-    app_logger.debug("Initializing application.")
+    logger.debug("Initializing application")
     db.init_app(app)
     migrate.init_app(app, db)

@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from .development import DevelopmentConfig
 from .default import Config
 import warnings
+from config import logger
 
 
 ENVIRONMENTS = {"development": DevelopmentConfig}
