@@ -23,3 +23,5 @@ class Config:
         self.SQLALCHEMY_DATABASE_URI = (
             f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
         )
+
+        self.JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]

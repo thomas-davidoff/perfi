@@ -20,3 +20,7 @@ Will set up the pre-commit hook for formatting. Whitespace, yml, black.
 
 Run the hooks when adding:
 `pre-commit run --all-files`
+
+
+Using flask jwt
+add JWT_SECRET_KEY to env file
