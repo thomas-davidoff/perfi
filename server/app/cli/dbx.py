@@ -26,6 +26,8 @@ def seed():
 def seed():
     """Use this command to UNseed the database."""
     unseed_all()
+
+
 # Usage: `Flask dbx shell`
 @dbx_cli_group.command("shell")
 # @with_appcontext
@@ -56,7 +58,8 @@ def create_all():
     """Runs the `create_all` command; creates all defined tables."""
     db.create_all()
 
-@dbx_cli_group.command('drop')
+
+@dbx_cli_group.command("drop")
 def drop_all():
     """Drops all the tables."""
     db.drop_all()
