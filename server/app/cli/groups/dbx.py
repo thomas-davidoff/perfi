@@ -30,7 +30,6 @@ def seed():
 
 
 # Usage: `Flask dbx shell`
-@dbx_cli_group.command("sh")
 @dbx_cli_group.command("shell")
 # @with_appcontext
 def psql_shell():
