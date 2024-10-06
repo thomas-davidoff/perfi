@@ -28,6 +28,7 @@ def seed_users():
         # check for each individual user like a toddler, because i cant bother vectorizing it
         exists = User.query.filter_by(username=user["username"]).first()
         if not exists:
+            user = {**user, **{"password": os.environ["DB_SEEDS_PASSWORD"]}}
             new_user = User(**user)
             db.session.add(new_user)
 

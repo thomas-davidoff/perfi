@@ -10,14 +10,15 @@ from config import logger
 ENVIRONMENTS = {"development": DevelopmentConfig, "testing": TestingConfig}
 
 
-def load_env(environment):
+def load_env(env_filename):
     # Get path of env file for environment
     env_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    env_file = os.path.abspath(os.path.join(env_dir, f".env.{environment}"))
+    env_file = os.path.abspath(os.path.join(env_dir, env_filename))
 
     # Load environment file
     if not os.path.exists(env_file):
-        raise RuntimeError(f"Dot file for environment {environment} does not exist.")
+        print(env_file)
+        raise RuntimeError(f"Dot file {env_file} does not exist.")
     else:
         load_dotenv(env_file)
 
@@ -46,5 +47,6 @@ To create a new configuration:
 
 # Get the flask environment
 environment = os.environ["FLASK_ENV"]
-load_env(environment)
+load_env(".env")  # load default env
+load_env(f".env.{environment}")
 configuration = load_configuration(environment)
