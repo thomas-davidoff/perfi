@@ -33,3 +33,6 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return bcrypt.check_password_hash(self._password_hash, password)
+
+    def dump(self):
+        return {"id": self.id, "username": self.username, "email": self.email}
