@@ -3,6 +3,7 @@
 import pytest
 from extensions import db
 import os
+from flask.testing import FlaskClient
 
 
 os.environ["FLASK_ENV"] = "testing"
@@ -24,7 +25,7 @@ def app():
 
 
 @pytest.fixture()
-def client(app):
+def client(app) -> FlaskClient:
     return app.test_client()
 
 
