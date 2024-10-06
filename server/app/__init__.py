@@ -1,15 +1,12 @@
 from flask import Flask
 from initializers import init_app
 from config import logger, configuration
-from flask_jwt_extended import JWTManager
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(configuration)
     app.logger = logger
-
-    jwt = JWTManager(app)
 
     # Initialize extensions
     init_app(app)

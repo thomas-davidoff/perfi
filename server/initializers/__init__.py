@@ -1,7 +1,7 @@
 # initializers/__init__.py
 
 from config import logger
-from extensions import db, bcrypt, migrate
+from extensions import db, bcrypt, migrate, jwt
 
 
 def init_app(app):
@@ -9,3 +9,4 @@ def init_app(app):
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    jwt.init_app(app)
