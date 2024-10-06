@@ -1,6 +1,9 @@
-from flask import Flask
+from flask import Flask, g
 from initializers import init_app
 from config import logger, configuration
+from app.repositories import UserRepository
+from app.services import AuthService
+from extensions import db
 
 
 def create_app():
@@ -18,10 +21,14 @@ def create_app():
         app.register_blueprint(main_bp)
         app.register_blueprint(auth_bp)
 
-        # from cli import CLI_GROUPS
         from app.cli import CLI_GROUPS
 
-        for g in CLI_GROUPS:
-            app.cli.add_command(g)
+        for group in CLI_GROUPS:
+            app.cli.add_command(group)
+
+        @app.after_request
+        def remove_session(response):
+            db.session.remove()
+            return response
 
     return app

@@ -1,2 +1,4 @@
 
 .env.*
+# temporary for writing notes to self
+.notes
