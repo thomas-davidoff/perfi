@@ -31,3 +31,8 @@ class AuthService:
         user = self.user_repo.get_by_username_or_email(username_or_email)
         if user and user.verify_password(password):
             return user
+
+
+def create_auth_service():
+    user_repository = UserRepository()
+    return AuthService(user_repository)
