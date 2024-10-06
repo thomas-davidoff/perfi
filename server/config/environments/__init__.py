@@ -1,12 +1,13 @@
 import os
 from dotenv import load_dotenv
 from .development import DevelopmentConfig
+from .testing import TestingConfig
 from .default import Config
 import warnings
 from config import logger
 
 
-ENVIRONMENTS = {"development": DevelopmentConfig}
+ENVIRONMENTS = {"development": DevelopmentConfig, "testing": TestingConfig}
 
 
 def load_env(environment):
