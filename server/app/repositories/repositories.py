@@ -1,14 +1,77 @@
 from .base import Repository
-from database import User
+from database import User, Transaction
 from extensions import db
 from typing import List
 from app import logger
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
+
+
+class TransactionRepository(Repository):
+    def __init__(self) -> None:
+        super().__init__(model=Transaction, model_name="transaction")
+
+    def get_by_id(self, id) -> Transaction | None:
+        """
+        Gets a transaction by ID
+
+        :param id:
+            The id of the transaction object
+        :return Transaction:
+            Transaction object or None
+        """
+        if id > 2147483647 or id < -2147483647:
+            raise IdentifierError("transaction id must be of int size")
+        user = db.session.query(Transaction).filter(Transaction.id == id).one_or_none()
+        if user is None:
+            logger.error(f"No transaction with ID {id} exists.")
+            raise NoResultFound("No transaction with ID {id} exists.")
+        return user
+
+    def create(self, transaction: Transaction) -> Transaction:
+        """Creates a valid transaction."""
+        db.session.add(transaction)
+        try:
+            db.session.commit()
+            return transaction
+        except IntegrityError:
+            logger.error(f"Integrity error when attempting to create {transaction}")
+            db.session.rollback()
+            raise
+
+    def get_all(self):
+        """Retrieve all users"""
+        return db.session.query(Transaction).all()
+
+    def bulk_delete(self, ids: List[int]) -> List[int]:
+        """Bulk delete transactions by their IDs."""
+        try:
+            transactions_to_delete = (
+                db.session.query(Transaction).filter(Transaction.id.in_(ids)).all()
+            )
+            if not transactions_to_delete:
+                logger.warning("No transactions were deleted.")
+                return []
+
+            for transaction in transactions_to_delete:
+                db.session.delete(transaction)
+
+            db.session.commit()
+            return [t.id for t in transactions_to_delete]
+
+        except IntegrityError as e:
+            db.session.rollback()  # Rollback on failure
+            logger.error(f"Error during bulk delete: {e}")
+            raise e
+
+        except Exception as e:
+            db.session.rollback()  # Ensure rollback for any other exceptions
+            logger.error(f"Unexpected error during bulk delete: {e}")
+            raise e
 
 
 class UserRepository(Repository):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(model=User, model_name="user")
 
     def get_by_id(self, id) -> User | None:
         """
@@ -49,13 +112,3 @@ class UserRepository(Repository):
     def get_all(self) -> List[User]:
         """Gets all users"""
         return db.session.query(User).all()
-
-    def delete(self, id) -> None:
-        """Deletes a user by ID"""
-        user = self.get_by_id(id)
-        if user:
-            db.session.delete(user)
-            db.session.commit()
-        else:
-            logger.error(f"No user with ID {id} exists.")
-            raise NoResultFound(f"No user with ID {id} exists.")

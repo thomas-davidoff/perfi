@@ -1,9 +1,10 @@
 # database/seeds.py
 
-from .models import User
+from .models import User, Transaction
 from initializers import db
 import json
 import os
+from datetime import datetime
 
 
 def load_seed_file(path):
@@ -15,14 +16,15 @@ def load_seed_file(path):
 
 def seed_all():
     seed_users()
+    seed_transactions()
 
 
 def unseed_all():
     unseed_users()
+    unseed_transactions()
 
 
 def seed_users():
-
     users_data = load_seed_file("seed_data/users.json")
     for user in users_data:
         # check for each individual user like a toddler, because i cant bother vectorizing it
@@ -46,3 +48,18 @@ def unseed_users():
 
         db.session.commit()
         print("Unseeded users successfully.")
+
+
+def seed_transactions():
+    transactions_data = load_seed_file("seed_data/transactions.json")
+    for transaction in transactions_data:
+        sqlite_safe_transaction = {**transaction, **{"date": datetime(2020, 10, 3)}}
+        new_transaction = Transaction(**sqlite_safe_transaction)
+        db.session.add(new_transaction)
+
+    db.session.commit()
+    print("Seeded transactions successfully.")
+
+
+def unseed_transactions():
+    pass
