@@ -1,0 +1,9 @@
+[
+    {
+        "amount": 100,
+        "description": "",
+        "merchant": "test_merchant",
+        "date": "1998-09-25",
+        "category": "HOUSING"
+    }
+]
