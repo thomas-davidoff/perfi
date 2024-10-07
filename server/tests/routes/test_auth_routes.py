@@ -1,15 +1,17 @@
 import pytest
 from flask.testing import FlaskClient
 from flask_jwt_extended import decode_token
+import os
 
 HEADERS = {"Content-type": "application/json", "Accept": "application/json"}
+seed_pass = os.environ.get("DB_SEEDS_PASSWORD")
 
 
 def test_login(client: FlaskClient):
     # valid access token is successfully returned by providing valid credentials
     r = client.post(
         "/auth/login",
-        json={"username": "moo_deng", "password": "woof"},
+        json={"username": "moo_deng", "password": seed_pass},
         headers=HEADERS,
     )
     assert r.status_code == 200
@@ -47,7 +49,7 @@ def test_authorization(client: FlaskClient):
     # get an access token
     r = client.post(
         "/auth/login",
-        json={"username": "moo_deng", "password": "woof"},
+        json={"username": "moo_deng", "password": seed_pass},
         headers=HEADERS,
     )
     token = r.json["access_token"]
