@@ -6,9 +6,9 @@ from app import logger
 from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
 
 
-class TransactionRepository(Repository):
+class TransactionRepository(Repository[Transaction]):
     def __init__(self) -> None:
-        super().__init__(model=Transaction, model_name="transaction")
+        super().__init__(entity_name="transaction", model=Transaction)
 
     def get_by_id(self, id) -> Transaction | None:
         """
@@ -68,25 +68,25 @@ class TransactionRepository(Repository):
             logger.error(f"Unexpected error during bulk delete: {e}")
             raise e
 
+    def update(self, id: int, entity: Transaction) -> Transaction:
+        raise NotImplementedError
+        return super().update(id, entity)
 
-class UserRepository(Repository):
+
+class UserRepository(Repository[User]):
     def __init__(self) -> None:
-        super().__init__(model=User, model_name="user")
+        super().__init__(entity_name="user", model=User)
 
-    def get_by_id(self, id) -> User | None:
+    def get_by_id(self, id: int) -> User | None:
         """
         Gets a user by ID
 
         :param id:
-            The id of the user object
-        :return User:
-            User object or None
+            The id of the user
+        :return user:
+            User instance or None
         """
-        user = db.session.query(User).filter(User.id == id).one_or_none()
-        if user is None:
-            logger.error(f"No user with ID {id} exists.")
-            raise NoResultFound("No user with ID {id} exists.")
-        return user
+        return super().get_by_id(id)
 
     @staticmethod
     def get_by_username_or_email(username_or_email) -> User:
@@ -98,16 +98,13 @@ class UserRepository(Repository):
             .first()
         )
 
-    def create(self, user: User) -> User:
-        """Creates a valid user."""
-        db.session.add(user)
-        try:
-            db.session.commit()
-            return user
-        except IntegrityError:
-            logger.error(f"Integrity error when attempting to create {user}")
-            db.session.rollback()
-            raise
+    def update(self, id: int, entity: User) -> User:
+        raise NotImplementedError
+        return super().update(id, entity)
+
+    def bulk_delete(self, ids: List[int]) -> List[int]:
+        raise NotImplementedError
+        return super().bulk_delete(ids)
 
     def get_all(self) -> List[User]:
         """Gets all users"""

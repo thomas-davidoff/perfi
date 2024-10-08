@@ -12,9 +12,11 @@ class TransactionCategory(enum.Enum):
     INCOME = "income"
     OTHER = "other"
     HOUSING = "housing"
+    UNCATEGORIZED = "uncategorized"
 
 
 class Transaction(TimestampMixin, db.Model):
+
     __tablename__ = "transactions"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,5 +29,7 @@ class Transaction(TimestampMixin, db.Model):
     merchant = db.Column(String(255), nullable=False)
     date = db.Column(DateTime, default=func.now(), nullable=False)
     category = db.Column(
-        Enum(TransactionCategory), nullable=True, default=TransactionCategory.OTHER
+        Enum(TransactionCategory),
+        nullable=True,
+        default=TransactionCategory.UNCATEGORIZED,
     )

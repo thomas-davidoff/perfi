@@ -28,11 +28,16 @@ def login():
     :return:
         An access token used to authorize user access to protected routes.
     """
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid or missing JSON body"}), 400
+
+    # Extract fields from the JSON body if it's valid
+    username = data.get("username")
+    password = data.get("password")
 
     if not username or not password:
-        return jsonify({"msg": "Provide username and password."}), 400
+        return jsonify({"error": "Provide username and password."}), 400
 
     auth_service = get_user_service()
 
