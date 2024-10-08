@@ -1,24 +1,31 @@
-import pytest
 from flask import Flask
 from database import User
-from app.repositories import UserRepository
-from app.services import AuthService, create_auth_service
+from app.services import create_auth_service
+from tests.helpers.helpers import add_valid_user
 import os
 
 auth_service = create_auth_service()
-seed_pass = os.environ.get("DB_SEEDS_PASSWORD")
+TEST_PASSWORD = os.environ.get("TEST_PASSWORD")
 
 
-def test_authenticate(app: Flask):
-    with app.app_context():
-        # returns user if existing user provides correct password
-        user = auth_service.authenticate("moo_deng", seed_pass)
-        assert isinstance(user, User)
-        # it gets the right user
-        assert user.username == "moo_deng"
+def test_authenticate_correct_username_incorrect_password(app: Flask):
+    u = add_valid_user(password=TEST_PASSWORD)
+    user = auth_service.authenticate(u.username, "not a password")
+    assert not user
 
-        # returns None if existing user uses incorrect password
-        assert auth_service.authenticate("moo_deng", "anjsdkjansd") is None
 
-        # returns None if no user is found
-        assert auth_service.authenticate("lakmsdlakmsd", "asdknasdn") is None
+def test_authenticate_no_user(app: Flask):
+    user = auth_service.authenticate("username", "not a password")
+    assert not user
+
+
+def test_authenticate_correct_username(app: Flask):
+    u = add_valid_user(password=TEST_PASSWORD)
+    user = auth_service.authenticate(u.username, TEST_PASSWORD)
+    assert user.username == u.username
+
+
+def test_authenticate_success(app: Flask):
+    u = add_valid_user(password=TEST_PASSWORD)
+    user = auth_service.authenticate(u.username, TEST_PASSWORD)
+    assert isinstance(user, User)

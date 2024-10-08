@@ -14,9 +14,11 @@ from extensions import db
 transaction_repository = TransactionRepository()
 
 
-def test_get_by_id(app: Flask):
+def test_get_by_id(app: Flask, valid_transaction):
     with app.app_context():
         # Case: Returns a transaction object when the transaction with the given ID exists
+        db.session.add(valid_transaction)
+        db.session.commit()
         t = transaction_repository.get_by_id(1)
         assert isinstance(t, Transaction)
 
