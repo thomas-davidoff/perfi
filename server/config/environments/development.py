@@ -1,11 +1,10 @@
-from .default import Config
-from config import logger
+from .default import DefaultConfig
 
 
-class DevelopmentConfig(Config):
-    def __init__(self) -> None:
-        super().__init__()
+class DevelopmentConfig(DefaultConfig):
+    name = "development"
 
-        logger.debug("Loading development config...")
+    def __init__(self, logger=None) -> None:
+        super().__init__(logger)
 
         self.DEBUG = True

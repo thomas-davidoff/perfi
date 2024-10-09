@@ -3,3 +3,5 @@
 # temporary for writing notes to self
 .notes
 .coverage
+.mypy_cache/
+.pytest_cache/

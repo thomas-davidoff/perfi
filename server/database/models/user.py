@@ -1,6 +1,5 @@
 from extensions import db, bcrypt
 from sqlalchemy import Text
-from initializers import bcrypt
 from .timestamp_mixin import TimestampMixin
 
 

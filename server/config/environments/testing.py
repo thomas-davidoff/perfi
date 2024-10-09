@@ -1,12 +1,11 @@
-from .default import Config
-from config import logger
+from .default import DefaultConfig
 
 
-class TestingConfig(Config):
-    def __init__(self) -> None:
-        super().__init__()
+class TestingConfig(DefaultConfig):
+    name = "testing"
 
-        logger.debug("Loading testing config...")
+    def __init__(self, logger) -> None:
+        super().__init__(logger)
 
         self.DEBUG = True
         self.TESTING = True

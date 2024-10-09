@@ -1,18 +1,19 @@
-from flask import Flask, g
-from initializers import init_app
-from config import logger, configuration
-from app.repositories import UserRepository
-from app.services import AuthService
+from initializers import init_extensions, get_logger
+from flask import Flask
 from extensions import db
+import os
+
+logger = get_logger("APP_LOGGER", os.getenv("LOG_LEVEL"))
 
 
-def create_app():
+def create_app(config, init_logger=None):
     app = Flask(__name__)
-    app.config.from_object(configuration)
+    app.config.from_object(config)
+
     app.logger = logger
 
     # Initialize extensions
-    init_app(app)
+    init_extensions(app, init_logger)
 
     # Register blueprints
     with app.app_context():

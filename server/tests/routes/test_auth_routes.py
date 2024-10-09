@@ -4,6 +4,7 @@ from flask_jwt_extended import decode_token
 import os
 from tests.helpers.helpers import add_valid_user
 
+
 HEADERS = {"Content-type": "application/json", "Accept": "application/json"}
 seed_pass = os.environ.get("DB_SEEDS_PASSWORD")
 expired_token = os.environ["EXPIRED_TOKEN"]

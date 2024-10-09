@@ -1,9 +1,16 @@
+import os
+import sys
+
+print(os.getcwd())
+print(sys.path)
+
 import pytest
 from flask import Flask
 from database import User
+from extensions import db
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from extensions import db
+
 from tests.helpers.helpers import add_valid_user, add_valid_users
 
 

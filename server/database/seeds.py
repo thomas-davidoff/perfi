@@ -1,7 +1,7 @@
 # database/seeds.py
 
 from .models import User, Transaction
-from initializers import db
+from extensions import db
 import json
 import os
 from datetime import datetime
