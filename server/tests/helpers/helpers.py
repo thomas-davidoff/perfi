@@ -1,7 +1,9 @@
 from extensions import db
-from database import User
+from database import User, Transaction
 from random import choice
 from string import ascii_lowercase
+from datetime import datetime, timedelta
+from random import uniform, randint
 
 
 def random_string(length=10):

@@ -1,12 +1,11 @@
 import pytest
 from extensions import db
 from flask.testing import FlaskClient
-from random import uniform
-from datetime import datetime
-from database import Transaction
 from tests.helpers.helpers import add_valid_user
 import os
 from initializers import load_env, load_configuration, get_logger
+
+from tests.helpers import TransactionFactory
 
 environment = "testing"
 
@@ -47,15 +46,10 @@ def client(app) -> FlaskClient:
 
 
 @pytest.fixture()
-def valid_transaction():
-    return Transaction(
-        amount=round(uniform(5, 150), 2),
-        date=datetime(2024, 10, 7),
-        merchant="test_merchant",
-        category="UNCATEGORIZED",
-    )
+def valid_user():
+    return add_valid_user(password=os.environ["TEST_PASSWORD"])
 
 
 @pytest.fixture()
-def valid_user():
-    return add_valid_user(password=os.environ["TEST_PASSWORD"])
+def transaction_factory():
+    return TransactionFactory()
