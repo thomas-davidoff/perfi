@@ -24,6 +24,10 @@ class Repository(ABC, Generic[T]):
             logger.error(f"Integrity error when attempting to create {entity}")
             db.session.rollback()
             raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {e} when attempting to create {entity}")
+            db.session.rollback()
+            raise
 
     def get_by_id(self, id: int) -> T | None:
         """

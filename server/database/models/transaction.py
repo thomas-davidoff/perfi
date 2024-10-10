@@ -29,7 +29,7 @@ class Transaction(TimestampMixin, db.Model):
     merchant = db.Column(String(255), nullable=False)
     date = db.Column(DateTime, default=func.now(), nullable=False)
     category = db.Column(
-        Enum(TransactionCategory),
+        Enum(TransactionCategory, validate_strings=True),
         nullable=True,
         default=TransactionCategory.UNCATEGORIZED,
     )

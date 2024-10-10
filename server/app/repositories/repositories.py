@@ -29,18 +29,14 @@ class TransactionRepository(Repository[Transaction]):
 
     def create(self, transaction: Transaction) -> Transaction:
         """Creates a valid transaction."""
-        db.session.add(transaction)
-        try:
-            db.session.commit()
-            return transaction
-        except IntegrityError:
-            logger.error(f"Integrity error when attempting to create {transaction}")
-            db.session.rollback()
-            raise
+        return super().create(entity=transaction)
 
     def get_all(self):
-        """Retrieve all users"""
+        """Retrieve all transactions"""
         return db.session.query(Transaction).all()
+
+    def get_between_dates(self):
+        """Retrieve all transactions that are between dates"""
 
     def bulk_delete(self, ids: List[int]) -> List[int]:
         """Bulk delete transactions by their IDs."""
