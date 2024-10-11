@@ -7,7 +7,6 @@ print(sys.path)
 import pytest
 from flask import Flask
 from database import User
-from extensions import db
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
@@ -55,7 +54,7 @@ def test_get_all(app: Flask):
 def test_create(app: Flask):
     with app.app_context():
         # it successfully creates a user with correct data
-        user = User(username="test", password="test", email="test@test.com")
+        user = {"username": "test", "password": "test", "email": "test@test.com"}
         user = user_repository.create(user)
 
         assert isinstance(user, User)
@@ -64,28 +63,26 @@ def test_create(app: Flask):
 
 def test_create_duplicate_username(app: Flask, valid_user):
     with app.app_context():
-        new_user = User(
-            username=valid_user.username, password="test_pass", email="test@example.com"
-        )
+        new_user = {
+            "username": valid_user.username,
+            "password": "test",
+            "email": "test@test.com",
+        }
         with pytest.raises(IntegrityError):
-            db.session.add(new_user)
-            db.session.commit()
+            user_repository.create(new_user)
 
 
 def test_create_duplicate_email(app: Flask, valid_user):
     with app.app_context():
-        new_user = User(
-            username="test username", password="test_pass", email=valid_user.email
-        )
+        new_user = {"username": "test", "password": "test", "email": valid_user.email}
         with pytest.raises(IntegrityError):
-            db.session.add(new_user)
-            db.session.commit()
+            user_repository.create(new_user)
 
 
 def test_delete(app: Flask):
     with app.app_context():
         # create test user
-        user = User(username="test", password="test", email="test@test.com")
+        user = {"username": "test", "password": "test", "email": "test@test.com"}
         user = user_repository.create(user)
 
         # it successfully deletes the user

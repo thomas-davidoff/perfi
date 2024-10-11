@@ -27,16 +27,25 @@ class TransactionRepository(Repository[Transaction]):
             raise NoResultFound("No transaction with ID {id} exists.")
         return user
 
-    def create(self, transaction: Transaction) -> Transaction:
+    def create(self, data: dict) -> Transaction:
         """Creates a valid transaction."""
-        return super().create(entity=transaction)
+        return super().create(data=data)
 
     def get_all(self):
         """Retrieve all transactions"""
         return db.session.query(Transaction).all()
 
-    def get_between_dates(self):
+    def get_between_dates(self, start_date, end_date):
         """Retrieve all transactions that are between dates"""
+        if end_date < start_date:
+            raise ValueError("start_date must be before or equal to end_date.")
+        start = start_date
+        end = end_date
+        return (
+            db.session.query(Transaction)
+            .filter(Transaction.date.between(start, end))
+            .all()
+        )
 
     def bulk_delete(self, ids: List[int]) -> List[int]:
         """Bulk delete transactions by their IDs."""
@@ -64,9 +73,9 @@ class TransactionRepository(Repository[Transaction]):
             logger.error(f"Unexpected error during bulk delete: {e}")
             raise e
 
-    def update(self, id: int, entity: Transaction) -> Transaction:
-        raise NotImplementedError
-        return super().update(id, entity)
+    def update(self, id: int, data: dict) -> Transaction:
+        """Creates a transaction that already exists in the database"""
+        return super().update(id, data)
 
 
 class UserRepository(Repository[User]):
@@ -105,3 +114,7 @@ class UserRepository(Repository[User]):
     def get_all(self) -> List[User]:
         """Gets all users"""
         return db.session.query(User).all()
+
+    def create(self, data):
+        """Creates a user in the database."""
+        return super().create(data)

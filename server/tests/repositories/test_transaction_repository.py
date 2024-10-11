@@ -1,6 +1,6 @@
 import pytest
 from flask import Flask
-from database import User, Transaction
+from database import Transaction
 from app.repositories import TransactionRepository
 from sqlalchemy.exc import (
     NoResultFound,
@@ -10,14 +10,12 @@ from sqlalchemy.exc import (
     SAWarning,
 )
 from extensions import db
-from typing import Callable
 from datetime import datetime
 import warnings
 
 transaction_repository = TransactionRepository()
 
 
-# @pytest.mark.parametrize("transaction", ["valid"], indirect=True)
 def test_get_by_id(app: Flask, transaction_factory):
     with app.app_context():
         # create a valid transaction
@@ -80,9 +78,7 @@ def test_create_duplicate_id(app: Flask, transaction_factory):
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=SAWarning)
-                new_t = Transaction(
-                    amount=100, merchant="test", date=datetime(2024, 10, 10), id=1
-                )
+                new_t = {**transaction_factory.get("valid"), **{"id": 1}}
                 t = transaction_repository.create(new_t)
 
 
@@ -164,60 +160,89 @@ def test_get_all_none_found(app: Flask):
         assert len(transactions) == 0
 
 
-# # def test_get_within_dates_success(app: Flask):
-# #     with app.app_context():
-# #         # Case: Returns transactions that fall within the given date range
-# #         start_date = datetime(2024, 1, 1)
-# #         end_date = datetime(2024, 1, 31)
-# transactions = transaction_repository.get_between_dates(start_date, end_date)
-# #         assert isinstance(transactions, list)
-# #         assert all([isinstance(t, Transaction) for t in transactions])
-# #         assert all([start_date <= t.date and end_date >= t.date] for t in transactions)
+def test_get_between_dates_success(app: Flask, transaction_factory):
+    with app.app_context():
+        transactions = transaction_factory.bulk_create(variants=["valid"] * 5)
+        # Case: Returns transactions that fall within the given date range
+        start_date = datetime(2024, 1, 1)
+        end_date = datetime(2024, 1, 31)
+        transactions = transaction_repository.get_between_dates(start_date, end_date)
+        print(transactions)
+        assert isinstance(transactions, list)
+        assert all([isinstance(t, Transaction) for t in transactions])
+        assert all([start_date <= t.date and end_date >= t.date] for t in transactions)
 
 
-# # def test_get_within_dates_no_transactions(app: Flask):
-# #     with app.app_context():
-# #         # Case: Returns an empty list if no transactions fall within the date range
-# #         start_date = datetime(2024, 1, 1)
-# #         end_date = datetime(2024, 1, 31)
-# #         transactions = transaction_repository.get_between_dates(start_date, end_date)
-# #         assert isinstance(transactions, list)
-# #         assert not transactions
+def test_get_between_dates_no_transactions(app: Flask):
+    with app.app_context():
+        # Case: Returns an empty list if no transactions fall within the date range
+        start_date = datetime(2024, 1, 1)
+        end_date = datetime(2024, 1, 31)
+        transactions = transaction_repository.get_between_dates(start_date, end_date)
+        assert isinstance(transactions, list)
+        assert not transactions
 
 
-# # def test_get_within_dates_improper_range(app: Flask):
-# #     with app.app_context():
-# #         # Edge Case: Start date is after the end date (should return an error or empty result)
-# #         start_date = datetime(2024, 1, 1)
-# #         end_date = datetime(2024, 1, 31)
-# #         with pytest.raises(ValueError):
-# #             transactions = transaction_repository.get_between_dates(
-# #                 end_date, start_date
-# #             )
+def test_get_between_dates_improper_range(app: Flask):
+    with app.app_context():
+        # Edge Case: Start date is after the end date (should return an error or empty result)
+        start_date = datetime(2024, 1, 1)
+        end_date = datetime(2024, 1, 31)
+        with pytest.raises(ValueError):
+            transactions = transaction_repository.get_between_dates(
+                end_date, start_date
+            )
 
 
-# # def test_get_within_dates_single_day_range(app: Flask):
-# #     with app.app_context():
-# #         # Edge Case: Start date and end date are the same, check if transactions on that date are included
-# #         start_date = datetime(2024, 1, 1)
-# #         end_date = datetime(2024, 1, 1)
-# #         transactions = transaction_repository.get_between_dates(end_date, start_date)
+def test_get_between_dates_single_day_range(app: Flask, transaction_factory):
 
-# #         assert transactions
-# #         assert isinstance(transactions, list)
-# #         assert all([isinstance(t, Transaction) for t in transactions])
-# #         assert all([start_date <= t.date and end_date >= t.date] for t in transactions)
-# #         assert len(transactions) == 1
+    with app.app_context():
+        transaction = transaction_factory.create("valid")
+        transaction_datetime = transaction.date
+        # Edge Case: Start date and end date are the same, check if transactions on that date are included
+        transactions = transaction_repository.get_between_dates(
+            transaction_datetime, transaction_datetime
+        )
 
-# #         # Edge Case: Dates provided in different formats (e.g., ISO, string, datetime object)
-# #         pass
+        assert transactions
+        assert isinstance(transactions, list)
+        assert all([isinstance(t, Transaction) for t in transactions])
+        assert all(
+            [transaction_datetime <= t.date and transaction_datetime >= t.date]
+            for t in transactions
+        )
+        assert len(transactions) == 1
 
 
-# def test_update(app: Flask):
-#     with app.app_context():
-#         # Case: Successfully updates the transaction and returns the updated transaction object
-#         # Case: Raises NoResultFound when trying to update a transaction with a non-existent ID
-#         # Edge Case: Partial updates (only updating one field like `amount` without affecting others)
-#         # Edge Case: Trying to update a field with an invalid value (e.g., negative transaction amount)
-#         # Edge Case: Attempt to update read-only fields (if any, such as creation date)
-#         pass
+def test_update_success(app: Flask, transaction_factory):
+    with app.app_context():
+        transaction = transaction_factory.create("valid")
+        # update the amount to 200
+        updated = transaction_repository.update(transaction.id, {"amount": 200})
+        assert isinstance(transaction, Transaction)
+        assert updated.id == transaction.id
+        assert updated.amount == 200
+
+
+def test_update_invalid_category(app: Flask, transaction_factory):
+    with app.app_context():
+        transaction = transaction_factory.create("valid")
+        # update the amount to 200
+        with pytest.raises(StatementError):
+            updated = transaction_repository.update(
+                transaction.id, {"category": "NOT A REAL CATEGORY"}
+            )
+
+
+def test_update_non_existent(app: Flask):
+    with app.app_context():
+        # try to update a non-existent id
+        with pytest.raises(NoResultFound):
+            transaction_repository.update(1, {})
+
+
+def test_update_write_only_field(app: Flask, transaction_factory):
+    with app.app_context():
+        t = transaction_factory.create()
+        with pytest.raises(AttributeError):
+            transaction_repository.update(t.id, {"created_at": datetime(2024, 10, 10)})
