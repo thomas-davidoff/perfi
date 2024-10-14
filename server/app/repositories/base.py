@@ -47,6 +47,11 @@ class Repository(ABC, Generic[T]):
             raise NoResultFound("No user with ID {id} exists.")
         return user
 
+    @abstractmethod
+    def get_all(self) -> List[T]:
+        """Gets all entities"""
+        return db.session.query(self.model).all()
+
     def delete(self, id) -> int:
         f"""Deletes an entity by ID"""
         instance = self.get_by_id(id)

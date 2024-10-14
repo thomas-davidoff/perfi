@@ -1,5 +1,5 @@
 from .base import Repository
-from database import User, Transaction
+from database import User, Transaction, Account
 from extensions import db
 from typing import List
 from app import logger
@@ -32,8 +32,8 @@ class TransactionRepository(Repository[Transaction]):
         return super().create(data=data)
 
     def get_all(self):
-        """Retrieve all transactions"""
-        return db.session.query(Transaction).all()
+        """Gets all transactions"""
+        return super().get_all()
 
     def get_between_dates(self, start_date, end_date):
         """Retrieve all transactions that are between dates"""
@@ -111,10 +111,27 @@ class UserRepository(Repository[User]):
         raise NotImplementedError
         return super().bulk_delete(ids)
 
-    def get_all(self) -> List[User]:
+    def get_all(self):
         """Gets all users"""
-        return db.session.query(User).all()
+        return super().get_all()
 
     def create(self, data):
         """Creates a user in the database."""
         return super().create(data)
+
+
+class AccountRepository(Repository[Account]):
+    def __init__(self):
+        super().__init__("account", Account)
+
+    # def create(self, data):
+    #     return super().create(data)
+
+    # def get_by_id(self, id):
+    #     return super().get_by_id(id)
+
+    # def get_all(self):
+    #     return super().get_all()
+
+    # def bulk_delete(self, ids):
+    #     return super().bulk_delete(ids)
