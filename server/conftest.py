@@ -74,13 +74,7 @@ def postgresql_container():
         detach=True,
     )
 
-    container.reload()
-    port_info = container.attrs["NetworkSettings"]["Ports"]
-    if not port_info or not port_info.get("5432/tcp"):
-        raise Exception(
-            "Failed to get port mapping from Docker container. is a previous container still running?"
-        )
-    host_port = port_info["5432/tcp"][0]["HostPort"]
+    host_port = wait_for_port_mapping(container)
 
     test_db_config = DB_CONFIG.copy()
     test_db_config["port"] = host_port
@@ -99,6 +93,24 @@ def postgresql_container():
     finally:
         container.stop()
         container.remove()
+
+
+def wait_for_port_mapping(container, timeout=30):
+    start_time = time.time()
+    while True:
+        container.reload()
+        port_info = container.attrs["NetworkSettings"]["Ports"]
+        if (
+            port_info
+            and port_info.get("5432/tcp")
+            and port_info["5432/tcp"][0].get("HostPort")
+        ):
+            return port_info["5432/tcp"][0]["HostPort"]
+        if time.time() - start_time > timeout:
+            logs = container.logs().decode("utf-8")
+            print(f"Container logs:\n{logs}")
+            raise Exception("Timed out waiting for port mapping from Docker container.")
+        time.sleep(0.1)
 
 
 @pytest.fixture
