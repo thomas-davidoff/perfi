@@ -33,3 +33,7 @@ class Transaction(TimestampMixin, db.Model):
         nullable=True,
         default=TransactionCategory.UNCATEGORIZED,
     )
+
+    # relationships
+    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
+    account = db.relationship("Account", back_populates="transactions")

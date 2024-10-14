@@ -49,6 +49,7 @@ class TransactionFactory:
             "date": random_date(),
             "merchant": "TEST MERCHANT",
             "category": "UNCATEGORIZED",
+            "account_id": 1,
         }
 
     def _invalid_date(self) -> dict:
