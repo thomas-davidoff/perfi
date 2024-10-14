@@ -1,4 +1,5 @@
 from .default import DefaultConfig
+import os
 
 
 class TestingConfig(DefaultConfig):
@@ -10,11 +11,7 @@ class TestingConfig(DefaultConfig):
         self.DEBUG = True
         self.TESTING = True
 
-        # self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-        # self.SQLALCHEMY_DATABASE_URI = (
-        #     "postgresql+psycopg2://poopy:12345@127.0.0.1:8888/tests"
-        # )
-
-        self.SQLALCHEMY_DATABASE_URI = (
-            "postgresql://postgres:mysecretpassword@localhost:5432/testdb"
-        )
+        database_uri = os.environ["DATABASE_URI"]
+        if not database_uri:
+            raise Exception("DATABASE_URI was not set.")
+        self.SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URI"]
