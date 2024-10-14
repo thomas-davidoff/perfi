@@ -4,37 +4,35 @@ from tests.helpers.helpers import add_valid_user
 import os
 from initializers import load_env, load_configuration, get_logger
 from tests.helpers import TransactionFactory
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from extensions import db
 import psycopg
 import time
 import docker
-
+import uuid
 
 environment = "testing"
-DEFAULT_DATABASE_NAME = "postgres"
 
 DB_CONFIG = {
     "dbname": "testdb",
-    "user": "postgres",
+    "user": "testuser",
     "password": "mysecretpassword",
     "host": "localhost",
-    "port": 5432,
 }
 
-CONNECTION = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}"
 
-
-def is_postgres_available(db_name):
-    db_config = DB_CONFIG.copy()
-    db_config["dbname"] = db_name
+def is_postgres_available(db_config):
+    db_config = db_config.copy()
+    connection_string = (
+        f"postgresql://{db_config['user']}:{db_config['password']}"
+        f"@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
+    )
     try:
-        with psycopg.connect(**db_config) as conn:
+        with psycopg.connect(connection_string) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
         return True
-    except psycopg.OperationalError:
+    except psycopg.OperationalError as e:
+        print(f"OperationalError: {e}")
         return False
 
 
@@ -43,87 +41,82 @@ def pytest_configure():
     load_env(f".env.{environment}")
 
 
-@pytest.fixture(scope="session", autouse=True)
-def config():
-    """Fixture that loads environment variables before any tests are run."""
-
+@pytest.fixture(scope="function", autouse=True)
+def config(postgresql_container):
     environment = "testing"
+
+    test_db_config = postgresql_container
+
+    connection_string = (
+        f"postgresql://{test_db_config['user']}:{test_db_config['password']}"
+        f"@{test_db_config['host']}:{test_db_config['port']}/{test_db_config['dbname']}"
+    )
+
+    os.environ["DATABASE_URI"] = connection_string
     configuration = load_configuration(environment)
     return configuration
 
 
+@pytest.fixture(scope="function")
+def postgresql_container():
+    unique_container_name = f"test-postgres-{uuid.uuid4()}"
+
+    client = docker.from_env()
+    container = client.containers.run(
+        image="postgres:14",
+        name=unique_container_name,
+        ports={"5432/tcp": None},
+        environment={
+            "POSTGRES_USER": DB_CONFIG["user"],
+            "POSTGRES_PASSWORD": DB_CONFIG["password"],
+            "POSTGRES_DB": DB_CONFIG["dbname"],
+        },
+        detach=True,
+    )
+
+    container.reload()
+    port_info = container.attrs["NetworkSettings"]["Ports"]
+    if not port_info or not port_info.get("5432/tcp"):
+        raise Exception(
+            "Failed to get port mapping from Docker container. is a previous container still running?"
+        )
+    host_port = port_info["5432/tcp"][0]["HostPort"]
+
+    test_db_config = DB_CONFIG.copy()
+    test_db_config["port"] = host_port
+
+    timeout = 30
+    start = time.time()
+    while not is_postgres_available(db_config=test_db_config):
+        time.sleep(0.1)
+        if time.time() - start > timeout:
+            logs = container.logs().decode("utf-8")
+            print(f"Container logs:\n{logs}")
+            raise TimeoutError("Postgres database did not start in time")
+
+    try:
+        yield test_db_config
+    finally:
+        container.stop()
+        container.remove()
+
+
 @pytest.fixture
-def app(config, session):
+def app(config):
     from app import create_app
 
     init_logger = get_logger(logger_name="poo", log_level="CRITICAL")
     app = create_app(config, init_logger)
-    app.config.update({"SQLALCHEMY_DATABASE_URI": CONNECTION})
-
     with app.app_context():
         db.create_all()
         yield app
-        session.rollback()
+        db.session.remove()
         db.drop_all()
 
 
 @pytest.fixture()
 def client(app) -> FlaskClient:
     return app.test_client()
-
-
-@pytest.fixture()
-def session(engine):
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    yield session
-    session.close()
-
-
-@pytest.fixture(scope="session")
-def engine(postgresql_container):
-    engine = create_engine(CONNECTION)
-    yield engine
-    engine.dispose()
-
-
-@pytest.fixture(scope="session")
-def postgresql_container():
-    client = docker.from_env()
-    container = client.containers.run(
-        image="postgres:14",
-        name="test-postgres",
-        ports={f"5432/tcp": DB_CONFIG["port"]},
-        environment={
-            "POSTGRES_USER": DB_CONFIG["user"],
-            "POSTGRES_PASSWORD": DB_CONFIG["password"],
-            "POSTGRES_DB": DB_CONFIG["dbname"],  # Add this line
-        },
-        detach=True,
-    )
-
-    timeout = 10
-    start = time.time()
-    while container.status != "running":
-        time.sleep(0.1)
-        container.reload()
-        elapsed = time.time() - start
-        if elapsed > timeout:
-            raise TimeoutError("Postgres container did not start in time")
-
-    # Wait for the database to be ready
-    start = time.time()
-    while not is_postgres_available(db_name="postgres"):
-        time.sleep(0.1)
-        elapsed = time.time() - start
-        if elapsed > timeout:
-            raise TimeoutError("Postgres database did not start in time")
-
-    try:
-        yield container
-    finally:
-        container.stop()
-        container.remove()
 
 
 @pytest.fixture()
@@ -134,8 +127,3 @@ def valid_user():
 @pytest.fixture()
 def transaction_factory():
     return TransactionFactory()
-
-
-@pytest.fixture()
-def postgresql_connection(postgresql_container, postgresql):
-    yield postgresql
