@@ -18,7 +18,9 @@ def random_date():
     return datetime(year, month, day).strftime("%Y-%m-%d")
 
 
-choices = Literal["valid", "invalid_date", "missing_amount", "invalid_category"]
+choices = Literal[
+    "valid", "invalid_date", "missing_amount", "invalid_category", "missing_account_id"
+]
 
 
 class TransactionFactory:
@@ -61,4 +63,9 @@ class TransactionFactory:
     def _missing_amount(self) -> dict:
         t = self._valid()
         del t["amount"]
+        return t
+
+    def _missing_account_id(self) -> dict:
+        t = self._valid()
+        del t["account_id"]
         return t

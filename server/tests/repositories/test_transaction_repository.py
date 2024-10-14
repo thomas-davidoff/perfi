@@ -68,7 +68,17 @@ def test_create_missing_amount(app: Flask, transaction_factory):
             t = transaction_repository.create(transaction)
 
 
+def test_create_missing_account_id(app: Flask, transaction_factory):
+
+    with app.app_context():
+        # creates a valid transaction
+        transaction = transaction_factory.get(variant="missing_account_id")
+        with pytest.raises(IntegrityError):
+            t = transaction_repository.create(transaction)
+
+
 def test_create_duplicate_id(app: Flask, transaction_factory):
+
     with app.app_context():
         # creates a valid transaction
         t = transaction_factory.get(variant="valid")
@@ -83,6 +93,7 @@ def test_create_duplicate_id(app: Flask, transaction_factory):
 
 
 def test_delete(app: Flask, transaction_factory):
+
     with app.app_context():
         t = transaction_factory.create()
         # Case: Successfully deletes a transaction when a valid transaction ID is provided
@@ -95,6 +106,7 @@ def test_delete(app: Flask, transaction_factory):
 
 
 def test_bulk_delete_success(app: Flask, transaction_factory):
+
     with app.app_context():
         transactions = transaction_factory.bulk_create(["valid"] * 5)
         # Case: Successfully delete multiple valid transactions
@@ -123,6 +135,7 @@ def test_bulk_delete_non_existent(app: Flask):
 
 
 def test_bulk_delete_skip_invalid(app: Flask, transaction_factory):
+
     with app.app_context():
         count = 5
         transactions = transaction_factory.bulk_create(["valid"] * count)
@@ -140,6 +153,7 @@ def test_bulk_delete_skip_invalid(app: Flask, transaction_factory):
 
 
 def test_get_all_success(app: Flask, transaction_factory):
+
     with app.app_context():
         count = 5
         transaction_factory.bulk_create(["valid"] * count)
@@ -161,6 +175,7 @@ def test_get_all_none_found(app: Flask):
 
 
 def test_get_between_dates_success(app: Flask, transaction_factory):
+
     with app.app_context():
         transactions = transaction_factory.bulk_create(variants=["valid"] * 5)
         # Case: Returns transactions that fall within the given date range
