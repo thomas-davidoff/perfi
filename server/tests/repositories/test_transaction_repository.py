@@ -12,12 +12,10 @@ from sqlalchemy.exc import (
 from extensions import db
 from datetime import datetime
 import warnings
-from tests.helpers import with_app_context
 
 transaction_repository = TransactionRepository()
 
 
-@with_app_context
 def test_get_by_id(app: Flask, transaction_factory):
     # create a valid transaction
     transaction = transaction_factory.create("valid")
@@ -36,7 +34,6 @@ def test_get_by_id(app: Flask, transaction_factory):
         t = transaction_repository.get_by_id(2147483648)
 
 
-@with_app_context
 def test_create_success(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get()
@@ -45,7 +42,6 @@ def test_create_success(app: Flask, transaction_factory):
     assert isinstance(t.id, int)
 
 
-@with_app_context
 def test_create_invalid_category(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get(variant="invalid_category")
@@ -53,7 +49,6 @@ def test_create_invalid_category(app: Flask, transaction_factory):
         t = transaction_repository.create(transaction)
 
 
-@with_app_context
 def test_create_invalid_date(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get(variant="invalid_date")
@@ -61,7 +56,6 @@ def test_create_invalid_date(app: Flask, transaction_factory):
         t = transaction_repository.create(transaction)
 
 
-@with_app_context
 def test_create_missing_amount(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get(variant="missing_amount")
@@ -69,7 +63,6 @@ def test_create_missing_amount(app: Flask, transaction_factory):
         t = transaction_repository.create(transaction)
 
 
-@with_app_context
 def test_create_missing_account_id(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get(variant="missing_account_id")
@@ -77,7 +70,6 @@ def test_create_missing_account_id(app: Flask, transaction_factory):
         t = transaction_repository.create(transaction)
 
 
-@with_app_context
 def test_create_duplicate_id(app: Flask, transaction_factory):
     # creates a valid transaction
     t = transaction_factory.get(variant="valid")
@@ -91,7 +83,6 @@ def test_create_duplicate_id(app: Flask, transaction_factory):
             t = transaction_repository.create(new_t)
 
 
-@with_app_context
 def test_delete(app: Flask, transaction_factory):
     t = transaction_factory.create()
     # Case: Successfully deletes a transaction when a valid transaction ID is provided
@@ -103,7 +94,6 @@ def test_delete(app: Flask, transaction_factory):
         transaction_repository.delete(t.id)
 
 
-@with_app_context
 def test_bulk_delete_success(app: Flask, transaction_factory):
     transactions = transaction_factory.bulk_create(["valid"] * 5)
     # Case: Successfully delete multiple valid transactions
@@ -113,7 +103,6 @@ def test_bulk_delete_success(app: Flask, transaction_factory):
     assert all([isinstance(d, int) for d in deleted])
 
 
-@with_app_context
 def test_bulk_delete_empty_list(app: Flask):
     # Case: Successfully delete multiple valid transactions
 
@@ -122,7 +111,6 @@ def test_bulk_delete_empty_list(app: Flask):
     assert len(deleted) == 0
 
 
-@with_app_context
 def test_bulk_delete_non_existent(app: Flask):
     # Case: Successfully delete multiple valid transactions
     deleted = transaction_repository.bulk_delete([1, 2, 3])
@@ -130,7 +118,6 @@ def test_bulk_delete_non_existent(app: Flask):
     assert len(deleted) == 0
 
 
-@with_app_context
 def test_bulk_delete_skip_invalid(app: Flask, transaction_factory):
     count = 5
     transactions = transaction_factory.bulk_create(["valid"] * count)
@@ -145,7 +132,6 @@ def test_bulk_delete_skip_invalid(app: Flask, transaction_factory):
         assert db.session.get(Transaction, id) is None
 
 
-@with_app_context
 def test_get_all_success(app: Flask, transaction_factory):
     count = 5
     transaction_factory.bulk_create(["valid"] * count)
@@ -158,7 +144,6 @@ def test_get_all_success(app: Flask, transaction_factory):
     assert len(transactions) == count
 
 
-@with_app_context
 def test_get_all_none_found(app: Flask):
     # Case: Returns an empty list when no transactions exist
     transactions = transaction_repository.get_all()
@@ -166,7 +151,6 @@ def test_get_all_none_found(app: Flask):
     assert len(transactions) == 0
 
 
-@with_app_context
 def test_get_between_dates_success(app: Flask, transaction_factory):
     transactions = transaction_factory.bulk_create(variants=["valid"] * 5)
     # Case: Returns transactions that fall within the given date range
@@ -179,7 +163,6 @@ def test_get_between_dates_success(app: Flask, transaction_factory):
     assert all([start_date <= t.date and end_date >= t.date] for t in transactions)
 
 
-@with_app_context
 def test_get_between_dates_no_transactions(app: Flask):
     # Case: Returns an empty list if no transactions fall within the date range
     start_date = datetime(2024, 1, 1)
@@ -189,7 +172,6 @@ def test_get_between_dates_no_transactions(app: Flask):
     assert not transactions
 
 
-@with_app_context
 def test_get_between_dates_improper_range(app: Flask):
     # Edge Case: Start date is after the end date (should return an error or empty result)
     start_date = datetime(2024, 1, 1)
@@ -198,7 +180,6 @@ def test_get_between_dates_improper_range(app: Flask):
         transactions = transaction_repository.get_between_dates(end_date, start_date)
 
 
-@with_app_context
 def test_get_between_dates_single_day_range(app: Flask, transaction_factory):
     transaction = transaction_factory.create("valid")
     transaction_datetime = transaction.date
@@ -217,7 +198,6 @@ def test_get_between_dates_single_day_range(app: Flask, transaction_factory):
     assert len(transactions) == 1
 
 
-@with_app_context
 def test_update_success(app: Flask, transaction_factory):
     transaction = transaction_factory.create("valid")
     # update the amount to 200
@@ -227,7 +207,6 @@ def test_update_success(app: Flask, transaction_factory):
     assert updated.amount == 200
 
 
-@with_app_context
 def test_update_invalid_category(app: Flask, transaction_factory):
     transaction = transaction_factory.create("valid")
     # update the amount to 200
@@ -237,14 +216,12 @@ def test_update_invalid_category(app: Flask, transaction_factory):
         )
 
 
-@with_app_context
 def test_update_non_existent(app: Flask):
     # try to update a non-existent id
     with pytest.raises(NoResultFound):
         transaction_repository.update(1, {})
 
 
-@with_app_context
 def test_update_write_only_field(app: Flask, transaction_factory):
     t = transaction_factory.create()
     with pytest.raises(AttributeError):

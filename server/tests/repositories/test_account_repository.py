@@ -12,12 +12,10 @@ from sqlalchemy.exc import (
 from extensions import db
 from datetime import datetime
 import warnings
-from tests.helpers import with_app_context
 
 account_repository = AccountRepository()
 
 
-@with_app_context
 def test_get_by_id_success(app: Flask, account_factory):
     account = account_factory.create()
 

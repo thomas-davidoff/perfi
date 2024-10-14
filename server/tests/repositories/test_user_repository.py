@@ -5,14 +5,12 @@ from flask import Flask
 from database import User
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from tests.helpers import with_app_context
 from tests.helpers.helpers import add_valid_user, add_valid_users
 
 
 user_repository = UserRepository()
 
 
-@with_app_context
 def test_get_by_username_or_email(app: Flask):
     # successfully returns user by username
     # remember to seed data
@@ -36,7 +34,6 @@ def test_get_by_username_or_email(app: Flask):
     assert user is None
 
 
-@with_app_context
 def test_get_all(app: Flask):
     n_users = 3
     add_valid_users(n_users)
@@ -47,7 +44,6 @@ def test_get_all(app: Flask):
     assert all([isinstance(u, User) for u in users])
 
 
-@with_app_context
 def test_create(app: Flask):
     # it successfully creates a user with correct data
     user = {"username": "test", "password": "test", "email": "test@test.com"}
@@ -57,7 +53,6 @@ def test_create(app: Flask):
     assert user.username == "test"
 
 
-@with_app_context
 def test_create_duplicate_username(app: Flask, valid_user):
     new_user = {
         "username": valid_user.username,
@@ -68,14 +63,12 @@ def test_create_duplicate_username(app: Flask, valid_user):
         user_repository.create(new_user)
 
 
-@with_app_context
 def test_create_duplicate_email(app: Flask, valid_user):
     new_user = {"username": "test", "password": "test", "email": valid_user.email}
     with pytest.raises(IntegrityError):
         user_repository.create(new_user)
 
 
-@with_app_context
 def test_delete(app: Flask):
     # create test user
     user = {"username": "test", "password": "test", "email": "test@test.com"}
@@ -92,7 +85,6 @@ def test_delete(app: Flask):
         user_repository.delete(999)
 
 
-@with_app_context
 def test_update(app: Flask):
     with pytest.raises(NotImplementedError):
         user_repository.update(100, "data")
