@@ -15,7 +15,7 @@ def random_date():
         else datetime(year, month + 1, 1) - timedelta(days=1)
     )
     day = randint(1, max_day.day)
-    return datetime(year, month, day)
+    return datetime(year, month, day).strftime("%Y-%m-%d")
 
 
 choices = Literal["valid", "invalid_date", "missing_amount", "invalid_category"]

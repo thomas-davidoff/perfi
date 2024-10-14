@@ -37,7 +37,7 @@ def is_postgres_available(db_config):
 
 
 def pytest_configure():
-    load_env(".env")
+    load_env(f".env")
     load_env(f".env.{environment}")
 
 
@@ -57,13 +57,13 @@ def config(postgresql_container):
     return configuration
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def postgresql_container():
     unique_container_name = f"test-postgres-{uuid.uuid4()}"
 
     client = docker.from_env()
     container = client.containers.run(
-        image="postgres:14",
+        image="postgres:17",
         name=unique_container_name,
         ports={"5432/tcp": None},
         environment={
@@ -72,6 +72,7 @@ def postgresql_container():
             "POSTGRES_DB": DB_CONFIG["dbname"],
         },
         detach=True,
+        tmpfs={"/var/lib/postgresql/data": "rw"},
     )
 
     host_port = wait_for_port_mapping(container)
