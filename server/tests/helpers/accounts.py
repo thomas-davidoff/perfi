@@ -5,7 +5,7 @@ from typing import Literal, List
 from extensions import db
 
 
-choices = Literal["valid"]
+choices = Literal["valid", "invalid_account_type", "missing_name"]
 
 
 class AccountFactory:
@@ -27,3 +27,13 @@ class AccountFactory:
             "balance": 100,
             "account_type": "CHECKING",
         }
+
+    def _invalid_account_type(self) -> dict:
+        a = self._valid()
+        a["account_type"] = "NOT A REAL TYPE"
+        return a
+
+    def _missing_name(self) -> dict:
+        a = self._valid()
+        del a["name"]
+        return a

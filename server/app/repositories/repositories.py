@@ -124,17 +124,26 @@ class AccountRepository(Repository[Account]):
     def __init__(self):
         super().__init__("account", Account)
 
-    def create(self, data):
+    def create(self, data) -> Account:
+        """Creates an account in the database"""
         return super().create(data)
 
-    def get_by_id(self, id):
+    def get_by_id(self, id) -> Account:
+        """Gets an account by ID"""
         return super().get_by_id(id)
 
-    def get_all(self):
+    def get_all(self) -> List[Account]:
+        """Gets all accounts from the database"""
         return super().get_all()
 
+    def delete(self, id) -> int:
+        """Deletes an account by ID"""
+        return super().delete(id)
+
     def bulk_delete(self, ids):
+        """Deletes a list of accounts by id"""
         return super().bulk_delete(ids)
 
-    def update(self, id, data):
+    def update(self, id, data) -> Account:
+        """Updates an account by id"""
         return super().update(id, data)
