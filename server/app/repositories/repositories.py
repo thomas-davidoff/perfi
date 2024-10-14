@@ -124,14 +124,17 @@ class AccountRepository(Repository[Account]):
     def __init__(self):
         super().__init__("account", Account)
 
-    # def create(self, data):
-    #     return super().create(data)
+    def create(self, data):
+        return super().create(data)
 
-    # def get_by_id(self, id):
-    #     return super().get_by_id(id)
+    def get_by_id(self, id):
+        return super().get_by_id(id)
 
-    # def get_all(self):
-    #     return super().get_all()
+    def get_all(self):
+        return super().get_all()
 
-    # def bulk_delete(self, ids):
-    #     return super().bulk_delete(ids)
+    def bulk_delete(self, ids):
+        return super().bulk_delete(ids)
+
+    def update(self, id, data):
+        return super().update(id, data)
