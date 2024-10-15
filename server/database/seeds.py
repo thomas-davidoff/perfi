@@ -1,65 +1,44 @@
 # database/seeds.py
 
-from .models import User, Transaction
+from .models import User, Transaction, Account
 from extensions import db
 import json
 import os
-from datetime import datetime
+import uuid
+from random import randint
 
 
-def load_seed_file(path):
+def load_seed_file(seed):
     cur_file = os.path.dirname(os.path.abspath(__file__))
-    fp = os.path.join(cur_file, path)
+    fp = os.path.join(cur_file, f"seed_data/{seed}.json")
     with open(fp, "r") as f:
         return json.load(f)
 
 
-def seed_all():
-    seed_users()
-    seed_transactions()
+def get_random_account_id(accounts):
+    return accounts[randint(0, len(accounts) - 1)].id
 
 
-def unseed_all():
-    unseed_users()
-    unseed_transactions()
+def seed():
+    for entity_type, model in {
+        "users": User,
+        "accounts": Account,
+        "transactions": Transaction,
+    }.items():
+        data = load_seed_file(entity_type)
+        for entity in data:
+            try:
+                if entity_type == "users":
+                    entity = {**entity, "password": os.environ.get("DB_SEEDS_PASSWORD")}
+                if entity_type == "transactions":
+                    acx = db.session.query(Account).all()
+                    entity = {**entity, "account_id": get_random_account_id(acx)}
+                e = model(**entity)
+                db.session.add(e)
+                db.session.commit()
+            except:
+                print(f"could not seed entity {entity_type} with data {entity}")
+                raise
+                continue
 
-
-def seed_users():
-    users_data = load_seed_file("seed_data/users.json")
-    for user in users_data:
-        # check for each individual user like a toddler, because i cant bother vectorizing it
-        exists = User.query.filter_by(username=user["username"]).first()
-        if not exists:
-            user = {**user, **{"password": os.environ["DB_SEEDS_PASSWORD"]}}
-            new_user = User(**user)
-            db.session.add(new_user)
-
-    db.session.commit()
-    print("Seeded users successfully.")
-
-
-def unseed_users():
-    users_data = load_seed_file("seed_data/users.json")
-
-    for user in users_data:
-        exists = User.query.filter_by(username=user["username"]).first()
-        if exists:
-            db.session.delete(exists)
-
-        db.session.commit()
-        print("Unseeded users successfully.")
-
-
-def seed_transactions():
-    transactions_data = load_seed_file("seed_data/transactions.json")
-    for transaction in transactions_data:
-        sqlite_safe_transaction = {**transaction, **{"date": datetime(2020, 10, 3)}}
-        new_transaction = Transaction(**sqlite_safe_transaction)
-        db.session.add(new_transaction)
-
-    db.session.commit()
-    print("Seeded transactions successfully.")
-
-
-def unseed_transactions():
-    pass
+        print(f"Seeded {entity_type} successfully.")

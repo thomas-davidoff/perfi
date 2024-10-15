@@ -19,13 +19,7 @@ class TransactionRepository(Repository[Transaction]):
         :return Transaction:
             Transaction object or None
         """
-        if id > 2147483647 or id < -2147483647:
-            raise IdentifierError("transaction id must be of int size")
-        user = db.session.query(Transaction).filter(Transaction.id == id).one_or_none()
-        if user is None:
-            logger.error(f"No transaction with ID {id} exists.")
-            raise NoResultFound("No transaction with ID {id} exists.")
-        return user
+        return super().get_by_id(id)
 
     def create(self, data: dict) -> Transaction:
         """Creates a valid transaction."""

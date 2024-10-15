@@ -142,7 +142,7 @@ def valid_user():
 def transaction_factory():
     # make sure that an account actually exists before allowing transactions to be created.
     # check for account with id of 1
-    account = db.session.get(Account, 1)
+    account = db.session.query(Account).first()
     if not account:
         account_factory = AccountFactory()
         account_factory.create("valid")

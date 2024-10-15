@@ -2,6 +2,8 @@ from extensions import db
 from sqlalchemy import Float, String, DateTime, Enum, func
 from .timestamp_mixin import TimestampMixin
 import enum
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 
 class TransactionCategory(enum.Enum):
@@ -19,7 +21,7 @@ class Transaction(TimestampMixin, db.Model):
 
     __tablename__ = "transactions"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
     # TODO: account relationship
     # TODO: category relationship
     # TODO: source - manual, csv_import, etc
@@ -35,5 +37,9 @@ class Transaction(TimestampMixin, db.Model):
     )
 
     # relationships
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
+    # account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), nullable=False)
     account = db.relationship("Account", back_populates="transactions")
+
+    account_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey("accounts.id"), nullable=False
+    )

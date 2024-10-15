@@ -5,7 +5,7 @@ import os
 import subprocess
 from flask import current_app
 from sqlalchemy.engine.url import make_url
-from database import seed_all, unseed_all
+from database import seed
 from extensions import db
 
 
@@ -19,15 +19,9 @@ dbx_cli_group = AliasedGroup("dbx")
 
 
 @dbx_cli_group.command("seed")
-def seed():
+def seed_all():
     """Use this command to seed the database with necessary data."""
-    seed_all()
-
-
-@dbx_cli_group.command("unseed")
-def seed():
-    """Use this command to UNseed the database."""
-    unseed_all()
+    seed()
 
 
 # Usage: `Flask dbx shell`

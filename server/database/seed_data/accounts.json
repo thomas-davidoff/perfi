@@ -1,0 +1,7 @@
+[
+    {
+        "name": "Some checking account",
+        "balance": 100,
+        "account_type": "CHECKING"
+    }
+]

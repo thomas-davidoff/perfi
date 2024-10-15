@@ -8,10 +8,12 @@ from sqlalchemy.exc import (
     StatementError,
     IntegrityError,
     SAWarning,
+    ArgumentError,
 )
 from extensions import db
 from datetime import datetime
 import warnings
+import uuid
 
 transaction_repository = TransactionRepository()
 
@@ -27,11 +29,12 @@ def test_get_by_id(app: Flask, transaction_factory):
 
     # Case: Raises NoResultFound when the ID does not exist
     with pytest.raises(NoResultFound):
-        t = transaction_repository.get_by_id(transaction.id + 1)
+        t = transaction_repository.get_by_id(uuid.uuid4())
 
-    # Edge Case: Handling when the ID is a valid integer but outside the possible range of IDs
-    with pytest.raises(IdentifierError):
-        t = transaction_repository.get_by_id(2147483648)
+
+def test_get_by_id_not_uuid(app: Flask):
+    with pytest.raises(ArgumentError):
+        transaction_repository.get_by_id(1)
 
 
 def test_create_success(app: Flask, transaction_factory):
@@ -39,7 +42,7 @@ def test_create_success(app: Flask, transaction_factory):
     transaction = transaction_factory.get()
     t = transaction_repository.create(transaction)
     assert isinstance(t, Transaction)
-    assert isinstance(t.id, int)
+    assert isinstance(t.id, uuid.UUID)
 
 
 def test_create_invalid_category(app: Flask, transaction_factory):
@@ -79,7 +82,7 @@ def test_create_duplicate_id(app: Flask, transaction_factory):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=SAWarning)
-            new_t = {**transaction_factory.get("valid"), **{"id": 1}}
+            new_t = {**transaction_factory.get("valid"), **{"id": t.id}}
             t = transaction_repository.create(new_t)
 
 
@@ -87,7 +90,7 @@ def test_delete(app: Flask, transaction_factory):
     t = transaction_factory.create()
     # Case: Successfully deletes a transaction when a valid transaction ID is provided
     deleted = transaction_repository.delete(t.id)
-    assert isinstance(deleted, int)
+    assert isinstance(deleted, uuid.UUID)
     assert db.session.get(Transaction, t.id) is None
     # Case: Raises NoResultFound when trying to delete a transaction with a non-existent ID
     with pytest.raises(NoResultFound):
@@ -100,7 +103,7 @@ def test_bulk_delete_success(app: Flask, transaction_factory):
 
     deleted = transaction_repository.bulk_delete([t.id for t in transactions])
     assert isinstance(deleted, list)
-    assert all([isinstance(d, int) for d in deleted])
+    assert all([isinstance(d, uuid.UUID) for d in deleted])
 
 
 def test_bulk_delete_empty_list(app: Flask):
@@ -113,7 +116,7 @@ def test_bulk_delete_empty_list(app: Flask):
 
 def test_bulk_delete_non_existent(app: Flask):
     # Case: Successfully delete multiple valid transactions
-    deleted = transaction_repository.bulk_delete([1, 2, 3])
+    deleted = transaction_repository.bulk_delete([uuid.uuid4()] * 3)
     assert isinstance(deleted, list)
     assert len(deleted) == 0
 
@@ -123,7 +126,9 @@ def test_bulk_delete_skip_invalid(app: Flask, transaction_factory):
     transactions = transaction_factory.bulk_create(["valid"] * count)
     # Case: Successfully delete multiple valid transactions
 
-    deleted = transaction_repository.bulk_delete([*[t.id for t in transactions], 100])
+    deleted = transaction_repository.bulk_delete(
+        [*[t.id for t in transactions], uuid.uuid4()]
+    )
     assert isinstance(deleted, list)
     assert len(deleted) == 5
     assert 100 not in deleted
@@ -219,7 +224,7 @@ def test_update_invalid_category(app: Flask, transaction_factory):
 def test_update_non_existent(app: Flask):
     # try to update a non-existent id
     with pytest.raises(NoResultFound):
-        transaction_repository.update(1, {})
+        transaction_repository.update(uuid.uuid4(), {})
 
 
 def test_update_write_only_field(app: Flask, transaction_factory):

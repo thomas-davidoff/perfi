@@ -110,6 +110,6 @@ def test_authorization_success(client: FlaskClient, valid_user):
     assert r.status_code == 200
     assert r.json == {
         "email": valid_user.email,
-        "id": 1,
+        "id": str(valid_user.id),
         "username": valid_user.username,
     }
