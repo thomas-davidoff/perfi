@@ -1,4 +1,4 @@
-from database import Transaction
+from database import Transaction, Account
 from datetime import datetime, timedelta
 from random import randint, uniform
 from typing import Literal, List
@@ -51,7 +51,7 @@ class TransactionFactory:
             "date": random_date(),
             "merchant": "TEST MERCHANT",
             "category": "UNCATEGORIZED",
-            "account_id": 1,
+            "account_id": db.session.query(Account).first().id,
         }
 
     def _invalid_date(self) -> dict:

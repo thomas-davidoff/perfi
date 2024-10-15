@@ -12,6 +12,7 @@ from sqlalchemy.exc import (
 from extensions import db
 from datetime import datetime
 import warnings
+import uuid
 
 account_repository = AccountRepository()
 
@@ -25,7 +26,7 @@ def test_get_by_id_success(app: Flask, account_factory):
 
 def test_get_by_id_no_result(app):
     with pytest.raises(NoResultFound):
-        account = account_repository.get_by_id(1)
+        account = account_repository.get_by_id(uuid.uuid4())
 
 
 @pytest.mark.parametrize("id", ["some string", {}, account_repository])

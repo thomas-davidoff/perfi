@@ -6,6 +6,7 @@ from database import User
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from tests.helpers.helpers import add_valid_user, add_valid_users
+import uuid
 
 
 user_repository = UserRepository()
@@ -82,7 +83,7 @@ def test_delete(app: Flask):
 
     # it fails to delete a non-existent id
     with pytest.raises(NoResultFound):
-        user_repository.delete(999)
+        user_repository.delete(uuid.uuid4())
 
 
 def test_update(app: Flask):

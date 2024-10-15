@@ -4,6 +4,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError, ArgumentError
 from app import logger
 from extensions import db
 from typing import TypeVar, Generic
+from uuid import UUID
 
 
 T = TypeVar("T")
@@ -41,7 +42,7 @@ class Repository(ABC, Generic[T]):
         :return entity:
             entity instance or None
         """
-        self._id_is_int(id)
+        self._id_is_uuid(id)
         user = db.session.query(self.model).filter(self.model.id == id).one_or_none()
         if user is None:
             logger.error(f"No user with ID {id} exists.")
@@ -55,7 +56,7 @@ class Repository(ABC, Generic[T]):
 
     def delete(self, id: int) -> int:
         f"""Deletes an entity by ID"""
-        self._id_is_int(id)
+        self._id_is_uuid(id)
         instance = self.get_by_id(id)
         if instance:
             db.session.delete(instance)
@@ -72,13 +73,13 @@ class Repository(ABC, Generic[T]):
     @abstractmethod
     def update(self, id: int, data: dict) -> T:
         """Updates an existing entity in the database."""
-        self._id_is_int(id)
+        self._id_is_uuid(id)
         user = self.get_by_id(id)
         for key, value in data.items():
             setattr(user, key, value)
         db.session.commit()
         return user
 
-    def _id_is_int(self, id):
-        if not isinstance(id, int):
-            raise ArgumentError(f"id must be a valid integer. You passed {type(id)}")
+    def _id_is_uuid(self, id):
+        if not isinstance(id, UUID):
+            raise ArgumentError(f"id must be a valid uuid. You passed {type(id)}")
