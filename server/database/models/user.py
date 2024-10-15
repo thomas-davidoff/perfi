@@ -28,3 +28,11 @@ class User(TimestampMixin, db.Model):
 
     def to_dict(self):
         return {"id": self.id, "username": self.username, "email": self.email}
+
+    # relationships
+    accounts = db.relationship(
+        "Account",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )

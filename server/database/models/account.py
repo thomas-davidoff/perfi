@@ -2,6 +2,7 @@ from extensions import db
 from sqlalchemy import Float, String, Enum
 from .timestamp_mixin import TimestampMixin
 import enum
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class AccountType(enum.Enum):
@@ -25,3 +26,6 @@ class Account(TimestampMixin, db.Model):
         cascade="all, delete-orphan",
         lazy="dynamic",
     )
+
+    user = db.relationship("User", back_populates="accounts")
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
