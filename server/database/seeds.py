@@ -15,8 +15,8 @@ def load_seed_file(seed):
         return json.load(f)
 
 
-def get_random_account_id(accounts):
-    return accounts[randint(0, len(accounts) - 1)].id
+def get_random_entity_id(entities):
+    return entities[randint(0, len(entities) - 1)].id
 
 
 def seed():
@@ -32,7 +32,10 @@ def seed():
                     entity = {**entity, "password": os.environ.get("DB_SEEDS_PASSWORD")}
                 if entity_type == "transactions":
                     acx = db.session.query(Account).all()
-                    entity = {**entity, "account_id": get_random_account_id(acx)}
+                    entity = {**entity, "account_id": get_random_entity_id(acx)}
+                if entity_type == "accounts":
+                    usrs = db.session.query(User).all()
+                    entity = {**entity, "user_id": get_random_entity_id(usrs)}
                 e = model(**entity)
                 db.session.add(e)
                 db.session.commit()
