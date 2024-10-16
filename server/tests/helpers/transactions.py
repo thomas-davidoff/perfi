@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from random import randint, uniform
 from typing import Literal, List
 from extensions import db
+from .accounts import AccountFactory
 
 
 def random_date():
@@ -46,6 +47,11 @@ class TransactionFactory:
         return transactions
 
     def _valid(self) -> dict:
+
+        account = db.session.query(Account).first()
+        if not account:
+            account_factory = AccountFactory()
+            account_factory.create("valid")
         return {
             "amount": round(uniform(5, 250), 2),
             "date": random_date(),

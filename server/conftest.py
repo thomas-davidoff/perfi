@@ -1,15 +1,14 @@
 import pytest
 from flask.testing import FlaskClient
-from tests.helpers.helpers import add_valid_user
 import os
 from initializers import load_env, load_configuration, get_logger
-from tests.helpers import TransactionFactory, AccountFactory
+from tests.helpers import TransactionFactory, AccountFactory, UserFactory
 from extensions import db
 import psycopg
 import time
 import docker
 import uuid
-from database import Account
+from database import Account, User
 
 environment = "testing"
 
@@ -134,21 +133,15 @@ def client(app) -> FlaskClient:
 
 
 @pytest.fixture()
-def valid_user():
-    return add_valid_user(password=os.environ["TEST_PASSWORD"])
-
-
-@pytest.fixture()
 def transaction_factory():
-    # make sure that an account actually exists before allowing transactions to be created.
-    # check for account with id of 1
-    account = db.session.query(Account).first()
-    if not account:
-        account_factory = AccountFactory()
-        account_factory.create("valid")
     return TransactionFactory()
 
 
 @pytest.fixture
 def account_factory():
     return AccountFactory()
+
+
+@pytest.fixture
+def user_factory():
+    return UserFactory()

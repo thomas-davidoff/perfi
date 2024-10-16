@@ -2,20 +2,20 @@ import pytest
 from flask.testing import FlaskClient
 from flask_jwt_extended import decode_token
 import os
-from tests.helpers.helpers import add_valid_user
 
 
 HEADERS = {"Content-type": "application/json", "Accept": "application/json"}
 seed_pass = os.environ.get("DB_SEEDS_PASSWORD")
 expired_token = os.environ["EXPIRED_TOKEN"]
-TEST_PASSWORD = os.environ.get("TEST_PASSWORD")
 
 
-def test_login_success(client: FlaskClient, valid_user):
+def test_login_success(client: FlaskClient, user_factory):
+    # create valid user
+    u = user_factory.create("valid")
     # valid access token is successfully returned by providing valid credentials
     r = client.post(
         "/auth/login",
-        json={"username": valid_user.username, "password": TEST_PASSWORD},
+        json={"username": u.username, "password": os.environ["DB_SEEDS_PASSWORD"]},
         headers=HEADERS,
     )
     assert r.status_code == 200
@@ -24,21 +24,30 @@ def test_login_success(client: FlaskClient, valid_user):
     assert decode_token(r.json["access_token"])["type"] == "access"
 
 
-def test_login_invalid_password(client: FlaskClient, valid_user):
+def test_login_invalid_password(client: FlaskClient, user_factory):
+    # create valid user
+    u = user_factory.create("valid")
+
     # a 401 unauthorized is returned by providing invalid password
     r = client.post(
         "/auth/login",
-        json={"username": valid_user.username, "password": "NOT THE PASSWORD"},
+        json={"username": u.username, "password": "NOT THE PASSWORD"},
         headers=HEADERS,
     )
     assert r.status_code == 401
 
 
-def test_login_invalid_username(client: FlaskClient, valid_user):
+def test_login_invalid_username(client: FlaskClient, user_factory):
+    # create valid user
+    u = user_factory.create("valid")
+
     # a 401 unauthorized is returned by providing invalid password
     r = client.post(
         "/auth/login",
-        json={"username": "not the username", "password": TEST_PASSWORD},
+        json={
+            "username": "not the username",
+            "password": os.environ["DB_SEEDS_PASSWORD"],
+        },
         headers=HEADERS,
     )
     assert r.status_code == 401
@@ -54,7 +63,11 @@ def test_login_empty_payload(client: FlaskClient):
 
 def test_login_no_username(client: FlaskClient):
     # an empty payload returns a 400, with a helpful message
-    r = client.post("/auth/login", json={"password": TEST_PASSWORD}, headers=HEADERS)
+    r = client.post(
+        "/auth/login",
+        json={"password": os.environ["DB_SEEDS_PASSWORD"]},
+        headers=HEADERS,
+    )
     assert r.status_code == 400
     assert "error" in r.json
     assert "Provide username and password" in r.json["error"]
@@ -95,11 +108,17 @@ def test_authorization_invalid_token(client: FlaskClient):
     assert r.status_code == 422
 
 
-def test_authorization_success(client: FlaskClient, valid_user):
+def test_authorization_success(client: FlaskClient, user_factory):
+    # create valid user
+    u = user_factory.create("valid")
+
     # get an access token
     r = client.post(
         "/auth/login",
-        json={"username": valid_user.username, "password": TEST_PASSWORD},
+        json={
+            "username": u.username,
+            "password": os.environ["DB_SEEDS_PASSWORD"],
+        },
         headers=HEADERS,
     )
     token = r.json["access_token"]
@@ -109,7 +128,7 @@ def test_authorization_success(client: FlaskClient, valid_user):
     r = client.get("/whoami", headers=headers)
     assert r.status_code == 200
     assert r.json == {
-        "email": valid_user.email,
-        "id": str(valid_user.id),
-        "username": valid_user.username,
+        "email": u.email,
+        "id": str(u.id),
+        "username": u.username,
     }

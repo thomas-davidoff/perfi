@@ -5,19 +5,17 @@ from flask import Flask
 from database import User
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from tests.helpers.helpers import add_valid_user, add_valid_users
 import uuid
 
 
 user_repository = UserRepository()
 
 
-def test_get_by_username_or_email(app: Flask):
+def test_get_by_username_or_email(app: Flask, user_factory):
     # successfully returns user by username
     # remember to seed data
 
-    # setup: add valid user
-    u = add_valid_user()
+    u = user_factory.create("valid")
 
     user = user_repository.get_by_username_or_email(u.username)
     assert isinstance(user, User)
@@ -35,9 +33,11 @@ def test_get_by_username_or_email(app: Flask):
     assert user is None
 
 
-def test_get_all(app: Flask):
+def test_get_all(app: Flask, user_factory):
+
     n_users = 3
-    add_valid_users(n_users)
+
+    users = user_factory.bulk_create(["valid"] * n_users)
     # it successfully gets all users
     users = user_repository.get_all()
     assert isinstance(users, list)
@@ -54,26 +54,24 @@ def test_create(app: Flask):
     assert user.username == "test"
 
 
-def test_create_duplicate_username(app: Flask, valid_user):
-    new_user = {
-        "username": valid_user.username,
-        "password": "test",
-        "email": "test@test.com",
-    }
+def test_create_duplicate_username(app: Flask, user_factory):
+    user = user_factory.create("valid")
+    u = user_factory.get("valid")
+    u["username"] = user.username
     with pytest.raises(IntegrityError):
-        user_repository.create(new_user)
+        user_repository.create(u)
 
 
-def test_create_duplicate_email(app: Flask, valid_user):
-    new_user = {"username": "test", "password": "test", "email": valid_user.email}
+def test_create_duplicate_email(app: Flask, user_factory):
+    user = user_factory.create("valid")
+    u = user_factory.get("valid")
+    u["email"] = user.email
     with pytest.raises(IntegrityError):
-        user_repository.create(new_user)
+        user_repository.create(u)
 
 
-def test_delete(app: Flask):
-    # create test user
-    user = {"username": "test", "password": "test", "email": "test@test.com"}
-    user = user_repository.create(user)
+def test_delete(app: Flask, user_factory):
+    user = user_factory.create("valid")
 
     # it successfully deletes the user
     user_repository.delete(user.id)
@@ -86,6 +84,7 @@ def test_delete(app: Flask):
         user_repository.delete(uuid.uuid4())
 
 
-def test_update(app: Flask):
+def test_update(app: Flask, user_factory):
+    user = user_factory.create("valid")
     with pytest.raises(NotImplementedError):
-        user_repository.update(100, "data")
+        user_repository.update(user.id, {"username": "test"})

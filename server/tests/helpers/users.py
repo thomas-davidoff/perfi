@@ -5,6 +5,7 @@ from typing import Literal, List
 from extensions import db
 import string
 import random
+import os
 
 
 choices = Literal["valid"]
@@ -13,10 +14,11 @@ choices = Literal["valid"]
 def generate_random_credentials():
     username = "".join(random.choices(string.ascii_lowercase, k=10))
 
-    password = "".join(
-        random.choices(string.ascii_letters + string.digits + string.punctuation, k=12)
-    )
-    return {"username": username, "password": password}
+    return {
+        "username": username,
+        "password": os.environ["DB_SEEDS_PASSWORD"],
+        "email": "".join(random.choices(string.ascii_lowercase, k=10)),
+    }
 
 
 class UserFactory:
@@ -27,10 +29,19 @@ class UserFactory:
         return getattr(self, f"_{variant}")()
 
     def create(self, variant: choices = "valid") -> User:
-        a = User(**self.get(variant))
-        db.session.add(a)
+        u = User(**self.get(variant))
+        db.session.add(u)
         db.session.commit()
-        return a
+        return u
 
     def _valid(self) -> dict:
         return generate_random_credentials()
+
+    def bulk_create(self, variants: List[choices] = None) -> List[User]:
+        transactions = []
+        for v in variants:
+            u = User(**self.get(variant=v))
+            db.session.add(u)
+            transactions.append(u)
+        db.session.commit()
+        return transactions
