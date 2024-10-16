@@ -48,3 +48,10 @@ def login():
 
     access_token = create_access_token(identity=user)
     return jsonify(access_token=access_token)
+
+
+@auth_bp.route("/register", methods=["POST"])
+def register():
+    """
+    Registration route.
+    """

@@ -8,16 +8,20 @@ import random
 import os
 
 
-choices = Literal["valid"]
+choices = Literal["valid", "simple_password"]
+
+
+def generate_string(length=10):
+    return "".join(random.choices(string.ascii_lowercase, k=length))
 
 
 def generate_random_credentials():
-    username = "".join(random.choices(string.ascii_lowercase, k=10))
+    username = generate_string()
 
     return {
         "username": username,
         "password": os.environ["DB_SEEDS_PASSWORD"],
-        "email": "".join(random.choices(string.ascii_lowercase, k=10)),
+        "email": "@".join([generate_string()] * 2) + ".com",
     }
 
 
@@ -36,6 +40,11 @@ class UserFactory:
 
     def _valid(self) -> dict:
         return generate_random_credentials()
+
+    def _simple_password(self) -> dict:
+        u = self._valid()
+        u["password"] = "12345"
+        return u
 
     def bulk_create(self, variants: List[choices] = None) -> List[User]:
         transactions = []
