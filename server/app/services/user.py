@@ -17,8 +17,6 @@ class UserService:
         return new_user
 
     def _validate_user_data(self, user_data):
-        for v in user_data.values():
-            assert isinstance(v, str)
         if not self._validate_email(user_data["email"]):
             raise ValueError("Email address is invalid.")
         if not self._validate_username(user_data["username"]):
@@ -27,19 +25,22 @@ class UserService:
             raise ValueError("Password is too simple.")
 
     def _validate_email(self, email):
-        pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-        if re.match(pattern, email):
-            return True
-        else:
+        if not isinstance(email, str):
             return False
+        pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+
+        return True if re.match(pattern, email) else False
 
     def _validate_username(self, username):
-        return False if len(username) >= 12 or not isinstance(username, str) else True
+        if not isinstance(username, str):
+            return False
+        return False if len(username) > 12 or len(username) < 6 else True
 
     def _validate_password_complexity(self, password):
         """
         Validates password complexity.
         """
+        # TODO: Obviously, make this way better.
 
         return True if len(password) > 8 else False
 
