@@ -2,8 +2,10 @@ from flask_jwt_extended import create_access_token
 from flask import Blueprint, request, jsonify, g
 from app.services import AuthService, create_auth_service
 from typing import cast
-from app.repositories import UserRepository
-from app import logger
+from app.exceptions import (
+    MissingPayload,
+    MissingLoginData,
+)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -30,14 +32,14 @@ def login():
     """
     data = request.get_json(silent=True)
     if not data:
-        return jsonify({"error": "Invalid or missing JSON body"}), 400
+        raise MissingPayload
 
     # Extract fields from the JSON body if it's valid
     username = data.get("username")
     password = data.get("password")
 
     if not username or not password:
-        return jsonify({"error": "Provide username and password."}), 400
+        raise MissingLoginData
 
     auth_service = get_user_service()
 
@@ -55,3 +57,18 @@ def register():
     """
     Registration route.
     """
+
+    auth_service = get_user_service()
+
+    user_data = request.get_json(silent=True)
+
+    if not user_data:
+        raise MissingPayload
+
+    user = auth_service.register_user(
+        username=user_data.get("username"),
+        password=user_data.get("password"),
+        email=user_data.get("email"),
+    )
+
+    return jsonify(user.to_dict()), 201

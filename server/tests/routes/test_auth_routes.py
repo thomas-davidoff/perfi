@@ -1,7 +1,7 @@
-import pytest
 from flask.testing import FlaskClient
 from flask_jwt_extended import decode_token
 import os
+import pytest
 
 
 HEADERS = {"Content-type": "application/json", "Accept": "application/json"}
@@ -18,6 +18,7 @@ def test_login_success(client: FlaskClient, user_factory):
         json={"username": u.username, "password": os.environ["DB_SEEDS_PASSWORD"]},
         headers=HEADERS,
     )
+
     assert r.status_code == 200
     assert "access_token" in r.json
     assert isinstance(decode_token(r.json["access_token"]), dict)
@@ -56,34 +57,32 @@ def test_login_invalid_username(client: FlaskClient, user_factory):
 def test_login_empty_payload(client: FlaskClient):
     # an empty payload returns a 400, with a helpful message
     r = client.post("/auth/login", data={}, headers=HEADERS)
-    assert r.status_code == 400
+    print(r.text)
+    assert r.status_code == 422
     assert "error" in r.json
     assert "Invalid or missing JSON body" in r.json["error"]
 
 
-def test_login_no_username(client: FlaskClient):
+@pytest.mark.parametrize(
+    "user_data", [{"password": os.environ["DB_SEEDS_PASSWORD"]}, {"username": "test"}]
+)
+def test_login_missing_data(client: FlaskClient, user_data):
     # an empty payload returns a 400, with a helpful message
     r = client.post(
         "/auth/login",
-        json={"password": os.environ["DB_SEEDS_PASSWORD"]},
+        json=user_data,
         headers=HEADERS,
     )
-    assert r.status_code == 400
+    assert r.status_code == 422
     assert "error" in r.json
-    assert "Provide username and password" in r.json["error"]
-
-
-def test_login_no_password(client: FlaskClient):
-    # an empty payload returns a 400, with a helpful message
-    r = client.post("/auth/login", json={"username": "test"}, headers=HEADERS)
-    assert r.status_code == 400
-    assert "error" in r.json
-    assert "Provide username and password" in r.json["error"]
+    assert "Missing username or password" in r.json["error"]
 
 
 def test_login_wrong_method(client: FlaskClient):
     # a GET returns a 405
     r = client.get("/auth/login")
+    print(r.text)
+    print(r.status_code)
     assert r.status_code == 405
 
 
@@ -101,7 +100,8 @@ def test_authorization_no_auth(client: FlaskClient):
 
 
 def test_authorization_invalid_token(client: FlaskClient):
-    # a 422 is returned when accessing a protected route with invalid token
+    # a 422 unauthorized is returned when accessing a protected route with invalid token
+    # search for `default_invalid_token_callback` in flask_jwt_extended to see why
     temp_token = "notatoken"
     headers = {**HEADERS, "Authorization": f"Bearer {temp_token}"}
     r = client.get("/whoami", headers=headers)
@@ -132,3 +132,80 @@ def test_authorization_success(client: FlaskClient, user_factory):
         "id": str(u.id),
         "username": u.username,
     }
+
+
+valid_user_data = {
+    "username": "takjsdn",
+    "password": "kjasdkjns",
+    "email": "kjansd@klasd.com",
+}
+
+
+def test_register_success(client: FlaskClient):
+
+    r = client.post("/auth/register", json=valid_user_data, headers=HEADERS)
+
+    assert r.status_code == 201
+
+
+def test_register_user_can_log_in(client: FlaskClient):
+    r = client.post("/auth/register", json=valid_user_data, headers=HEADERS)
+
+    r = client.post(
+        "/auth/login",
+        json={
+            "username": valid_user_data["username"],
+            "password": valid_user_data["password"],
+        },
+        headers=HEADERS,
+    )
+
+    assert r.status_code == 200
+    assert "access_token" in r.json
+    assert isinstance(decode_token(r.json["access_token"]), dict)
+    assert decode_token(r.json["access_token"])["type"] == "access"
+
+
+def test_register_invalid_password(client: FlaskClient):
+
+    invalid_password_data = {**valid_user_data, "password": 12345}
+
+    r = client.post("/auth/register", json=invalid_password_data, headers=HEADERS)
+    print(r.text)
+    print(r.status_code)
+    assert r.status_code == 400
+    assert r.json["error"] == "Password is too simple."
+
+
+def test_register_no_data(client: FlaskClient):
+
+    r = client.post("/auth/register", headers=HEADERS)
+    print(r.text)
+    print(r.status_code)
+
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "user_data",
+    [
+        {"password": "kjans", "email": "kjnasd@kjns.com"},
+        {"username": "1234324123", "email": "kjnasd@kjns.com"},
+        {"username": "1234324123", "password": "kjansdkjnasd"},
+    ],
+)
+def test_register_missing_data(client: FlaskClient, user_data):
+
+    r = client.post("/auth/register", headers=HEADERS)
+    print(r.text)
+    print(r.status_code)
+
+    assert r.status_code == 422
+
+
+def test_register_user_already_exists(client: FlaskClient):
+
+    r = client.post("/auth/register", json=valid_user_data, headers=HEADERS)
+    r2 = client.post("/auth/register", json=valid_user_data, headers=HEADERS)
+
+    assert r2.status_code == 400
