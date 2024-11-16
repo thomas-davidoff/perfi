@@ -4,7 +4,6 @@ from database import Transaction
 from app.repositories import TransactionRepository
 from sqlalchemy.exc import (
     NoResultFound,
-    IdentifierError,
     StatementError,
     IntegrityError,
     SAWarning,

@@ -4,13 +4,14 @@ from extensions import db
 from typing import List
 from app import logger
 from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
+from uuid import UUID
 
 
 class TransactionRepository(Repository[Transaction]):
     def __init__(self) -> None:
         super().__init__(entity_name="transaction", model=Transaction)
 
-    def get_by_id(self, id) -> Transaction | None:
+    def get_by_id(self, id: UUID) -> Transaction | None:
         """
         Gets a transaction by ID
 
@@ -76,7 +77,7 @@ class UserRepository(Repository[User]):
     def __init__(self) -> None:
         super().__init__(entity_name="user", model=User)
 
-    def get_by_id(self, id: int) -> User | None:
+    def get_by_id(self, id) -> User | None:
         """
         Gets a user by ID
 

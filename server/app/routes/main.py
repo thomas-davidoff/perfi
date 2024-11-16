@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from flask_jwt_extended import get_jwt_identity, current_user, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 from database import User
 from typing import cast
 

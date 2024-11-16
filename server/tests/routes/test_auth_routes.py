@@ -86,20 +86,20 @@ def test_login_wrong_method(client: FlaskClient):
     assert r.status_code == 405
 
 
-def test_authorization_expired_token(client: FlaskClient):
+def test_whoami_authorization_expired_token(client: FlaskClient):
     # a 401 is returned when accessing a protected route with an expired token
     headers = {**HEADERS, "Authorization": f"Bearer {expired_token}"}
     r = client.get("/whoami", headers=headers)
     assert r.status_code == 401
 
 
-def test_authorization_no_auth(client: FlaskClient):
+def test_whoami_authorization_no_auth(client: FlaskClient):
     # a 401 is returned when accessing a protected route without token
     r = client.get("/whoami", headers=HEADERS)
     assert r.status_code == 401
 
 
-def test_authorization_invalid_token(client: FlaskClient):
+def test_whoami_authorization_invalid_token(client: FlaskClient):
     # a 422 unauthorized is returned when accessing a protected route with invalid token
     # search for `default_invalid_token_callback` in flask_jwt_extended to see why
     temp_token = "notatoken"
@@ -108,7 +108,7 @@ def test_authorization_invalid_token(client: FlaskClient):
     assert r.status_code == 422
 
 
-def test_authorization_success(client: FlaskClient, user_factory):
+def test_whoami_authorization_success(client: FlaskClient, user_factory):
     # create valid user
     u = user_factory.create("valid")
 

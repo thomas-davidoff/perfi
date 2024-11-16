@@ -21,11 +21,6 @@ class Transaction(TimestampMixin, db.Model):
 
     __tablename__ = "transactions"
 
-    # id = db.Column(db.Integer, primary_key=True)
-    # TODO: account relationship
-    # TODO: category relationship
-    # TODO: source - manual, csv_import, etc
-
     amount = db.Column(Float, nullable=False)
     description = db.Column(String(255), nullable=True)
     merchant = db.Column(String(255), nullable=False)
@@ -42,3 +37,14 @@ class Transaction(TimestampMixin, db.Model):
     account_id = db.Column(
         UUID(as_uuid=True), db.ForeignKey("accounts.id"), nullable=False
     )
+
+    def to_dict(self):
+        return {
+            "amount": self.amount,
+            "description": self.description,
+            "merchant": self.merchant,
+            "date": self.date,
+            "category": self.category.value,
+            "account_id": self.account_id,
+            "id": self.id,
+        }

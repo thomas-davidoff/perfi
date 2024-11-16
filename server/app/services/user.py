@@ -1,4 +1,4 @@
-from database import User
+from database import User, Account
 from app.repositories import UserRepository
 import re
 from app.exceptions import (
@@ -7,6 +7,7 @@ from app.exceptions import (
     InvalidEmailError,
     UserAlreadyExistsError,
 )
+from typing import List
 
 
 class UserService:
@@ -27,6 +28,9 @@ class UserService:
 
         new_user = self.user_repo.create(user_data)
         return new_user
+
+    def get_by_id(self, user_id):
+        return self.user_repo.get_by_id(user_id)
 
     def _validate_user_data(self, user_data):
         if not self._validate_email(user_data["email"]):
@@ -65,6 +69,27 @@ class UserService:
         return isinstance(
             self.user_repo.get_by_username_or_email(username_or_email), User
         )
+
+    def get_user_accounts(self, user_id) -> List[Account]:
+        user = self.user_repo.get_by_id(user_id)
+        accounts = user.accounts
+        return accounts
+
+    def get_transactions(self, user_id):
+        transactions = []
+        # get accounts for user
+        accounts = self.get_user_accounts(user_id=user_id)
+
+        if not accounts:
+            raise Exception("User has no accounts.")
+
+        # get all transactions for each account and merge into
+        for account in accounts:
+            account: Account
+            t = account.transactions
+            transactions.extend(t)
+
+        return transactions
 
 
 def create_user_service():
