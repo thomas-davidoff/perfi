@@ -1,5 +1,6 @@
 import os
 from urllib.parse import quote_plus as url_quote_plus
+from datetime import timedelta
 
 
 class DefaultConfig:
@@ -30,3 +31,10 @@ class DefaultConfig:
         )
 
         self.JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
+        self.JWT_ACCESS_TOKEN_EXPIRES = timedelta(
+            seconds=int(os.environ["JWT_ACCESS_TOKEN_EXPIRES"])
+        )
+
+        self.JWT_REFRESH_TOKEN_EXPIRES = timedelta(
+            seconds=int(os.environ["JWT_REFRESH_TOKEN_EXPIRES"])
+        )
