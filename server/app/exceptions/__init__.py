@@ -13,3 +13,5 @@ from .user_error import (
     MissingLoginData,
     MissingRegistrationData,
 )
+
+from .not_found import ResourceNotFoundError

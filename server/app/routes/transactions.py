@@ -32,3 +32,15 @@ def create_transaction():
     transaction = transactions_service.create_transaction(request.get_json())
 
     return jsonify(transaction.to_dict()), 201
+
+
+@transactions_bp.route("/<transaction_id>", methods=["DELETE"])
+@jwt_required()
+def delete_transaction(transaction_id):
+    """Delete a transaction by ID"""
+
+    transactions_service = create_authenticated_transaction_service(current_user.id)
+
+    transactions_service.delete_transaction(transaction_id)
+
+    return jsonify({"msg": f"Transaction {transaction_id} deleted."})
