@@ -43,8 +43,10 @@ class Repository(ABC, Generic[T]):
         :return entity:
             entity instance or None
         """
-        self._id_is_uuid(id)
-        entity = db.session.query(self.model).filter(self.model.id == id).one_or_none()
+        uuid = self._to_uuid(id)
+        entity = (
+            db.session.query(self.model).filter(self.model.id == uuid).one_or_none()
+        )
         return entity
 
     @abstractmethod
@@ -54,12 +56,12 @@ class Repository(ABC, Generic[T]):
 
     def delete(self, id: int) -> int:
         f"""Deletes an entity by ID"""
-        self._id_is_uuid(id)
-        instance = self.get_by_id(id)
+        uuid = self._to_uuid(id)
+        instance = self.get_by_id(uuid)
         if instance:
             db.session.delete(instance)
             db.session.commit()
-            return id
+            return uuid
         else:
             logger.error(f"No {self.entity_name} with ID {id} exists.")
             raise ResourceNotFoundError(f"No {self.entity_name} with ID {id} exists.")
@@ -71,17 +73,24 @@ class Repository(ABC, Generic[T]):
     @abstractmethod
     def update(self, id: int, data: dict) -> T:
         """Updates an existing entity in the database."""
-        self._id_is_uuid(id)
-        user = self.get_by_id(id)
+        uuid = self._to_uuid(id)
+        user = self.get_by_id(uuid)
         if user is None:
             raise ResourceNotFoundError(
-                f"{self.entity_name} with ID {id} does not exist."
+                f"{self.entity_name} with ID {uuid} does not exist."
             )
         for key, value in data.items():
             setattr(user, key, value)
         db.session.commit()
         return user
 
-    def _id_is_uuid(self, id):
-        if not isinstance(id, UUID):
+    def _to_uuid(self, id):
+        if isinstance(id, UUID):
+            return id
+        elif isinstance(id, str):
+            try:
+                return UUID(id)
+            except (TypeError, ValueError):
+                raise ArgumentError(f"id must be a valid uuid. You passed {id}")
+        else:
             raise ArgumentError(f"id must be a valid uuid. You passed {type(id)}")
