@@ -43,11 +43,8 @@ class Repository(ABC, Generic[T]):
             entity instance or None
         """
         self._id_is_uuid(id)
-        user = db.session.query(self.model).filter(self.model.id == id).one_or_none()
-        if user is None:
-            logger.error(f"No user with ID {id} exists.")
-            raise NoResultFound("No user with ID {id} exists.")
-        return user
+        entity = db.session.query(self.model).filter(self.model.id == id).one_or_none()
+        return entity
 
     @abstractmethod
     def get_all(self) -> List[T]:
