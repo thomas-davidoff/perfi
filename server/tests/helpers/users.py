@@ -6,6 +6,7 @@ from extensions import db
 import string
 import random
 import os
+from .factory import TestFactory
 
 
 choices = Literal["valid", "simple_password"]
@@ -25,17 +26,17 @@ def generate_random_credentials():
     }
 
 
-class UserFactory:
-    def __init__(self):
-        pass
+class UserFactory(TestFactory):
+    def __init__(self, db_session):
+        super().__init__(db_session)
 
     def get(self, variant: choices = "valid") -> dict:
         return getattr(self, f"_{variant}")()
 
     def create(self, variant: choices = "valid") -> User:
         u = User(**self.get(variant))
-        db.session.add(u)
-        db.session.commit()
+        self.session.add(u)
+        self.session.commit()
         return u
 
     def _valid(self) -> dict:
@@ -50,7 +51,7 @@ class UserFactory:
         transactions = []
         for v in variants:
             u = User(**self.get(variant=v))
-            db.session.add(u)
+            self.session.add(u)
             transactions.append(u)
-        db.session.commit()
+        self.session.commit()
         return transactions

@@ -4,6 +4,7 @@ from random import randint, uniform
 from typing import Literal, List
 from extensions import db
 from .accounts import AccountFactory
+from .factory import TestFactory
 
 
 def random_date():
@@ -24,40 +25,46 @@ choices = Literal[
 ]
 
 
-class TransactionFactory:
-    def __init__(self):
-        pass
+class TransactionFactory(TestFactory):
+    def __init__(self, db_session):
+        print(f"init factory with session {db_session}")
+        super().__init__(db_session)
 
     def get(self, variant: choices = "valid") -> dict:
         return getattr(self, f"_{variant}")()
 
     def create(self, variant: choices = "valid") -> Transaction:
         t = Transaction(**self.get(variant))
-        db.session.add(t)
-        db.session.commit()
+        self.session.add(t)
+        self.session.commit()
+        self.session.refresh(t)
+        from sqlalchemy.orm import object_session
+
+        assert object_session(t) is not None, "Transaction is not bound to a session"
+        print(f"object session: {object_session(t)}")
         return t
 
     def bulk_create(self, variants: List[choices] = None) -> List[Transaction]:
         transactions = []
         for v in variants:
             t = Transaction(**self.get(variant=v))
-            db.session.add(t)
+            self.session.add(t)
             transactions.append(t)
-        db.session.commit()
+        self.session.commit()
         return transactions
 
     def _valid(self) -> dict:
 
-        account = db.session.query(Account).first()
+        account = self.session.query(Account).first()
         if not account:
-            account_factory = AccountFactory()
+            account_factory = AccountFactory(self.session)
             account_factory.create("valid")
         return {
             "amount": round(uniform(5, 250), 2),
             "date": random_date(),
             "merchant": "TEST MERCHANT",
             "category": "UNCATEGORIZED",
-            "account_id": db.session.query(Account).first().id,
+            "account_id": self.session.query(Account).first().id,
         }
 
     def _invalid_date(self) -> dict:

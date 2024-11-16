@@ -4,14 +4,15 @@ from random import randint, uniform
 from typing import Literal, List
 from extensions import db
 from .users import UserFactory
+from .factory import TestFactory
 
 
 choices = Literal["valid", "invalid_account_type", "missing_name"]
 
 
-class AccountFactory:
-    def __init__(self):
-        pass
+class AccountFactory(TestFactory):
+    def __init__(self, db_session):
+        super().__init__(db_session)
 
     def get(self, variant: choices = "valid") -> dict:
 
@@ -20,20 +21,20 @@ class AccountFactory:
     def create(self, variant: choices = "valid") -> Account:
 
         a = Account(**self.get(variant))
-        db.session.add(a)
-        db.session.commit()
+        self.session.add(a)
+        self.session.commit()
         return a
 
     def _valid(self) -> dict:
-        user = db.session.query(User).first()
+        user = self.session.query(User).first()
         if not user:
-            user_factory = UserFactory()
+            user_factory = UserFactory(self.session)
             user_factory.create("valid")
         return {
             "name": "Some Account name",
             "balance": 100,
             "account_type": "CHECKING",
-            "user_id": db.session.query(User).first().id,
+            "user_id": self.session.query(User).first().id,
         }
 
     def _invalid_account_type(self) -> dict:

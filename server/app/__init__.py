@@ -4,6 +4,7 @@ from werkzeug.exceptions import HTTPException
 from extensions import db
 import os
 from .exceptions import CustomException
+import traceback
 
 logger = get_logger("APP_LOGGER", os.getenv("LOG_LEVEL"))
 
@@ -57,6 +58,7 @@ def create_app(config, init_logger=None):
         @app.errorhandler(Exception)
         def handle_exception(e):
             logger.error(f"{type(e)}: {e}")
+            logger.error(traceback.format_exc())
             if isinstance(e, CustomException):
                 return error_respond(e.msg, e.code)
             elif isinstance(e, HTTPException):

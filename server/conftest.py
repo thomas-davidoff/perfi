@@ -149,29 +149,48 @@ def app(logger, config):
         db.drop_all()
 
 
+@pytest.fixture
+def db_session():
+    from extensions import db  # Import the db object from your app
+
+    session = db.session
+    yield session
+    session.rollback()  # Rollback any changes after the test
+
+
 @pytest.fixture()
 def client(app) -> FlaskClient:
     return app.test_client()
 
 
 @pytest.fixture()
-def transaction_factory():
-    return TransactionFactory()
+def transaction_factory(db_session):
+    return TransactionFactory(db_session)
 
 
 @pytest.fixture
-def account_factory():
-    return AccountFactory()
+def account_factory(db_session):
+    return AccountFactory(db_session)
 
 
 @pytest.fixture
-def user_factory():
-    return UserFactory()
+def user_factory(db_session):
+    return UserFactory(db_session)
 
 
 @pytest.fixture
 def valid_user(user_factory):
     return user_factory.create("valid")
+
+
+@pytest.fixture
+def valid_transaction(transaction_factory: TransactionFactory):
+    t = transaction_factory.create("valid")
+    from sqlalchemy.orm import object_session
+
+    assert object_session(t) is not None, "Transaction is not bound to a session"
+    print(f"valid transaction sesh: {object_session(t)}")
+    return t
 
 
 @pytest.fixture

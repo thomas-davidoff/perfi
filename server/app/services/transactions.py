@@ -4,6 +4,7 @@ from .user import create_user_service
 from database import TransactionCategory
 from app.exceptions import ValidationError
 from uuid import UUID
+from app.utils import StandardDate
 
 
 class TransactionsService:
@@ -42,6 +43,13 @@ class TransactionsService:
         if not isinstance(amount, (float, int)):
             raise ValidationError("amount must be a valid number")
         return amount
+
+    def validate_date(self, date):
+        try:
+            date = StandardDate(date)
+        except Exception:
+            raise ValidationError("Invalid date.")
+        return date
 
 
 def create_transactions_service():

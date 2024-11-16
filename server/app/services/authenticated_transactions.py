@@ -24,7 +24,7 @@ class TransactionUserService(TransactionsService):
     def validate_account_id(self, account_id):
         account_id = self._validate_uuid(account_id)
         user_accounts = [a.id for a in self.user.accounts]
-        if UUID(account_id) not in user_accounts:
+        if account_id not in user_accounts:
             # potential to raise flag for user trying to take an unauthorized action
             # user either incorrectly entering account ID or user is attempting to access info which is not theirs
             raise Exception(f"Account {account_id} does not exist")
@@ -33,7 +33,7 @@ class TransactionUserService(TransactionsService):
     def create_transaction(self, data):
         account_id = self.validate_account_id(data.get("account_id"))
         amount = self.validate_amount(data.get("amount"))
-        date = StandardDate(data.get("date"))
+        date = self.validate_date(data.get("date"))
         merchant = self.validate_merchant(data.get("merchant"))
         category = self.validate_category(data.get("category"))
         description = data.get("description", "")

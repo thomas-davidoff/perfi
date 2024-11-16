@@ -43,4 +43,4 @@ def delete_transaction(transaction_id):
 
     transactions_service.delete_transaction(transaction_id)
 
-    return jsonify({"msg": f"Transaction {transaction_id} deleted."})
+    return jsonify({"msg": f"Transaction {transaction_id} deleted."}), 204
