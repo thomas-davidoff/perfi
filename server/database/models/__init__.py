@@ -1,4 +1,4 @@
 # database/models/__init__.py
 from .user import User
 from .transaction import Transaction
-from .account import Account
+from .account import Account, AccountType
