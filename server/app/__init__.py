@@ -23,16 +23,15 @@ def create_app(config, init_logger=None):
 
     app.logger = logger
 
-    # Initialize extensions
     init_extensions(app, init_logger)
 
-    # Register blueprints
     with app.app_context():
-        from app.routes import main_bp, auth_bp, transactions_bp
+        from app.routes import main_bp, auth_bp, transactions_bp, accounts_bp
 
-        app.register_blueprint(main_bp)
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(transactions_bp)
+        blueprints = [main_bp, auth_bp, transactions_bp, accounts_bp]
+
+        for bp in blueprints:
+            app.register_blueprint(bp)
 
         from app.cli import CLI_GROUPS
 
@@ -57,7 +56,6 @@ def create_app(config, init_logger=None):
 
         @app.errorhandler(Exception)
         def handle_exception(e):
-            # You can have more specific error handlers for different exception types here
             if isinstance(e, CustomException):
                 return error_respond(e.msg, e.code)
             elif isinstance(e, HTTPException):
