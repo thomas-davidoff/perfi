@@ -115,11 +115,33 @@ def wait_for_port_mapping(container, timeout=30):
 
 
 @pytest.fixture
-def app(config):
+def logger():
+    import logging
+    import sys
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
+
+    testing_logger = logging.getLogger("test_logger")
+
+    yield testing_logger
+
+    root.removeHandler(handler)
+
+
+@pytest.fixture
+def app(logger, config):
+
     from app import create_app
 
-    init_logger = get_logger(logger_name="poo", log_level="CRITICAL")
-    app = create_app(config, init_logger)
+    app = create_app(config, logger)
     with app.app_context():
         db.create_all()
         yield app
@@ -145,3 +167,24 @@ def account_factory():
 @pytest.fixture
 def user_factory():
     return UserFactory()
+
+
+@pytest.fixture
+def valid_user(user_factory):
+    return user_factory.create("valid")
+
+
+@pytest.fixture
+def auth_headers(valid_user, client):
+    # log the user in to get an auth token
+    headers = {"Content-type": "application/json", "Accept": "application/json"}
+    r = client.post(
+        "/auth/login",
+        json={
+            "username": valid_user.username,
+            "password": os.environ["DB_SEEDS_PASSWORD"],
+        },
+        headers=headers,
+    )
+    headers["Authorization"] = f"Bearer {r.json['access_token']}"
+    return headers
