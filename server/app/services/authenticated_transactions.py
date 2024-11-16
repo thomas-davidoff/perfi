@@ -5,6 +5,7 @@ from uuid import UUID
 from app.utils import StandardDate
 from app.exceptions import ValidationError, ResourceNotFoundError
 from .transactions import TransactionsService
+from sqlalchemy.exc import NoResultFound
 
 
 class TransactionUserService(TransactionsService):
@@ -20,41 +21,21 @@ class TransactionUserService(TransactionsService):
 
         self.user = user
 
-    def create_transaction(self, data):
-
-        # verify account exists
-        account_id = data.get("account_id")
+    def validate_account_id(self, account_id):
+        account_id = self._validate_uuid(account_id)
         user_accounts = [a.id for a in self.user.accounts]
         if UUID(account_id) not in user_accounts:
             # potential to raise flag for user trying to take an unauthorized action
             # user either incorrectly entering account ID or user is attempting to access info which is not theirs
             raise Exception(f"Account {account_id} does not exist")
+        return account_id
 
-        # validate amount
-        amount = data.get("amount")
-        if not isinstance(amount, (float, int)):
-            raise ValidationError("amount must be a valid number")
-
-        # validate date
-        date = data.get("date")
-        date = StandardDate(date)
-
-        # merchant must be str
-        merchant = data.get("merchant")
-        if not isinstance(merchant, str):
-            raise ValidationError("merchant must be string")
-
-        category = data.get("category")
-        if category is not None:
-            # user passed in a category, so validate it
-            try:
-                category = TransactionCategory(category)
-            except ValueError:
-                valid_categories = [c.value for c in TransactionCategory]
-                raise ValidationError(
-                    f"Invalid category {category}. Must be one of: {', '.join(valid_categories)}"
-                )
-
+    def create_transaction(self, data):
+        account_id = self.validate_account_id(data.get("account_id"))
+        amount = self.validate_amount(data.get("amount"))
+        date = StandardDate(data.get("date"))
+        merchant = self.validate_merchant(data.get("merchant"))
+        category = self.validate_category(data.get("category"))
         description = data.get("description", "")
 
         transaction_data = {
@@ -74,10 +55,14 @@ class TransactionUserService(TransactionsService):
         return self.user_service.get_transactions(user_id=self.user.id)
 
     def delete_transaction(self, transaction_id) -> None:
-        # get the transaction
-        transaction = self.repo.get_by_id(id=transaction_id)
-        if not transaction:
-            raise ResourceNotFoundError("Transaction not found")
+        # validate transaction_id is uuid
+        transaction_id = self._validate_uuid(transaction_id)
+        try:
+            self.repo.delete(transaction_id)
+        except NoResultFound:
+            raise ResourceNotFoundError(
+                f"Transaction with ID {transaction_id} does not exist."
+            )
 
 
 def create_authenticated_transaction_service(user_id):
