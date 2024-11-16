@@ -6,6 +6,7 @@ from database import User
 from app.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
 import uuid
+from app.exceptions import ResourceNotFoundError
 
 
 user_repository = UserRepository()
@@ -76,11 +77,11 @@ def test_delete(app: Flask, user_factory):
     # it successfully deletes the user
     user_repository.delete(user.id)
 
-    with pytest.raises(NoResultFound):
-        user_repository.get_by_id(user.id)
+    user = user_repository.get_by_id(user.id)
+    assert user is None
 
     # it fails to delete a non-existent id
-    with pytest.raises(NoResultFound):
+    with pytest.raises(ResourceNotFoundError):
         user_repository.delete(uuid.uuid4())
 
 

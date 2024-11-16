@@ -5,6 +5,7 @@ from app import logger
 from extensions import db
 from typing import TypeVar, Generic
 from uuid import UUID
+from app.exceptions import ResourceNotFoundError
 
 
 T = TypeVar("T")
@@ -61,7 +62,7 @@ class Repository(ABC, Generic[T]):
             return id
         else:
             logger.error(f"No {self.entity_name} with ID {id} exists.")
-            raise NoResultFound(f"No {self.entity_name} with ID {id} exists.")
+            raise ResourceNotFoundError(f"No {self.entity_name} with ID {id} exists.")
 
     @abstractmethod
     def bulk_delete(self, ids: List[int]) -> List[int]:
@@ -72,6 +73,10 @@ class Repository(ABC, Generic[T]):
         """Updates an existing entity in the database."""
         self._id_is_uuid(id)
         user = self.get_by_id(id)
+        if user is None:
+            raise ResourceNotFoundError(
+                f"{self.entity_name} with ID {id} does not exist."
+            )
         for key, value in data.items():
             setattr(user, key, value)
         db.session.commit()

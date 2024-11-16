@@ -13,6 +13,7 @@ from extensions import db
 from datetime import datetime
 import warnings
 import uuid
+from app.exceptions import ResourceNotFoundError
 
 account_repository = AccountRepository()
 
@@ -25,8 +26,8 @@ def test_get_by_id_success(app: Flask, account_factory):
 
 
 def test_get_by_id_no_result(app):
-    with pytest.raises(NoResultFound):
-        account = account_repository.get_by_id(uuid.uuid4())
+    account = account_repository.get_by_id(uuid.uuid4())
+    assert account is None
 
 
 @pytest.mark.parametrize("id", ["some string", {}, account_repository])

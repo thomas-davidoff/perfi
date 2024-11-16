@@ -13,6 +13,7 @@ from extensions import db
 from datetime import datetime
 import warnings
 import uuid
+from app.exceptions import ResourceNotFoundError
 
 transaction_repository = TransactionRepository()
 
@@ -26,9 +27,11 @@ def test_get_by_id(app: Flask, transaction_factory):
     t = transaction_repository.get_by_id(transaction.id)
     assert isinstance(t, Transaction)
 
-    # Case: Raises NoResultFound when the ID does not exist
-    with pytest.raises(NoResultFound):
-        t = transaction_repository.get_by_id(uuid.uuid4())
+
+def test_get_by_id_no_result(app: Flask):
+    # get a non-existent transaction
+    t = transaction_repository.get_by_id(uuid.uuid4())
+    assert t is None
 
 
 def test_get_by_id_not_uuid(app: Flask):
@@ -92,7 +95,7 @@ def test_delete(app: Flask, transaction_factory):
     assert isinstance(deleted, uuid.UUID)
     assert db.session.get(Transaction, t.id) is None
     # Case: Raises NoResultFound when trying to delete a transaction with a non-existent ID
-    with pytest.raises(NoResultFound):
+    with pytest.raises(ResourceNotFoundError):
         transaction_repository.delete(t.id)
 
 
@@ -222,7 +225,7 @@ def test_update_invalid_category(app: Flask, transaction_factory):
 
 def test_update_non_existent(app: Flask):
     # try to update a non-existent id
-    with pytest.raises(NoResultFound):
+    with pytest.raises(ResourceNotFoundError):
         transaction_repository.update(uuid.uuid4(), {})
 
 
