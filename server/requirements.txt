@@ -53,4 +53,4 @@ types-setuptools==75.1.0.20240917
 typing_extensions==4.12.2
 urllib3==2.2.3
 virtualenv==20.26.6
-Werkzeug==3.0.4
+Werkzeug==3.0.6
