@@ -5,6 +5,7 @@ from typing import List
 from app import logger
 from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
 from uuid import UUID
+from app.utils import StandardDate
 
 
 class TransactionRepository(Repository[Transaction]):
@@ -32,10 +33,12 @@ class TransactionRepository(Repository[Transaction]):
 
     def get_between_dates(self, start_date, end_date):
         """Retrieve all transactions that are between dates"""
-        if end_date < start_date:
+        start = StandardDate(start_date).date
+        end = StandardDate(end_date).date
+
+        if end < start:
             raise ValueError("start_date must be before or equal to end_date.")
-        start = start_date
-        end = end_date
+
         return (
             db.session.query(Transaction)
             .filter(Transaction.date.between(start, end))

@@ -57,8 +57,7 @@ def create_app(config, init_logger=None):
 
         @app.errorhandler(Exception)
         def handle_exception(e):
-            logger.error(f"{type(e)}: {e}")
-            logger.error(traceback.format_exc())
+            logger.error(f"{type(e)}: {e}" + "\n" + traceback.format_exc())
             if isinstance(e, CustomException):
                 return error_respond(e.msg, e.code)
             elif isinstance(e, HTTPException):

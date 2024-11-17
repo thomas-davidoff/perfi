@@ -1,18 +1,24 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class StandardDate:
     DEFAULT_FORMAT = "%Y-%m-%d"
 
     def __init__(self, date_input):
-        self.date = self._coerce_to_date(date_input)
+        self.date = self._coerce_to_utc_date(date_input)
 
-    def _coerce_to_date(self, date_input):
+    def _coerce_to_utc_date(self, date_input):
         if isinstance(date_input, datetime):
-            return date_input
+            # Normalize to UTC if the datetime is naive or in a different timezone
+            if date_input.tzinfo is None:
+                return date_input.replace(tzinfo=timezone.utc)
+            else:
+                return date_input.astimezone(timezone.utc)
         elif isinstance(date_input, str):
             try:
-                return datetime.strptime(date_input, self.DEFAULT_FORMAT)
+                # Parse the date string as UTC midnight
+                naive_date = datetime.strptime(date_input, self.DEFAULT_FORMAT)
+                return naive_date.replace(tzinfo=timezone.utc)
             except ValueError as e:
                 raise ValueError(f"Invalid date format: {e}")
         else:
@@ -24,3 +30,15 @@ class StandardDate:
 
     def __repr__(self):
         return f"<StandardDate {self.to_string()}>"
+
+    @property
+    def month(self):
+        return self.date.month
+
+    @property
+    def year(self):
+        return self.date.year
+
+    @property
+    def day(self):
+        return self.date.day
