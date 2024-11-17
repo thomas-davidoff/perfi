@@ -19,7 +19,7 @@ def error_respond(message, status=200, **kwargs):
 
 
 def create_app(config, init_logger=None):
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder=None)
     app.config.from_object(config)
 
     app.logger = logger
@@ -32,7 +32,9 @@ def create_app(config, init_logger=None):
         blueprints = [main_bp, auth_bp, transactions_bp, accounts_bp]
 
         for bp in blueprints:
-            app.register_blueprint(bp)
+            local_prefix = bp.url_prefix or ""
+            prefix = "/api" + local_prefix
+            app.register_blueprint(bp, url_prefix=prefix)
 
         from app.cli import CLI_GROUPS
 

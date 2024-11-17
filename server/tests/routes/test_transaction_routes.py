@@ -21,7 +21,7 @@ def test_get_all_transactions(
     account_id_list = [str(a.id) for a in accounts]
 
     r = client.get(
-        "/transactions/",
+        "/api/transactions/",
         headers=auth_headers,
     )
     transactions = r.json
@@ -41,7 +41,7 @@ def test_create_transaction_success(client: FlaskClient, auth_headers, account_f
         "merchant": "nasdkjnasd",
         "category": "groceries",
     }
-    r = client.post(f"/transactions/", json=data, headers=auth_headers)
+    r = client.post(f"/api/transactions/", json=data, headers=auth_headers)
     assert r.status_code == 201
     pprint(r.json)
 
@@ -59,7 +59,7 @@ def test_create_transaction_success(client: FlaskClient, auth_headers, account_f
 )
 def test_create_transaction_no_account(client: FlaskClient, auth_headers, data):
 
-    r = client.post(f"/transactions/", json=data, headers=auth_headers)
+    r = client.post(f"/api/transactions/", json=data, headers=auth_headers)
     assert r.status_code == 400
     pprint(r.json)
 
@@ -99,7 +99,7 @@ def test_create_transaction_fail_validation(
 
     datum = {**data, "account_id": account.id}
 
-    r = client.post(f"/transactions/", json=datum, headers=auth_headers)
+    r = client.post(f"/api/transactions/", json=datum, headers=auth_headers)
     assert r.status_code == 400
     pprint(r.json)
 
@@ -111,7 +111,7 @@ def test_delete_transaction_success(
     valid_transaction = transaction_factory.create("valid")
     # create transaction
     r = client.delete(
-        f"/transactions/{valid_transaction.id}",
+        f"/api/transactions/{valid_transaction.id}",
         headers=auth_headers,
     )
     assert r.status_code == 204

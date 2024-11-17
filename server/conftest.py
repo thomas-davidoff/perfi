@@ -198,7 +198,7 @@ def auth_headers(valid_user, client):
     # log the user in to get an auth token
     headers = {"Content-type": "application/json", "Accept": "application/json"}
     r = client.post(
-        "/auth/login",
+        "/api/auth/login",
         json={
             "username": valid_user.username,
             "password": os.environ["DB_SEEDS_PASSWORD"],
