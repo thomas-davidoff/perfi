@@ -27,7 +27,11 @@ class User(TimestampMixin, db.Model):
         return bcrypt.check_password_hash(self._password_hash, password)
 
     def to_dict(self):
-        return {"id": self.id, "username": self.username, "email": self.email}
+        base_dict = super().to_dict()
+        base_dict.update(
+            {"id": self.id, "username": self.username, "email": self.email}
+        )
+        return base_dict
 
     # relationships
     accounts = db.relationship(

@@ -39,12 +39,15 @@ class Transaction(TimestampMixin, db.Model):
     )
 
     def to_dict(self):
-        return {
-            "amount": self.amount,
-            "description": self.description,
-            "merchant": self.merchant,
-            "date": self.date,
-            "category": self.category.value,
-            "account_id": self.account_id,
-            "id": self.id,
-        }
+        base_dict = super().to_dict()
+        base_dict.update(
+            {
+                "amount": self.amount,
+                "description": self.description,
+                "merchant": self.merchant,
+                "date": self.date,
+                "category": self.category.value,
+                "account_id": self.account_id,
+            }
+        )
+        return base_dict

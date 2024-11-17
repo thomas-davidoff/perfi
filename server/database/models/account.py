@@ -31,10 +31,13 @@ class Account(TimestampMixin, db.Model):
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "balance": self.balance,
-            "account_type": self.account_type.value,
-            "user_id": self.user.to_dict(),
-        }
+        base_dict = super().to_dict()
+        base_dict.update(
+            {
+                "name": self.name,
+                "balance": self.balance,
+                "account_type": self.account_type.value,
+                "user_id": self.user.to_dict(),
+            }
+        )
+        return base_dict
