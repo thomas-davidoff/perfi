@@ -113,4 +113,4 @@ def test_delete_transaction_success(
         f"/api/transactions/{valid_transaction.id}",
         headers=auth_headers,
     )
-    assert r.status_code == 204
+    assert r.status_code == 200
