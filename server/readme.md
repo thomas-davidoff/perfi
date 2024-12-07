@@ -1,4 +1,6 @@
 # Readme placeholder
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 I forgot alot of the things I've already done, so just an outline:
 - create env file
 - outline the configuration stuff - setting up env file, config.py file, flask env, etc
