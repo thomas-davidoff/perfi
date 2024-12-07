@@ -75,6 +75,14 @@ class TransactionRepository(Repository[Transaction]):
         """Creates a transaction that already exists in the database"""
         return super().update(id, data)
 
+    def get_user_transactions(self, user_id):
+        query = (
+            db.session.query(Transaction)
+            .join(Account)
+            .filter(Account.user_id == user_id)
+        )
+        return query.all()
+
 
 class UserRepository(Repository[User]):
     def __init__(self) -> None:

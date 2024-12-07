@@ -1,11 +1,7 @@
 from flask.testing import FlaskClient
 from app.services import create_user_service, UserService
-from database import Transaction
-from sqlalchemy.orm import object_session
 from pprint import pprint
 import pytest
-from app.exceptions import ValidationError
-from uuid import uuid4
 
 
 user_service: UserService = create_user_service()
