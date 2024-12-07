@@ -1,11 +1,10 @@
-from database import Transaction, TransactionCategory
+from database import Transaction
 from app.repositories import TransactionRepository
 from typing import List
-from uuid import UUID
-from app.utils import StandardDate
-from app.exceptions import ValidationError, ResourceNotFoundError
 from .transactions import TransactionsService
 from sqlalchemy.exc import NoResultFound
+from app.validators import TransactionAmount
+from app.exceptions import ResourceNotFoundError
 
 
 class TransactionUserService(TransactionsService):
@@ -31,15 +30,16 @@ class TransactionUserService(TransactionsService):
         return account_id
 
     def create_transaction(self, data):
+        transaction_data = {}
+
         account_id = self.validate_account_id(data.get("account_id"))
-        amount = self.validate_amount(data.get("amount"))
         date = self.validate_date(data.get("date"))
         merchant = self.validate_merchant(data.get("merchant"))
         category = self.validate_category(data.get("category"))
         description = data.get("description", "")
 
         transaction_data = {
-            "amount": amount,
+            "amount": TransactionAmount(data.get("amount")).value,
             "merchant": merchant,
             "date": date.to_string(),
             "category": category,
@@ -65,6 +65,6 @@ class TransactionUserService(TransactionsService):
             )
 
 
-def create_authenticated_transaction_service(user_id):
+def create_authenticated_transaction_service(user_id) -> TransactionUserService:
     transaction_repository = TransactionRepository()
     return TransactionUserService(transaction_repository, user_id)

@@ -1,4 +1,4 @@
-from database import Transaction, Account
+from database import Transaction, Account, TransactionCategory
 from datetime import datetime, timedelta
 from random import randint, uniform
 from typing import Literal, List
@@ -26,9 +26,11 @@ choices = Literal[
 
 
 class TransactionFactory(TestFactory):
-    def __init__(self, db_session):
+    def __init__(self, db_session, account_id: int, user_id):
         print(f"init factory with session {db_session}")
         super().__init__(db_session)
+        self.account_id = account_id
+        self.user_id = user_id
 
     def get(self, variant: choices = "valid") -> dict:
         return getattr(self, f"_{variant}")()
@@ -54,17 +56,12 @@ class TransactionFactory(TestFactory):
         return transactions
 
     def _valid(self) -> dict:
-
-        account = self.session.query(Account).first()
-        if not account:
-            account_factory = AccountFactory(self.session)
-            account_factory.create("valid")
         return {
             "amount": round(uniform(5, 250), 2),
             "date": random_date(),
             "merchant": "TEST MERCHANT",
-            "category": "UNCATEGORIZED",
-            "account_id": self.session.query(Account).first().id,
+            "category": TransactionCategory.UNCATEGORIZED,
+            "account_id": self.account_id,
         }
 
     def _invalid_date(self) -> dict:

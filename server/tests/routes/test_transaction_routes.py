@@ -107,7 +107,6 @@ def test_create_transaction_fail_validation(
 def test_delete_transaction_success(
     client: FlaskClient, transaction_factory, auth_headers
 ):
-
     valid_transaction = transaction_factory.create("valid")
     # create transaction
     r = client.delete(

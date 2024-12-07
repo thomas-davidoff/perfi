@@ -164,13 +164,10 @@ def client(app) -> FlaskClient:
 
 
 @pytest.fixture()
-def transaction_factory(db_session):
-    return TransactionFactory(db_session)
-
-
-@pytest.fixture
-def account_factory(db_session):
-    return AccountFactory(db_session)
+def transaction_factory(valid_account, db_session):
+    return TransactionFactory(
+        db_session, account_id=valid_account.id, user_id=valid_account.user.id
+    )
 
 
 @pytest.fixture
@@ -179,8 +176,18 @@ def user_factory(db_session):
 
 
 @pytest.fixture
-def valid_user(user_factory):
+def account_factory(valid_user: User, db_session):
+    return AccountFactory(db_session, user=valid_user)
+
+
+@pytest.fixture
+def valid_user(user_factory) -> User:
     return user_factory.create("valid")
+
+
+@pytest.fixture
+def valid_account(account_factory) -> Account:
+    return account_factory.create("valid")
 
 
 @pytest.fixture

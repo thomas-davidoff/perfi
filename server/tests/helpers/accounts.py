@@ -11,8 +11,10 @@ choices = Literal["valid", "invalid_account_type", "missing_name"]
 
 
 class AccountFactory(TestFactory):
-    def __init__(self, db_session):
+    def __init__(self, db_session, user: User):
         super().__init__(db_session)
+        self.user_id = user.id
+        self.user = user
 
     def get(self, variant: choices = "valid") -> dict:
 
@@ -26,15 +28,11 @@ class AccountFactory(TestFactory):
         return a
 
     def _valid(self) -> dict:
-        user = self.session.query(User).first()
-        if not user:
-            user_factory = UserFactory(self.session)
-            user_factory.create("valid")
         return {
             "name": "Some Account name",
             "balance": 100,
             "account_type": "CHECKING",
-            "user_id": self.session.query(User).first().id,
+            "user_id": self.user_id,
         }
 
     def _invalid_account_type(self) -> dict:

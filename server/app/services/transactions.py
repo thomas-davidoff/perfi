@@ -13,8 +13,10 @@ class TransactionsService:
         self.accounts_service = create_accounts_service()
         self.user_service = create_user_service()
 
-    def _validate_uuid(self, id):
+    def _validate_uuid(self, id: str | UUID):
         """Converts string id into a uuid object. Raises ValidationError if uuid is improper."""
+        if isinstance(id, UUID):
+            return id
         try:
             transaction_id = UUID(id)
         except (ValueError, TypeError):
@@ -39,17 +41,19 @@ class TransactionsService:
             raise ValidationError("merchant must be string")
         return merchant
 
-    def validate_amount(self, amount):
-        if not isinstance(amount, (float, int)):
-            raise ValidationError("amount must be a valid number")
-        return amount
-
     def validate_date(self, date):
         try:
             date = StandardDate(date)
         except Exception:
             raise ValidationError("Invalid date.")
         return date
+
+    def _validate(self, value, validation_func):
+        is_valid, err = validation_func(value)
+        if is_valid:
+            return value
+        else:
+            raise ValidationError(err)
 
 
 def create_transactions_service():
