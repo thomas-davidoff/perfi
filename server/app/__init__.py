@@ -65,6 +65,8 @@ def create_app(config, init_logger=None):
             elif isinstance(e, HTTPException):
                 return error_respond(str(e), e.code)
             else:
-                return error_respond(f"Internal server error: {str(e)}", 500)
+                return error_respond(
+                    f"An unexpected error occured. Contact the application owner.", 500
+                )
 
     return app
