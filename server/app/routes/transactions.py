@@ -4,8 +4,15 @@ from app.services import (
     create_transactions_service,
 )
 from app.exceptions import MissingPayload
+from database import TransactionCategory
 
 transactions_bp = Blueprint("transactions", __name__, url_prefix="/transactions")
+
+
+@transactions_bp.route("/categories", methods=["GET"])
+@jwt_required()
+def categories():
+    return jsonify([c.value for c in TransactionCategory]), 200
 
 
 @transactions_bp.route("/", methods=["GET"])

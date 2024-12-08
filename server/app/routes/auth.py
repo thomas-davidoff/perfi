@@ -59,8 +59,8 @@ def login():
 
     access_token = create_access_token(identity=user, fresh=True)
     refresh_token = create_refresh_token(identity=user)
-
     return jsonify(
+        user=user.to_dict(),
         access_token=access_token,
         refresh_token=refresh_token,
         access_token_expires=get_token_expiry(access_token),
