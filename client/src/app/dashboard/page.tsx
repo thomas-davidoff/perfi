@@ -1,7 +1,10 @@
 import { getTransactions } from "@/lib/getTransactions";
+import { redirectToLogin } from "@/lib/redirectToLogin";
 
 
 export default async function DashboardPage() {
+
+    await redirectToLogin()
 
     const data = await getTransactions()
 
