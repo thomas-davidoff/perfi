@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { Transaction } from "@/types";
 
-export async function getTransactions() {
+export async function getTransactions(): Promise<Transaction[]> {
     const session = await getServerSession(authOptions);
 
     if (!session?.access_token) {

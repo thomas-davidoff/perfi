@@ -1,17 +1,16 @@
 import { getTransactions } from "@/lib/getTransactions";
-import { redirectToLogin } from "@/lib/redirectToLogin";
-
+import { columns } from "@/app/dashboard/columns";
+import { DataTable } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button"
 
 export default async function DashboardPage() {
-
-    await redirectToLogin()
-
     const data = await getTransactions()
-
     return (
         <div>
             <h1>Transactions</h1>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
+            <Button variant="outline">Create Transaction</Button>
+            <Button variant="outline">Delete Transaction</Button>
+            <DataTable columns={columns} data={data} />
         </div>
     );
 }

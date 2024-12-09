@@ -45,9 +45,9 @@ class Transaction(TimestampMixin, db.Model):
                 "amount": self.amount,
                 "description": self.description,
                 "merchant": self.merchant,
-                "date": self.date,
+                "date": self.date.strftime("%m-%d-%Y"),
                 "category": self.category.value,
-                "account_id": self.account_id,
+                "account": self.account.compact(),
             }
         )
         return base_dict

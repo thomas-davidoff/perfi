@@ -41,3 +41,10 @@ class Account(TimestampMixin, db.Model):
             }
         )
         return base_dict
+
+    def compact(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "account_type": self.account_type.value,
+        }
