@@ -3,21 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
-
-export async function redirectToDashboard() {
-    const session = await getServerSession(authOptions);
-
-    if (session?.access_token) {
-        redirect("/dashboard")
-    }
-}
 
 
-export default async function LoginPage() {
-    await redirectToDashboard()
+
+export default function LoginPage() {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
