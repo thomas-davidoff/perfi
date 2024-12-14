@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useTransactionsContext } from '@/context/TransactionsContext';
 import { useAccounts } from '@/hooks/useAccounts';
-import { useTransactions } from '@/hooks/useTransactions';
 import { Button } from '@/components/ui/button';
 
 export default function TransactionForm() {
+    const { addTransaction } = useTransactionsContext();
     const { accounts, isLoading: accountsLoading } = useAccounts();
-    const { addTransaction, loadTransactions } = useTransactions();
 
     const [formData, setFormData] = useState({
         description: '',
@@ -25,27 +25,22 @@ export default function TransactionForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            await addTransaction({
-                description: formData.description,
-                amount: parseFloat(formData.amount),
-                date: formData.date,
-                category: formData.category,
-                merchant: formData.merchant,
-                account_id: formData.account_id,
-            });
-            await loadTransactions();
-            setFormData({
-                description: '',
-                amount: '',
-                date: '',
-                category: 'uncategorized',
-                account_id: '',
-                merchant: '',
-            }); // Reset form
-        } catch (error) {
-            console.error('Error creating transaction:', error);
-        }
+        await addTransaction({
+            description: formData.description,
+            amount: parseFloat(formData.amount),
+            date: formData.date,
+            category: formData.category,
+            merchant: formData.merchant,
+            account_id: formData.account_id,
+        });
+        setFormData({
+            description: '',
+            amount: '',
+            date: '',
+            category: 'uncategorized',
+            account_id: '',
+            merchant: '',
+        });
     };
 
     return (
