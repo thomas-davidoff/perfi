@@ -1,4 +1,9 @@
-// src/types.ts
+export interface AccountCompact {
+    account_type: string,
+    id: string,
+    name: string
+}
+
 export interface Transaction {
     account: AccountCompact,
     amount: number,
@@ -9,10 +14,4 @@ export interface Transaction {
     id: string,
     merchant: string,
     updated_at: string
-}
-
-export interface AccountCompact {
-    account_type: string,
-    id: string,
-    name: string
 }
