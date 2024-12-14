@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Account } from '@/types';
-import { fetchAccounts } from '@/lib/accounts/accounts';
+import { fetchAccounts } from '@/lib/fetch/accounts';
 
 export function useAccounts() {
     const [accounts, setAccounts] = useState<Account[]>([]);

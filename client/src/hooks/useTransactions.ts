@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Transaction } from '@/types';
-import { fetchTransactions, createTransaction } from '@/lib/transactions/fetchTransactions';
+import { fetchTransactions, createTransaction } from '@/lib/fetch/transactions';
 
 export function useTransactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
