@@ -3,10 +3,10 @@
 import { columns } from '@/app/dashboard/columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactionsContext } from '@/context/TransactionsContext';
 
 export default function TransactionsTable() {
-    const { transactions, isLoading, loadTransactions } = useTransactions();
+    const { transactions, isLoading, loadTransactions } = useTransactionsContext();
 
     return (
         <div>
