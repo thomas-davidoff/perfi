@@ -38,12 +38,14 @@ export async function authFetch(
         const data = await response.json();
         return NextResponse.json(data);
 
-    } catch (error: any) {
-        console.error(`Error in ${endpoint} request:`, error);
-
-        return NextResponse.json(
-            { error: 'Unexpected error occurred', details: error.message || error },
-            { status: 500 }
-        );
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json(
+                { error: 'Unexpected error occurred', details: error.message || error },
+                { status: 500 }
+            );
+        } else {
+            console.error('Unexpected error', error);
+        }
     }
 }
