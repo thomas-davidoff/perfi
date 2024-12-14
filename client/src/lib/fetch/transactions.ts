@@ -23,6 +23,10 @@ export async function createTransaction(transaction: Partial<TransactionPost>): 
     });
 
     if (!res.ok) {
-        throw new Error('Failed to create transaction');
+        const errorData = await res.json().catch(() => ({
+            error: 'Unexpected error occurred',
+        }));
+
+        throw new Error(errorData.error || 'Failed to create transaction');
     }
 }

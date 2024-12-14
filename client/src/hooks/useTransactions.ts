@@ -22,8 +22,9 @@ export function useTransactions() {
         try {
             await createTransaction(transaction);
             await loadTransactions();
-        } catch (error) {
-            console.error('Error creating transaction:', error);
+        } catch (error: any) {
+            console.error('Error creating transaction:', error.message);
+            alert(`Error: ${error.message}`);
         }
     };
 

@@ -39,5 +39,6 @@ export interface TransactionPost {
     amount: number,
     date: string,
     merchant: string,
-    category: string
+    category: string,
+    description: string
 }
