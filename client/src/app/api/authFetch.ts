@@ -23,9 +23,8 @@ export async function authFetch(
             },
         });
 
-        // If the response is not OK, capture the error details
         if (!response.ok) {
-            const errorDetails = await response.json().catch(() => ({})); // Handle non-JSON error responses
+            const errorDetails = await response.json().catch(() => ({}));
             console.error(`Error in ${endpoint} fetch:`, errorDetails);
 
             return NextResponse.json(
