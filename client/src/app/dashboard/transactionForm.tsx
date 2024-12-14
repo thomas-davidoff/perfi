@@ -59,7 +59,6 @@ export default function TransactionForm() {
                     value={formData.description}
                     onChange={handleChange}
                     className="input"
-                    required
                 />
             </div>
             <div>
@@ -95,6 +94,7 @@ export default function TransactionForm() {
                     value={formData.merchant}
                     onChange={handleChange}
                     className="input"
+                    required
                 />
             </div>
             <div>
