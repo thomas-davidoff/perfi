@@ -17,7 +17,9 @@ class StandardDate:
         elif isinstance(date_input, str):
             try:
                 # Parse the date string as UTC midnight
-                naive_date = datetime.strptime(date_input, self.DEFAULT_FORMAT)
+                naive_date = datetime.strptime(
+                    date_input.split("T")[0], self.DEFAULT_FORMAT
+                )
                 return naive_date.replace(tzinfo=timezone.utc)
             except ValueError as e:
                 raise ValueError(f"Invalid date format: {e}")
