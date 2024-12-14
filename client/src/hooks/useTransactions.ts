@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Transaction } from '@/types';
+import { Transaction, TransactionPost } from '@/types';
 import { fetchTransactions, createTransaction } from '@/lib/fetch/transactions';
 
 export function useTransactions() {
@@ -18,12 +18,13 @@ export function useTransactions() {
         }
     };
 
-    const addTransaction = async (transaction: Partial<Transaction>) => {
+    const addTransaction = async (transaction: Partial<TransactionPost>) => {
         try {
             await createTransaction(transaction);
             await loadTransactions();
-        } catch (error) {
-            console.error('Error creating transaction:', error);
+        } catch (error: any) {
+            console.error('Error creating transaction:', error.message);
+            alert(`Error: ${error.message}`);
         }
     };
 

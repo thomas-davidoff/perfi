@@ -18,6 +18,8 @@ export default function TransactionForm() {
         merchant: '',
     });
 
+    const [error, setError] = useState<string | null>(null);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -25,26 +27,34 @@ export default function TransactionForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await addTransaction({
-            description: formData.description,
-            amount: parseFloat(formData.amount),
-            date: formData.date,
-            category: formData.category,
-            merchant: formData.merchant,
-            account_id: formData.account_id,
-        });
-        setFormData({
-            description: '',
-            amount: '',
-            date: '',
-            category: 'uncategorized',
-            account_id: '',
-            merchant: '',
-        });
+        setError(null);
+
+        try {
+            await addTransaction({
+                description: formData.description,
+                amount: parseFloat(formData.amount),
+                date: formData.date,
+                category: formData.category,
+                merchant: formData.merchant,
+                account_id: formData.account_id,
+            });
+
+            setFormData({
+                description: '',
+                amount: '',
+                date: '',
+                category: 'uncategorized',
+                account_id: '',
+                merchant: '',
+            });
+        } catch (err: any) {
+            setError(err.message);
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500">{error}</p>} {/* Display errors */}
             <div>
                 <label htmlFor="description">Description</label>
                 <input

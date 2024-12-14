@@ -23,19 +23,28 @@ export async function authFetch(
             },
         });
 
+        // If the response is not OK, capture the error details
         if (!response.ok) {
-            const errorDetails = await response.json();
+            const errorDetails = await response.json().catch(() => ({})); // Handle non-JSON error responses
             console.error(`Error in ${endpoint} fetch:`, errorDetails);
+
             return NextResponse.json(
-                { error: `Failed to fetch ${endpoint}`, details: errorDetails },
+                {
+                    error: errorDetails?.error || `Failed to fetch ${endpoint}`,
+                    details: errorDetails,
+                },
                 { status: response.status }
             );
         }
-
         const data = await response.json();
         return NextResponse.json(data);
-    } catch (error) {
+
+    } catch (error: any) {
         console.error(`Error in ${endpoint} request:`, error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+        return NextResponse.json(
+            { error: 'Unexpected error occurred', details: error.message || error },
+            { status: 500 }
+        );
     }
 }

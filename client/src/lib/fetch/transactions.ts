@@ -1,4 +1,4 @@
-import { Transaction } from "@/types";
+import { Transaction, TransactionPost } from "@/types";
 /**
  * Fetch transactions from the API.
  * @returns Promise<Transaction[]>
@@ -15,7 +15,7 @@ export async function fetchTransactions(): Promise<Transaction[]> {
  * Create a new transaction via the API.
  * @param transaction Partial<Transaction> - New transaction data.
  */
-export async function createTransaction(transaction: Partial<Transaction>): Promise<void> {
+export async function createTransaction(transaction: Partial<TransactionPost>): Promise<void> {
     const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,6 +23,10 @@ export async function createTransaction(transaction: Partial<Transaction>): Prom
     });
 
     if (!res.ok) {
-        throw new Error('Failed to create transaction');
+        const errorData = await res.json().catch(() => ({
+            error: 'Unexpected error occurred',
+        }));
+
+        throw new Error(errorData.error || 'Failed to create transaction');
     }
 }
