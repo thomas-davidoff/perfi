@@ -50,9 +50,6 @@ export function DataTable<TData extends Record, TValue>({
         (row) => row.original.id
     )
 
-    console.log(selectedRowValues)
-
-
     return (
         <div className="rounded-md border">
             <div className="flex-1 text-sm text-muted-foreground">
