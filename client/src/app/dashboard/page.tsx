@@ -1,13 +1,13 @@
-import TransactionForm from "./transactionForm";
 import { TransactionsProvider } from "@/context/TransactionsContext";
 import TransactionsTable from "./transactions-table";
+import { TransactionForm } from "./transactions-form";
 
 export default async function DashboardPage() {
     return (
         <div>
             <TransactionsProvider>
-                <TransactionsTable />
                 <TransactionForm />
+                <TransactionsTable />
             </TransactionsProvider>
         </div>
     );

@@ -37,7 +37,7 @@ interface FullRecordResponse extends Record {
 export interface TransactionPost {
     account_id: string,
     amount: number,
-    date: string,
+    date: Date,
     merchant: string,
     category: string,
     description: string

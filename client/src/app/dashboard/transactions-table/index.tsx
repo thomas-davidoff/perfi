@@ -92,7 +92,6 @@ export default function TransactionsTable() {
                             <DropdownMenuSeparator />
                             {/* todo: update handler */}
                             <DropdownMenuItem>Update transaction</DropdownMenuItem>
-                            {/* todo: delete handler */}
                             <DropdownMenuItem onClick={() => handleDelete(transaction.id)}>
                                 Delete transaction
                             </DropdownMenuItem>
