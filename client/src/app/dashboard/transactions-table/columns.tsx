@@ -1,3 +1,5 @@
+'use client'
+
 import { Checkbox } from "@/components/ui/checkbox"
 import { Transaction } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
@@ -10,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { MoreHorizontal } from "lucide-react"
 
 export const columns: ColumnDef<Transaction>[] = [
     {
@@ -62,7 +65,7 @@ export const columns: ColumnDef<Transaction>[] = [
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <span className="sr-only">Open menu</span>
-                  <p>Some icon: todo</p>
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
