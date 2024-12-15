@@ -8,9 +8,6 @@ import {
   Form,
   FormControl,
   FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from "@/components/ui/form"
 import {
   cn
@@ -37,22 +34,18 @@ import {
 import { useTransactionsContext } from "@/context/TransactionsContext";
 import { useAccounts } from '@/hooks/useAccounts';
 import { CirclePlus } from "lucide-react"
+import formSchema from './schema'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import FieldItem from "./field-item"
 
-
-
-const formSchema = z.object({
-
-  merchant: z.string().min(1, {
-    message: "Merchant cannot be blank.",
-  }),
-  description: z.string().optional(),
-  amount: z
-    .number()
-    .min(-10000).max(10000),
-  date: z.coerce.date(),
-  category: z.string(),
-  account_id: z.string(),
-});
 
 export function TransactionForm() {
 
@@ -82,35 +75,38 @@ export function TransactionForm() {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <Button variant='outline'>
           <CirclePlus /> Create Transaction
         </Button>
-      </PopoverTrigger>
-      <PopoverContent>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create a transaction</DialogTitle>
+          <DialogDescription>
+            Create a new transaction. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="merchant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Merchant</FormLabel>
-                  <FormControl>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid gap-y-0">
+              <FormField
+                control={form.control}
+                name="merchant"
+                render={({ field }) => (
+                  <FieldItem fieldName="Merchant">
                     <Input placeholder="Trader Joes" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="amount"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
+                  </FieldItem>
+
+                )}
+              />
+              <FormField
+                name="amount"
+                control={form.control}
+                render={({ field }) => (
+                  <FieldItem fieldName="Amount">
                     <Input
                       type="number"
                       placeholder="Enter amount"
@@ -118,110 +114,103 @@ export function TransactionForm() {
                       step="1"
                       onChange={event => field.onChange(+event.target.value)}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            field.value.toISOString().split('T')[0]
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="account_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={accounts[0].name} defaultValue={accounts[0].id} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {accounts.map(acc => (
-                        <SelectItem value={acc.id} key={`${acc.name}_item`}>{acc.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </FieldItem>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Some description..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Submit</Button>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FieldItem fieldName="Date">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-[100%] pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              field.value.toISOString().split('T')[0]
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </FieldItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FieldItem fieldName="Category">
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FieldItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="account_id"
+                render={({ field }) => (
+                  <FieldItem fieldName="Account">
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={accounts[0].name} defaultValue={accounts[0].id} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {accounts.map(acc => (
+                          <SelectItem value={acc.id} key={`${acc.name}_item`}>{acc.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FieldItem fieldName="Description">
+                    <FormControl>
+                      <Input placeholder="Some description..." {...field} />
+                    </FormControl>
+                  </FieldItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Submit</Button>
+              </DialogFooter>
+            </div>
           </form>
         </Form>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
 
   )
 }
