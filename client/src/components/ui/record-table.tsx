@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+
 import {
     ColumnDef,
     flexRender,
@@ -16,23 +18,44 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-interface DataTableProps<TData, TValue> {
+import { Record } from "@/types"
+
+interface DataTableProps<TData extends Record, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Record, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
+
+    const [rowSelection, setRowSelection] = useState({})
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        onRowSelectionChange: setRowSelection,
+        state: {
+            rowSelection
+        }
     })
+
+
+    const selectedRowValues = table.getFilteredSelectedRowModel().rows.map(
+        (row) => row.original.id
+    )
+
+    console.log(selectedRowValues)
+
 
     return (
         <div className="rounded-md border">
+            <div className="flex-1 text-sm text-muted-foreground">
+                {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                {table.getFilteredRowModel().rows.length} row(s) selected.
+            </div>
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (

@@ -24,7 +24,7 @@ export interface User extends FullRecordResponse {
     email: string
 }
 
-interface Record {
+export interface Record {
     id: string
 }
 
