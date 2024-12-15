@@ -36,8 +36,7 @@ import {
 } from "@/components/ui/select"
 import { useTransactionsContext } from "@/context/TransactionsContext";
 import { useAccounts } from '@/hooks/useAccounts';
-import { MailOpen } from "lucide-react"
-import FlexBetween from "@/components/flex-between";
+import { CirclePlus } from "lucide-react"
 
 
 
@@ -84,10 +83,10 @@ export function TransactionForm() {
 
   return (
     <Popover>
-      <PopoverTrigger>
-        <FlexBetween>
-          <MailOpen /> Create Transaction
-        </FlexBetween>
+      <PopoverTrigger asChild>
+        <Button variant='outline'>
+          <CirclePlus /> Create Transaction
+        </Button>
       </PopoverTrigger>
       <PopoverContent>
         <Form {...form}>
