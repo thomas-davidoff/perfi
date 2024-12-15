@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useTransactionsContext } from '@/context/TransactionsContext';
 import { useAccounts } from '@/hooks/useAccounts';
 import { Button } from '@/components/ui/button';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function TransactionForm() {
     const { addTransaction } = useTransactionsContext();
@@ -53,91 +58,101 @@ export default function TransactionForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <p className="text-red-500">{error}</p>} {/* Display errors */}
-            <div>
-                <label htmlFor="description">Description</label>
-                <input
-                    type="text"
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="input"
-                />
-            </div>
-            <div>
-                <label htmlFor="amount">Amount</label>
-                <input
-                    type="number"
-                    id="amount"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="date">Date</label>
-                <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="merchant">Merchant</label>
-                <input
-                    type="text"
-                    id="merchant"
-                    name="merchant"
-                    value={formData.merchant}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="category">Category</label>
-                <input
-                    type="text"
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="input"
-                />
-            </div>
-            <div>
-                <label htmlFor="account_id">Account</label>
-                {accountsLoading ? (
-                    <p>Loading accounts...</p>
-                ) : (
-                    <select
-                        id="account_id"
-                        name="account_id"
-                        value={formData.account_id}
-                        onChange={handleChange}
-                        className="input"
-                        required
-                    >
-                        <option value="">Select an account</option>
-                        {accounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                                {account.name}
-                            </option>
-                        ))}
-                    </select>
-                )}
-            </div>
-            <Button type="submit" variant="outline">
-                Create Transaction
-            </Button>
-        </form>
+        <Popover>
+            <PopoverTrigger>
+                <div>
+                    something</div>Create transaction
+            </PopoverTrigger>
+            <PopoverContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && <p className="text-red-500">{error}</p>} {/* Display errors */}
+                    <div>
+                        <label htmlFor="description">Description</label>
+                        <input
+                            type="text"
+                            id="description"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            className="input"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="amount">Amount</label>
+                        <input
+                            type="number"
+                            id="amount"
+                            name="amount"
+                            value={formData.amount}
+                            onChange={handleChange}
+                            className="input"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="date">Date</label>
+                        <input
+                            type="date"
+                            id="date"
+                            name="date"
+                            value={formData.date}
+                            onChange={handleChange}
+                            className="input"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="merchant">Merchant</label>
+                        <input
+                            type="text"
+                            id="merchant"
+                            name="merchant"
+                            value={formData.merchant}
+                            onChange={handleChange}
+                            className="input"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="category">Category</label>
+                        <input
+                            type="text"
+                            id="category"
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            className="input"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="account_id">Account</label>
+                        {accountsLoading ? (
+                            <p>Loading accounts...</p>
+                        ) : (
+                            <select
+                                id="account_id"
+                                name="account_id"
+                                value={formData.account_id}
+                                onChange={handleChange}
+                                className="input"
+                                required
+                            >
+                                <option value="">Select an account</option>
+                                {accounts.map((account) => (
+                                    <option key={account.id} value={account.id}>
+                                        {account.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+                    <Button type="submit" variant="outline">
+                        Create Transaction
+                    </Button>
+                </form>
+            </PopoverContent>
+        </Popover>
+
+
     );
 }
