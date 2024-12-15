@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { Dispatch, SetStateAction } from "react"
+import { TableState } from '@tanstack/react-table';
 
 import {
     ColumnDef,
@@ -21,16 +22,18 @@ import {
 import { Record } from "@/types"
 
 interface DataTableProps<TData extends Record, TValue> {
-    columns: ColumnDef<TData, TValue>[]
-    data: TData[]
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    rowSelection: TableState['rowSelection'];
+    setRowSelection: Dispatch<SetStateAction<TableState['rowSelection']>>;
 }
 
 export function DataTable<TData extends Record, TValue>({
     columns,
     data,
+    rowSelection,
+    setRowSelection
 }: DataTableProps<TData, TValue>) {
-
-    const [rowSelection, setRowSelection] = useState({})
 
     const table = useReactTable({
         data,

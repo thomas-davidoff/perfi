@@ -15,6 +15,7 @@ import {
 import { MoreHorizontal } from "lucide-react"
 import { useTransactionsContext } from "@/context/TransactionsContext";
 import { DataTable } from "@/components/ui/record-table";
+import { useState } from "react"
 
 export default function TransactionsTable() {
     const { transactions, deleteTransaction } = useTransactionsContext();
@@ -102,8 +103,10 @@ export default function TransactionsTable() {
         },
     ]
 
+    const [selectedRows, setSelectedRows] = useState({})
+
     return (
-        <DataTable columns={columns} data={transactions} />
+        <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
     )
 
 }
