@@ -30,3 +30,21 @@ export async function createTransaction(transaction: Partial<TransactionPost>): 
         throw new Error(errorData.error || 'Failed to create transaction');
     }
 }
+
+/**
+ * Delete a transaction via the API.
+ * @param transactionId string - ID of the transaction to delete.
+ */
+export async function deleteTransaction(transactionId: string): Promise<void> {
+    const res = await fetch(`/api/transactions/${transactionId}`, {
+        method: 'DELETE',
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({
+            error: 'Unexpected error occurred',
+        }));
+
+        throw new Error(errorData.error || 'Failed to delete transaction');
+    }
+}

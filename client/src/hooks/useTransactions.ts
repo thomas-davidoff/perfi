@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Transaction, TransactionPost } from '@/types';
-import { fetchTransactions, createTransaction } from '@/lib/fetch/transactions';
+import { fetchTransactions, createTransaction, deleteTransaction as apiDeleteTransaction } from '@/lib/fetch/transactions';
 
 export function useTransactions() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -28,9 +28,19 @@ export function useTransactions() {
         }
     };
 
+    const deleteTransaction = async (transactionId: string) => {
+        try {
+            await apiDeleteTransaction(transactionId);
+            await loadTransactions();
+        } catch (error: any) {
+            console.error('Error deleting transaction:', error.message);
+            alert(`Error: ${error.message}`);
+        }
+    };
+
     useEffect(() => {
         loadTransactions();
     }, []);
 
-    return { transactions, isLoading, loadTransactions, addTransaction };
+    return { transactions, isLoading, loadTransactions, addTransaction, deleteTransaction };
 }

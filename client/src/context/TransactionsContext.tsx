@@ -8,15 +8,16 @@ interface TransactionsContextProps {
     isLoading: ReturnType<typeof useTransactions>['isLoading'];
     loadTransactions: ReturnType<typeof useTransactions>['loadTransactions'];
     addTransaction: ReturnType<typeof useTransactions>['addTransaction'];
+    deleteTransaction: ReturnType<typeof useTransactions>['deleteTransaction'];
 }
 
 const TransactionsContext = createContext<TransactionsContextProps | undefined>(undefined);
 
 export const TransactionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { transactions, isLoading, loadTransactions, addTransaction } = useTransactions();
+    const { transactions, isLoading, loadTransactions, addTransaction, deleteTransaction } = useTransactions();
 
     return (
-        <TransactionsContext.Provider value={{ transactions, isLoading, loadTransactions, addTransaction }}>
+        <TransactionsContext.Provider value={{ transactions, isLoading, loadTransactions, addTransaction, deleteTransaction }}>
             {children}
         </TransactionsContext.Provider>
     );
