@@ -32,7 +32,7 @@ export default function LoginPage() {
     return (
         <form onSubmit={handleSubmit}>
             <h1>Login</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p>{error}</p>}
             <input
                 type="text"
                 placeholder="Username"

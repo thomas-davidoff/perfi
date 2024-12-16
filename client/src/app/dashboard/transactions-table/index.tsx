@@ -16,8 +16,23 @@ import { MoreHorizontal } from "lucide-react"
 import { useTransactionsContext } from "@/context/TransactionsContext";
 import { DataTable } from "@/components/ui/record-table";
 import { useState } from "react"
+import { CreateTransactionForm } from "../create-transaction-form"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { CirclePlus } from "lucide-react"
+import { useAccounts } from "@/hooks/useAccounts"
 
-export default function TransactionsTable() {
+import { Dispatch, SetStateAction } from "react"
+import { TableState } from '@tanstack/react-table';
+
+export function TransactionsDataTable({ selectedRows, setSelectedRows }: { selectedRows: TableState['rowSelection'], setSelectedRows: Dispatch<SetStateAction<TableState['rowSelection']>> }) {
     const { transactions, deleteTransaction } = useTransactionsContext();
 
     const handleDelete = (id: string) => {
@@ -102,10 +117,48 @@ export default function TransactionsTable() {
         },
     ]
 
-    const [selectedRows, setSelectedRows] = useState({})
 
     return (
         <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
+    )
+
+}
+
+export function TransactionsTable() {
+
+    const { accounts, isLoading } = useAccounts()
+    const [selectedRows, setSelectedRows] = useState({})
+
+    return (
+        <div>
+            <div className="flex py-4 justify-between">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant='outline'>
+                            <CirclePlus /> Create Transaction
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Create a transaction</DialogTitle>
+                            <DialogDescription>
+                                Create a new transaction. Click save when you're done.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <CreateTransactionForm accounts={accounts} />
+                        <DialogFooter>
+                            <Button type="submit">Submit</Button>
+                        </DialogFooter>
+                    </DialogContent>
+
+                </Dialog>
+
+                <Button variant='outline' onClick={() => console.log('hi')}>
+                    Delete transaction
+                </Button>
+            </div>
+            <TransactionsDataTable selectedRows={selectedRows} setSelectedRows={setSelectedRows} />
+        </div>
     )
 
 }

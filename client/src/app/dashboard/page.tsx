@@ -1,12 +1,11 @@
 import { TransactionsProvider } from "@/context/TransactionsContext";
-import TransactionsTable from "./transactions-table";
-import { TransactionForm } from "./transactions-form";
+import { TransactionsTable } from "./transactions-table";
+
 
 export default async function DashboardPage() {
     return (
-        <div>
+        <div className="p-5">
             <TransactionsProvider>
-                <TransactionForm />
                 <TransactionsTable />
             </TransactionsProvider>
         </div>
