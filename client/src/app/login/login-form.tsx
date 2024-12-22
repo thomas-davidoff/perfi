@@ -8,7 +8,6 @@ import {
     FormField,
     FormLabel,
     FormMessage,
-    FormDescription
 } from "@/components/ui/form"
 import { z } from "zod"
 import { Input } from '@/components/ui/input'
@@ -58,8 +57,8 @@ export function LoginForm() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <div>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <div className='rounded-md space-y-4'>
                     <FormField
                         control={form.control}
                         name="username"
@@ -67,9 +66,6 @@ export function LoginForm() {
                             <div>
                                 <FormLabel className="text-right">Username</FormLabel>
                                 <Input placeholder="username" {...field} />
-                                <FormDescription>
-                                    This is your username or email.
-                                </FormDescription>
                                 <FormMessage />
                             </div>
 
@@ -88,7 +84,10 @@ export function LoginForm() {
                         )}
                     />
                 </div>
-                <Button type="submit">Submit</Button>
+                <div className='flex justify-end'>
+                <Button type="submit" >Submit</Button>
+                </div>
+
             </form>
         </Form>
     )
