@@ -1,15 +1,24 @@
 'use client'
 
 import React, { useState } from "react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { TransactionDetailsSheet } from "./transctions-details-sheet";
 import { Transaction } from "@/types";
+import { useTransactionsContext } from "@/context/TransactionsContext";
 
 export function TransactionActionsDropdown({ transaction }: { transaction: Transaction }) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const { deleteTransaction } = useTransactionsContext();
+
+    const handleDelete = (id: string) => {
+        if (confirm('Are you sure you want to delete this transaction?')) {
+            deleteTransaction(id);
+        }
+    }
 
     return (
         <>
@@ -32,17 +41,18 @@ export function TransactionActionsDropdown({ transaction }: { transaction: Trans
                     }}>
                         View Details
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem>
                         Update transaction
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => console.log("Delete transaction")}>
+                    <DropdownMenuItem onClick={() => handleDelete(transaction.id)}>
                         Delete transaction
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
             {/* Pass state to the Sheet */}
-            <TransactionDetailsSheet isOpen={isSheetOpen} onClose={() => { setIsSheetOpen(false) }} />
+            <TransactionDetailsSheet isOpen={isSheetOpen} onClose={() => { setIsSheetOpen(false) }} transaction={transaction}/>
         </>
     );
 }
