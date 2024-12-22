@@ -5,15 +5,6 @@ import { Transaction } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown } from "lucide-react"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal } from "lucide-react"
 import { useTransactionsContext } from "@/context/TransactionsContext";
 import { DataTable } from "@/components/ui/record-table";
 import { useState } from "react"
@@ -29,7 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { CirclePlus } from "lucide-react"
 import { useAccounts } from "@/hooks/useAccounts"
-
+import { TransactionActionsDropdown } from "./transaction-row-actions"
 
 export function TransactionsTable() {
 
@@ -124,34 +115,7 @@ export function TransactionsTable() {
         {
             id: "actions",
             cell: ({ row }) => {
-                const transaction = row.original
-
-                return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(transaction.id)}
-                            >
-                                Copy transaction ID
-                            </DropdownMenuItem>
-                            {/* todo: view details popover */}
-                            <DropdownMenuItem>View details</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {/* todo: update handler */}
-                            <DropdownMenuItem>Update transaction</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(transaction.id)}>
-                                Delete transaction
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )
+                return <TransactionActionsDropdown transaction={row.original} />
             },
         },
     ]
