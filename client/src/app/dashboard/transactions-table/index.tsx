@@ -169,12 +169,12 @@ export function TransactionsTable() {
                         <DialogHeader>
                             <DialogTitle>Create a transaction</DialogTitle>
                             <DialogDescription>
-                                Create a new transaction. Click save when you're done.
+                                Create a new transaction. Click save when you&apos;re done.
                             </DialogDescription>
                         </DialogHeader>
-                        <CreateTransactionForm accounts={accounts} />
+                        <CreateTransactionForm accounts={accounts} formId="create-transactions-form" />
                         <DialogFooter>
-                            <Button type="submit">Submit</Button>
+                            <Button type="submit" form="create-transactions-form">Submit</Button>
                         </DialogFooter>
                     </DialogContent>
 
@@ -187,5 +187,4 @@ export function TransactionsTable() {
             <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
         </div>
     )
-
 }

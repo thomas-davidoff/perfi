@@ -32,13 +32,12 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { useTransactionsContext } from "@/context/TransactionsContext";
-import { useAccounts } from '@/hooks/useAccounts';
 import formSchema from './schema'
 import FieldItem from "./field-item"
 import { Account } from "@/types"
 
 
-export function CreateTransactionForm({ accounts }: { accounts: Account[] }) {
+export function CreateTransactionForm({ accounts, formId }: { accounts: Account[], formId: string }) {
 
   const { addTransaction } = useTransactionsContext();
 
@@ -66,7 +65,7 @@ export function CreateTransactionForm({ accounts }: { accounts: Account[] }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} id={formId}>
         <div className="grid gap-y-0">
           <FormField
             control={form.control}
