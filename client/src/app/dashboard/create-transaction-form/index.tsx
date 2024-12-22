@@ -52,7 +52,7 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
       account_id: accounts[0]?.id || "",
       description: "",
     },
-  })
+  });
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -88,14 +88,22 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
                 <Input
                   type="number"
                   placeholder="Enter amount"
-                  {...field}
                   step="1"
-                  onChange={event => field.onChange(+event.target.value)}
+                  value={field.value === 0 ? "" : field.value}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    field.onChange(value === "" ? 0 : parseFloat(value));
+                  }}
+                  onBlur={(event) => {
+                    if (event.target.value === "") {
+                      field.onChange(0);
+                    }
+                  }}
                 />
               </FieldItem>
-
             )}
           />
+
           <FormField
             control={form.control}
             name="date"
