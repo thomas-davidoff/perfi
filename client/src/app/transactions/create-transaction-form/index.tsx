@@ -60,8 +60,6 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Values from form:")
-    console.log(values)
     try {
       await addTransaction(values);
     } catch (err) {
