@@ -38,7 +38,7 @@ def is_postgres_available(db_config):
 
 def pytest_configure():
     load_env(f".env")
-    load_env(f".env.{environment}")
+    load_env(f".env.{environment}", override=True)
 
 
 @pytest.fixture(scope="function", autouse=True)
