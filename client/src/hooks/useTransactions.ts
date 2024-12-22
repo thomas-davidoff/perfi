@@ -20,8 +20,9 @@ export function useTransactions() {
 
     const addTransaction = async (transaction: Partial<TransactionPost>) => {
         try {
-            await createTransaction(transaction);
+            const res = await createTransaction(transaction);
             await loadTransactions();
+            return res
         } catch (error: any) {
             console.error('Error creating transaction:', error.message);
             alert(`Error: ${error.message}`);

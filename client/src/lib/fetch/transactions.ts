@@ -15,7 +15,7 @@ export async function fetchTransactions(): Promise<Transaction[]> {
  * Create a new transaction via the API.
  * @param transaction Partial<Transaction> - New transaction data.
  */
-export async function createTransaction(transaction: Partial<TransactionPost>): Promise<void> {
+export async function createTransaction(transaction: Partial<TransactionPost>): Promise<Transaction> {
     const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,6 +28,8 @@ export async function createTransaction(transaction: Partial<TransactionPost>): 
         }));
 
         throw new Error(errorData.error || 'Failed to create transaction');
+    } else {
+        return await res.json()
     }
 }
 

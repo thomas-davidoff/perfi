@@ -35,6 +35,7 @@ import { useTransactionsContext } from "@/context/TransactionsContext";
 import formSchema from './schema'
 import FieldItem from "./field-item"
 import { Account } from "@/types"
+import { toast } from "sonner"
 
 
 export function CreateTransactionForm({ accounts, formId }: { accounts: Account[], formId: string }) {
@@ -61,7 +62,11 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await addTransaction(values);
+      const t = await addTransaction(values);
+      console.log(t)
+      toast("Transaction has been created.", {
+        description: `id: ${t?.id}`
+      })
     } catch (err) {
       console.error(err)
     }
