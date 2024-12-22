@@ -48,7 +48,11 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
       merchant: "",
       amount: 0,
       category: categories[0],
-      date: new Date(),
+      date: (() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+      })(),
       account_id: accounts[0]?.id || "",
       description: "",
     },
