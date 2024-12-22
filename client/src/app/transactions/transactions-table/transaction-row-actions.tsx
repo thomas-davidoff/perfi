@@ -42,9 +42,10 @@ export function TransactionActionsDropdown({ transaction }: { transaction: Trans
                         View Details
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    {/* <DropdownMenuItem>
                         Update transaction
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
+                    {/* todo ^ */}
                     <DropdownMenuItem onClick={() => handleDelete(transaction.id)}>
                         Delete transaction
                     </DropdownMenuItem>
