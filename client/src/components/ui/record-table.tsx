@@ -10,6 +10,7 @@ import {
     SortingState,
     getSortedRowModel,
     useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table"
 
 import {
@@ -20,6 +21,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 
 import { Record } from "@/types"
 
@@ -43,6 +45,7 @@ export function DataTable<TData extends Record, TValue>({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
         onRowSelectionChange: setRowSelection,
         state: {
             rowSelection,
@@ -99,10 +102,31 @@ export function DataTable<TData extends Record, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex-1 text-sm text-muted-foreground py-4" >
-                {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                {table.getFilteredRowModel().rows.length} row(s) selected.
+            <div className='flex'>
+                <div className="flex-1 text-sm text-muted-foreground py-4" >
+                    {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                    {table.getFilteredRowModel().rows.length} row(s) selected.
+                </div>
+                <div className="flex items-center justify-end py-4 space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
+
         </div>
     )
 }
