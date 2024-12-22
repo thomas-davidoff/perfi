@@ -180,8 +180,8 @@ export function TransactionsTable() {
 
                 </Dialog>
 
-                <Button variant='outline' onClick={handleDeleteSelected}>
-                    Delete transaction
+                <Button variant='outline' onClick={handleDeleteSelected} disabled={Object.keys(selectedRows).length === 0}>
+                    Delete transaction(s)
                 </Button>
             </div>
             <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
