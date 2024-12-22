@@ -41,27 +41,30 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
 
   const { addTransaction } = useTransactionsContext();
 
+  const categories = ["uncategorized"]
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       merchant: "",
       amount: 0,
-      category: "",
+      category: categories[0],
       date: new Date(),
-      account_id: "",
+      account_id: accounts[0]?.id || "",
       description: "",
     },
   })
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Values from form:")
     console.log(values)
     try {
-      const res = await addTransaction(values);
-    } catch (err: any) {
-      console.log(err)
+      await addTransaction(values);
+    } catch (err) {
+      console.error(err)
     }
   }
+
 
   return (
     <Form {...form}>
@@ -137,11 +140,15 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder={categories[0]} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                    {categories.map(acc => (
+                      <SelectItem value={acc} key={acc}>
+                        {acc}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FieldItem>
@@ -152,15 +159,17 @@ export function CreateTransactionForm({ accounts, formId }: { accounts: Account[
             name="account_id"
             render={({ field }) => (
               <FieldItem fieldName="Account">
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select defaultValue={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder={accounts[0].name} defaultValue={accounts[0].id} />
+                      <SelectValue placeholder={accounts[0]?.name} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {accounts.map(acc => (
-                      <SelectItem value={acc.id} key={`${acc.name}_item`}>{acc.name}</SelectItem>
+                      <SelectItem value={acc.id} key={acc.id}>
+                        {acc.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
