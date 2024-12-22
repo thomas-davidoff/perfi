@@ -5,9 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
     Form,
-    FormControl,
     FormField,
-    FormItem,
     FormLabel,
     FormMessage,
     FormDescription
@@ -16,12 +14,14 @@ import { z } from "zod"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from "sonner"
 
 export function LoginForm() {
 
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('callbackUrl') || '/transactions'
 
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),
@@ -40,7 +40,7 @@ export function LoginForm() {
         })
 
         if (res?.status === 200) {
-            router.push('/transactions')
+            router.push(redirectTo)
             return
         }
 
