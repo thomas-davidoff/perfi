@@ -30,11 +30,10 @@ export function TransactionsTable() {
 
     const { deleteTransaction } = useTransactionsContext();
 
-    const handleDelete = (id: string) => {
-        if (confirm('Are you sure you want to delete this transaction?')) {
-            deleteTransaction(id);
-        }
-    }
+
+    const [createTransactionOpen, setCreateTransactionOpen] = useState(false)
+
+
 
     const handleDeleteSelected = async () => {
         const selectedTransactionIds = Object.keys(selectedRows)
@@ -123,7 +122,9 @@ export function TransactionsTable() {
     return (
         <div>
             <div className="flex py-4 justify-between">
-                <Dialog>
+                <Dialog open={createTransactionOpen} onOpenChange={(isOpen) => {
+                    setCreateTransactionOpen(isOpen)
+                }}>
                     <DialogTrigger asChild>
                         <Button variant='outline'>
                             <CirclePlus /> Create Transaction
@@ -138,7 +139,7 @@ export function TransactionsTable() {
                         </DialogHeader>
                         <CreateTransactionForm accounts={accounts} formId="create-transactions-form" />
                         <DialogFooter>
-                            <Button type="submit" form="create-transactions-form">Submit</Button>
+                            <Button type="submit" form="create-transactions-form" onClick={() => { setCreateTransactionOpen(false) }}>Submit</Button>
                         </DialogFooter>
                     </DialogContent>
 
