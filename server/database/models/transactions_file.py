@@ -22,10 +22,20 @@ class TransactionsFileImport(TimestampMixin, db.Model):
     error_log = db.Column(JSON, nullable=True)
     user = db.relationship("User", back_populates="file_imports")
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
-    status = db.Column(
+    _status = db.Column(
         Enum(TransactionsFileImportStatus, validate_strings=True),
         nullable=False,
         default=TransactionsFileImportStatus.PENDING,
     )
     processed_at = db.Column(db.DateTime, nullable=True)
     retry_count = db.Column(db.Integer, default=0, nullable=False)
+
+    @property
+    def status(self):
+        return TransactionsFileImportStatus(self._status).value
+
+    @status.setter
+    def status(self, value):
+        if isinstance(value, str):
+            value = value.upper()
+            self._status = value.upper()
