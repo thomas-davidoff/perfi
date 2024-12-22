@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Transaction } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
+import { ArrowUpDown } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -82,8 +83,27 @@ export function TransactionsTable() {
             ),
         },
         {
+            accessorKey: "id",
+            header: "Id"
+        },
+        {
             accessorKey: "date",
-            header: "Date"
+            header: ({ column }) => {
+                return (
+                    <Button
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        Date
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                )
+            },
+            sortingFn: (rowA, rowB) => {
+                const dateA = new Date(rowA.getValue<string>('date'));
+                const dateB = new Date(rowB.getValue<string>('date'));
+                return dateA.getTime() - dateB.getTime();
+            },
         },
         {
             accessorKey: "merchant",
