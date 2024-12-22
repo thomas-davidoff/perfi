@@ -29,17 +29,36 @@ import {
 import { CirclePlus } from "lucide-react"
 import { useAccounts } from "@/hooks/useAccounts"
 
-import { Dispatch, SetStateAction } from "react"
-import { TableState } from '@tanstack/react-table';
 
-export function TransactionsDataTable({ selectedRows, setSelectedRows }: { selectedRows: TableState['rowSelection'], setSelectedRows: Dispatch<SetStateAction<TableState['rowSelection']>> }) {
-    const { transactions, deleteTransaction } = useTransactionsContext();
+export function TransactionsTable() {
+
+    const { accounts } = useAccounts()
+    const [selectedRows, setSelectedRows] = useState({})
+    const { transactions } = useTransactionsContext();
+
+    const { deleteTransaction } = useTransactionsContext();
 
     const handleDelete = (id: string) => {
         if (confirm('Are you sure you want to delete this transaction?')) {
             deleteTransaction(id);
         }
     }
+
+    const handleDeleteSelected = async () => {
+        const selectedTransactionIds = Object.keys(selectedRows)
+            .filter((key) => selectedRows[key])
+            .map((key) => transactions[parseInt(key)].id);
+
+        if (
+            selectedTransactionIds.length &&
+            confirm(
+                `Are you sure you want to delete ${selectedTransactionIds.length} transaction(s)?`
+            )
+        ) {
+            selectedTransactionIds.forEach((id) => deleteTransaction(id));
+            setSelectedRows({});
+        }
+    };
 
     const columns: ColumnDef<Transaction>[] = [
         {
@@ -117,18 +136,6 @@ export function TransactionsDataTable({ selectedRows, setSelectedRows }: { selec
         },
     ]
 
-
-    return (
-        <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
-    )
-
-}
-
-export function TransactionsTable() {
-
-    const { accounts, isLoading } = useAccounts()
-    const [selectedRows, setSelectedRows] = useState({})
-
     return (
         <div>
             <div className="flex py-4 justify-between">
@@ -153,11 +160,11 @@ export function TransactionsTable() {
 
                 </Dialog>
 
-                <Button variant='outline' onClick={() => console.log('hi')}>
+                <Button variant='outline' onClick={handleDeleteSelected}>
                     Delete transaction
                 </Button>
             </div>
-            <TransactionsDataTable selectedRows={selectedRows} setSelectedRows={setSelectedRows} />
+            <DataTable columns={columns} data={transactions} rowSelection={selectedRows} setRowSelection={setSelectedRows} />
         </div>
     )
 
