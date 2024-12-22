@@ -16,9 +16,13 @@ import { z } from "zod"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { signIn } from 'next-auth/react';
-import { redirect } from 'next/dist/server/api-utils'
+import { useRouter } from 'next/navigation'
+import { toast } from "sonner"
 
 export function LoginForm() {
+
+    const router = useRouter()
+
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -35,13 +39,21 @@ export function LoginForm() {
             redirect: false
         })
 
-        if (res?.status === 401) {
-            console.log('fuck')
-        } else {
-            console.error('fuck twice')
+        if (res?.status === 200) {
+            router.push('/transactions')
+            return
         }
 
-        console.log(res)
+        if (res?.status === 401 && res.error) {
+
+            toast.error("Error", {
+                description: res.error,
+            })
+
+        } else {
+            toast.error("An unexpected error occurred.")
+            console.error('An unexpected error occurred.')
+        }
     }
 
     return (

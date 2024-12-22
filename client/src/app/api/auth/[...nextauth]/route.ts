@@ -22,7 +22,7 @@ export const authOptions = {
 
                 const data = await res.json();
                 if (!data?.access_token) {
-                    return null;
+                    throw new Error(data.msg || "Invalid username or password");
                 }
 
                 return {
