@@ -5,7 +5,7 @@ init_logger = get_logger("init")
 
 environment = os.environ["FLASK_ENV"]
 load_env(".env")  # load default env
-load_env(f".env.{environment}")
+load_env(f".env.{environment}", override=True)
 
 configuration = load_configuration(environment, init_logger)
 

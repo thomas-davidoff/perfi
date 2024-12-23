@@ -40,3 +40,10 @@ class User(TimestampMixin, db.Model):
         cascade="all, delete-orphan",
         lazy="dynamic",
     )
+
+    file_imports = db.relationship(
+        "TransactionsFileImport",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )

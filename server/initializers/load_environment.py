@@ -7,7 +7,7 @@ from config import DevelopmentConfig, TestingConfig, DefaultConfig
 ENVIRONMENTS = {"development": DevelopmentConfig, "testing": TestingConfig}
 
 
-def load_env(env_filename):
+def load_env(env_filename, override=False):
     # Get path of env file for environment
     env_dir = os.path.dirname(os.path.dirname(__file__))
     env_file = os.path.abspath(os.path.join(env_dir, env_filename))
@@ -16,7 +16,7 @@ def load_env(env_filename):
     if not os.path.exists(env_file):
         raise RuntimeError(f"Dot file {env_file} does not exist.")
 
-    load_dotenv(env_file)
+    load_dotenv(env_file, override=override)
 
 
 # get the configuration
