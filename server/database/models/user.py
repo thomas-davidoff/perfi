@@ -41,8 +41,8 @@ class User(TimestampMixin, db.Model):
         lazy="dynamic",
     )
 
-    file_imports = db.relationship(
-        "TransactionsFileImport",
+    transactions_files = db.relationship(
+        "TransactionsFile",
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="dynamic",

@@ -6,5 +6,5 @@ from .models import (
     Account,
     AccountType,
     TransactionCategory,
-    TransactionsFileImport,
+    TransactionsFile,
 )
