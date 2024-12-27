@@ -72,7 +72,7 @@ class UserService:
 
     def get_user_accounts(self, user_id) -> List[Account]:
         user = self.user_repo.get_by_id(user_id)
-        accounts = user.accounts
+        accounts = list(user.accounts)
         return accounts
 
     def get_transactions(self, user_id):
