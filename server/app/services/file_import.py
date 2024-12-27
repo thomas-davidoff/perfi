@@ -164,3 +164,6 @@ class FileImportService:
                 },
             )
             raise
+
+    def _validate_csv(self, file: FileStorage | None):
+        return self.file_service.is_csv(file)

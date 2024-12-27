@@ -42,3 +42,42 @@ class LocalFileService:
         :return: The file path.
         """
         return str(Path(self.upload_folder) / str(user_id) / filename)
+
+    def is_csv(self, file: FileStorage | None) -> bool:
+        """
+        Validates that the uploaded file is a valid CSV.
+
+        :param file: FileStorage object representing the uploaded file.
+        :return: True if the file is valid CSV, False otherwise.
+        """
+        if file is None:
+            return False
+
+        if not file.filename.lower().endswith(".csv"):
+            return False
+
+        try:
+            file.stream.seek(0)
+            raw_data = file.stream.read()
+
+            with TextIOWrapper(
+                BytesIO(raw_data), encoding="utf-8", newline=""
+            ) as text_stream:
+                sample = text_stream.read(1024)
+                text_stream.seek(0)
+
+                sniffer = csv.Sniffer()
+                dialect = sniffer.sniff(sample)
+                text_stream.seek(0)
+
+                reader = csv.reader(text_stream, dialect=dialect)
+                for _ in range(10):
+                    next(reader, None)
+
+            file.stream.seek(0)
+
+        except (csv.Error, UnicodeDecodeError, ValueError) as e:
+            print(f"CSV Validation Error: {e}")
+            return False
+
+        return True
