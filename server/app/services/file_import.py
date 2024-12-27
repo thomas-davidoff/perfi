@@ -13,6 +13,7 @@ from database import TransactionsFileImportStatus
 from app.validators import to_uuid
 from app.exceptions import ApiError
 from datetime import datetime
+import json
 
 
 class FileImportService:
@@ -31,7 +32,9 @@ class FileImportService:
         self.user_repo = user_repo
         self.user_service: UserService = UserService(user_repo)
 
-    def save_and_preview(self, file: FileStorage, user_id: str, account_id: str):
+    def save_and_preview(
+        self, file: FileStorage, user_id: str | UUID, account_id: str | UUID
+    ):
         """
         Save the file and extract a preview for user confirmation.
         """
@@ -93,12 +96,14 @@ class FileImportService:
         except Exception as e:
             raise ValueError(f"Error reading file: {e}")
 
-    def map_headers(self, file_id: str, mapped_headers: dict):
+    def map_headers(
+        self, file_id: str | UUID, mapped_headers: dict, user_id: str | UUID
+    ):
         """
         Map file headers to transaction fields and validate the mapping.
         """
-        file_id = to_uuid(file_id)
-        file_record = self.file_repo.get_by_id(file_id)
+        file_id, user_id = to_uuid(file_id), to_uuid(user_id)
+        file_record = self.file_repo.get_by_id(id=file_id, user_id=user_id)
         if not file_record:
             raise ValueError("File record not found.")
 
@@ -127,27 +132,28 @@ class FileImportService:
                 "mapped_headers": mapped_headers,
                 "status": TransactionsFileImportStatus.VALIDATED.value,
             },
+            user_id=user_id,
         )
 
-    def import_transactions(self, file_id: UUID):
+    def import_transactions(self, file_id: str | UUID, user_id: str | UUID):
         """
         Process the file and create transactions in the database.
         """
-        file_record = self.file_repo.get_by_id(file_id)
+        file_id, user_id = to_uuid(file_id), to_uuid(user_id)
+        file_record = self.file_repo.get_by_id(file_id, user_id=user_id)
         if not file_record:
-            raise ValueError("File record not found.")
-        if file_record.status != TransactionsFileImportStatus.VALIDATED.value:
-            raise ValueError("File must be validated before importing.")
+            raise ApiError("File record not found.")
+        if file_record.mapped_headers is None:
+            raise ApiError("File must be validated before importing.")
 
-        try:
-            with open(file_record.file_path, mode="r") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    # Map data to Transaction fields
+        error_log = {}
+        with open(file_record.file_path, mode="r") as f:
+            reader = csv.DictReader(f)
+            for row_num, row in enumerate(reader):
+                try:
                     mapped_data = {}
                     for header, field in file_record.mapped_headers.items():
                         value = row.get(header)
-                        # Handle type conversions
                         if field == "amount":
                             mapped_data[field] = float(value)
                         elif field == "date":
@@ -160,47 +166,61 @@ class FileImportService:
                         else:
                             mapped_data[field] = value
 
-                    # Use file's account_id for single-account imports
                     if file_record.account_id:
                         mapped_data["account_id"] = file_record.account_id
 
-                    self.transaction_repo.create(mapped_data)
+                    mapped_data["file_id"] = file_record.id
 
-            self.file_repo.update(
-                file_id, {"status": TransactionsFileImportStatus.IMPORTED.value}
-            )
-        except Exception as e:
-            self.file_repo.update(
-                file_id,
-                {
-                    "status": TransactionsFileImportStatus.FAILED.value,
-                    "error_log": str(e),
-                },
-            )
-            raise
+                    existing_transaction = self.transaction_repo.get_where(
+                        dict(
+                            file_id=file_record.id,
+                            date=mapped_data["date"],
+                            amount=mapped_data["amount"],
+                        )
+                    )
+                    if existing_transaction:
+                        print(
+                            f"skipping transaction from row {row_num} with existing ID {existing_transaction.id}"
+                        )
+                        continue
+
+                    t = self.transaction_repo.create(mapped_data)
+                    print(f"transaction imported with id {t.id}")
+                except Exception as e:
+                    print(f"appending {str(e)} to errors for row number {row_num}")
+                    error_log[row_num] = str(e)
+
+        update_data = {
+            "status": (
+                TransactionsFileImportStatus.IMPORTED.value
+                if len(error_log.keys()) == 0
+                else TransactionsFileImportStatus.FAILED.value
+            ),
+            "error_log": json.loads(json.dumps(error_log)),
+        }
+        self.file_repo.update(
+            file_id,
+            data=update_data,
+            user_id=user_id,
+        )
 
     def _validate_csv(self, file: FileStorage | None):
         return self.file_service.is_csv(file)
 
-    def list_files_for_user(self, user_id):
+    def list_files_for_user(self, user_id: str | UUID):
         user_id = to_uuid(user_id)
         user = self.user_service.get_by_id(user_id=user_id)
         return [t.compact() for t in user.transactions_files]
 
-    def get_file_metadata(self, user_id, file_id):
+    def get_file_metadata(self, user_id: str | UUID, file_id: str | UUID):
         user_id, file_id = to_uuid(user_id), to_uuid(file_id)
-        user = self.user_service.get_by_id(user_id=user_id)
-
-        if not file_id in list([f.id for f in user.transactions_files]):
-            raise ApiError(
-                f"Transaction file with id {str(file_id)} does not exist or does not belong to user."
-            )
-
-        f = self.file_repo.get_by_id(file_id)
+        f = self.file_repo.get_by_id(file_id, user_id=user_id)
         return f.to_dict()
 
 
-def create_file_import_service(upload_folder: str = "uploads") -> FileImportService:
+def create_file_import_service(
+    upload_folder: str | UUID = "uploads",
+) -> FileImportService:
     account_repo = AccountRepository()
     file_service = LocalFileService(upload_folder=upload_folder)
     transaction_repo = TransactionRepository()
