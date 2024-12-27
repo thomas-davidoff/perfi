@@ -83,6 +83,9 @@ class TransactionRepository(Repository[Transaction]):
         )
         return query.all()
 
+    def get_where(self, filter_data: dict):
+        return db.session.query(Transaction).filter_by(**filter_data).first()
+
 
 class UserRepository(Repository[User]):
     def __init__(self) -> None:
