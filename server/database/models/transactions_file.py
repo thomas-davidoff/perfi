@@ -7,11 +7,11 @@ from sqlalchemy.orm import mapped_column, Mapped
 
 
 class TransactionsFileImportStatus(enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    VALIDATED = "validated"
-    IMPORTED = "imported"
-    FAILED = "failed"
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    VALIDATED = "VALIDATED"
+    IMPORTED = "IMPORTED"
+    FAILED = "FAILED"
 
     # TODO: Remove below normalization
     # def __new__(cls, value):
@@ -51,8 +51,7 @@ class TransactionsFile(TimestampMixin, db.Model):
     @status.setter
     def status(self, value):
         if isinstance(value, str):
-            value = value.lower()
-        # normalize to lowercase, but ensure that enum members are also lowered.
+            value = value.upper()
         self._status = TransactionsFileImportStatus(value)
 
     def to_dict(self):

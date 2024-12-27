@@ -41,6 +41,39 @@ def list_files():
     return jsonify(transaction_files_service.list_files_for_user(current_user.id)), 200
 
 
+@file_import_bp.route("/<file_id>", methods=["GET"])
+@jwt_required()
+def get_file(file_id):
+    transaction_files_service = create_file_import_service(
+        current_app.config.get("UPLOAD_FOLDER")
+    )
+
+    return jsonify(
+        transaction_files_service.get_file_metadata(
+            file_id=file_id, user_id=current_user.id
+        )
+    )
+
+
+@file_import_bp.route("/map-headers/<file_id>", methods=["POST"])
+@jwt_required()
+def map_headers(file_id):
+    transaction_files_service = create_file_import_service(
+        current_app.config.get("UPLOAD_FOLDER")
+    )
+
+    mapped_headers = request.json.get("mapped_headers")
+    if not mapped_headers:
+        raise ApiError("Mapped headers are reqired")
+
+    print(mapped_headers)
+
+    transaction_files_service.map_headers(
+        file_id=file_id, mapped_headers=mapped_headers
+    )
+    return mapped_headers
+
+
 # @file_import_bp.route("/map-headers/<file_id>", methods=["POST"])
 # def map_headers(file_id):
 #     mapped_headers = request.json.get("mapped_headers")

@@ -93,10 +93,11 @@ class FileImportService:
         except Exception as e:
             raise ValueError(f"Error reading file: {e}")
 
-    def map_headers(self, file_id: UUID, mapped_headers: dict):
+    def map_headers(self, file_id: str, mapped_headers: dict):
         """
         Map file headers to transaction fields and validate the mapping.
         """
+        file_id = to_uuid(file_id)
         file_record = self.file_repo.get_by_id(file_id)
         if not file_record:
             raise ValueError("File record not found.")
@@ -112,13 +113,13 @@ class FileImportService:
             if (
                 header not in file_record.preview_data[0]
             ):  # Assuming preview data exists
-                raise ValueError(f"Header '{header}' not found in file.")
+                raise ApiError(f"Header '{header}' not found in file.")
 
         # Ensure required fields are mapped
         mapped_fields = set(mapped_headers.values())
         missing_fields = transaction_fields - mapped_fields
         if missing_fields:
-            raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+            raise ApiError(f"Missing required fields: {', '.join(missing_fields)}")
 
         self.file_repo.update(
             file_id,
@@ -185,6 +186,18 @@ class FileImportService:
         user_id = to_uuid(user_id)
         user = self.user_service.get_by_id(user_id=user_id)
         return [t.compact() for t in user.transactions_files]
+
+    def get_file_metadata(self, user_id, file_id):
+        user_id, file_id = to_uuid(user_id), to_uuid(file_id)
+        user = self.user_service.get_by_id(user_id=user_id)
+
+        if not file_id in list([f.id for f in user.transactions_files]):
+            raise ApiError(
+                f"Transaction file with id {str(file_id)} does not exist or does not belong to user."
+            )
+
+        f = self.file_repo.get_by_id(file_id)
+        return f.to_dict()
 
 
 def create_file_import_service(upload_folder: str = "uploads") -> FileImportService:
