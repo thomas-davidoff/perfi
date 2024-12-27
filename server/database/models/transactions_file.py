@@ -13,14 +13,6 @@ class TransactionsFileImportStatus(enum.Enum):
     IMPORTED = "IMPORTED"
     FAILED = "FAILED"
 
-    # TODO: Remove below normalization
-    # def __new__(cls, value):
-    #     if isinstance(value, str):
-    #         value = value.upper()
-    #     obj = object.__new__(cls)
-    #     obj._value_ = value
-    #     return obj
-
 
 class TransactionsFile(TimestampMixin, db.Model):
     __tablename__ = "transactions_files"

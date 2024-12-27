@@ -1,10 +1,9 @@
 from abc import abstractmethod, ABC
 from typing import List
-from sqlalchemy.exc import NoResultFound, IntegrityError, ArgumentError
+from sqlalchemy.exc import IntegrityError
 from app import logger
 from extensions import db
 from typing import TypeVar, Generic
-from uuid import UUID
 from app.exceptions import ResourceNotFoundError
 from app.validators import to_uuid
 

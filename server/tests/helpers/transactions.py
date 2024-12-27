@@ -1,9 +1,7 @@
-from database import Transaction, Account, TransactionCategory
+from database import Transaction, TransactionCategory
 from datetime import datetime, timedelta
 from random import randint, uniform
 from typing import Literal, List
-from extensions import db
-from .accounts import AccountFactory
 from .factory import TestFactory
 
 
@@ -60,7 +58,7 @@ class TransactionFactory(TestFactory):
             "amount": round(uniform(5, 250), 2),
             "date": random_date(),
             "merchant": "TEST MERCHANT",
-            "category": TransactionCategory.UNCATEGORIZED,
+            "category": TransactionCategory.UNCATEGORIZED.value.lower(),
             "account_id": self.account_id,
         }
 

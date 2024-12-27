@@ -3,17 +3,15 @@ from flask import Flask
 from database import Transaction
 from app.repositories import TransactionRepository
 from sqlalchemy.exc import (
-    NoResultFound,
     StatementError,
     IntegrityError,
     SAWarning,
-    ArgumentError,
 )
 from extensions import db
 from datetime import datetime
 import warnings
 import uuid
-from app.exceptions import ResourceNotFoundError
+from app.exceptions import ResourceNotFoundError, ProgrammingError
 
 transaction_repository = TransactionRepository()
 
@@ -35,7 +33,7 @@ def test_get_by_id_no_result(app: Flask):
 
 
 def test_get_by_id_not_uuid(app: Flask):
-    with pytest.raises(ArgumentError):
+    with pytest.raises(ProgrammingError):
         transaction_repository.get_by_id(1)
 
 

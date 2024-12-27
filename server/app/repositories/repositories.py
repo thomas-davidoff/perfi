@@ -1,9 +1,9 @@
 from .base import Repository
-from database import User, Transaction, Account, TransactionCategory
+from database import User, Transaction, Account
 from extensions import db
 from typing import List
 from app import logger
-from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
+from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from app.utils import StandardDate
 

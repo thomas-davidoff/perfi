@@ -1,10 +1,7 @@
-# database/seeds.py
-
 from .models import User, Transaction, Account
 from extensions import db
 import json
 import os
-import uuid
 from random import randint
 
 

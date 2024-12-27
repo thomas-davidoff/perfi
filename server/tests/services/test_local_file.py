@@ -1,4 +1,3 @@
-import os
 import pytest
 from pathlib import Path
 import csv
@@ -37,7 +36,7 @@ def test_save_file(app: Flask, tmp_csv_fp):
     with open(tmp_csv_fp, "rb") as file_stream:
         file = FileStorage(stream=file_stream, filename="test.csv")
         user_id = "12345"
-        saved_path = file_service.save_file(file, user_id)
+        saved_path = file_service.save_file(file, user_id, file_name="test.csv")
 
     print(f"Saved file path: {saved_path}")
     assert Path(saved_path).exists()

@@ -23,6 +23,8 @@ class TransactionsService:
             raise ValidationError("ID must be a valid UUID")
 
     def validate_category(self, category):
+        # coerce to uppercase for enum
+        category = category.upper()
         if category is not None:
             try:
                 category = TransactionCategory(category)

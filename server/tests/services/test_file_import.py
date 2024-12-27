@@ -11,7 +11,7 @@ from io import BytesIO
 from uuid import uuid4
 from pathlib import Path
 import tempfile
-from database import TransactionsFileImportStatus
+from database import TransactionsFileImportStatus, TransactionCategory
 
 
 MOCK_CSV_ROWS = [
@@ -84,7 +84,7 @@ def test_save_and_preview(file_import_service, mock_file, mock_account_and_user_
     )
 
     assert file_record is not None
-    assert file_record.status == "pending"
+    assert file_record.status == TransactionsFileImportStatus.PENDING.value
     assert headers == list(MOCK_CSV_ROWS[0].keys())
     assert file_record.preview_data == MOCK_CSV_ROWS
 
@@ -103,9 +103,11 @@ def test_map_headers(file_import_service, mock_file, mock_account_and_user_ids):
         "date": "date",
         "category": "category",
     }
-    file_import_service.map_headers(file_record.id, mapped_headers)
+    file_import_service.map_headers(file_record.id, mapped_headers, user_id=user_id)
 
-    updated_file = file_import_service.file_repo.get_by_id(file_record.id)
+    updated_file = file_import_service.file_repo.get_by_id(
+        file_record.id, user_id=user_id
+    )
     assert updated_file.mapped_headers == mapped_headers
     assert updated_file.status == TransactionsFileImportStatus.VALIDATED.value
 
@@ -129,13 +131,15 @@ def test_import_transactions(
         "category": "category",
     }
 
-    file_import_service.map_headers(file_record.id, mapped_headers)
+    file_import_service.map_headers(file_record.id, mapped_headers, user_id=user_id)
 
     # Step 3: Import transactions
-    file_import_service.import_transactions(file_record.id)
+    file_import_service.import_transactions(file_record.id, user_id=user_id)
 
     # Check that the file status is updated to "IMPORTED"
-    updated_file = file_import_service.file_repo.get_by_id(file_record.id)
+    updated_file = file_import_service.file_repo.get_by_id(
+        file_record.id, user_id=user_id
+    )
     assert updated_file.status == TransactionsFileImportStatus.IMPORTED.value
 
     # Verify transactions are created
@@ -145,4 +149,4 @@ def test_import_transactions(
     assert transactions[0].description == "Groceries"
     assert transactions[0].merchant == "Walmart"
     assert transactions[0].date.strftime("%Y-%m-%d") == "2024-01-01"
-    assert transactions[0].category == "groceries"
+    assert transactions[0].category == TransactionCategory.GROCERIES.value
