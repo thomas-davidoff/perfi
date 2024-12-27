@@ -10,6 +10,7 @@ from uuid import UUID
 import csv
 from app.utils import StandardDate
 from database import TransactionsFileImportStatus
+from app.validators import to_uuid
 
 
 class FileImportService:
@@ -32,10 +33,7 @@ class FileImportService:
         """
         Save the file and extract a preview for user confirmation.
         """
-        # Validate account
-        # get user accounts
-        # user_accounts = self.user_repo.get_by_id(user_id).accounts
-        # account_ids = [a.id for a in user_accounts]
+        user_id, account_id = to_uuid(user_id), to_uuid(account_id)
 
         user_accounts = self.user_service.get_user_accounts(user_id=user_id)
         if not account_id in [a.id for a in user_accounts]:
