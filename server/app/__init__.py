@@ -9,10 +9,17 @@ import traceback
 logger = get_logger("APP_LOGGER", os.getenv("LOG_LEVEL"))
 
 
-def error_respond(message, status=200, **kwargs):
+def error_respond(message: str, status=200, **kwargs):
     """
     Helper function to create a JSON response with a consistent format.
     """
+
+    if not isinstance(message, str):
+        logger.error(
+            f"Message must be str to respond with error_respond. {str(type(message))} was passed instead."
+        )
+        return jsonify({"error": "Unknown error"}), 500
+
     response_data = {"error": message}
     response_data.update(kwargs)
     return jsonify(response_data), status
@@ -27,9 +34,15 @@ def create_app(config, init_logger=None):
     init_extensions(app, init_logger)
 
     with app.app_context():
-        from app.routes import main_bp, auth_bp, transactions_bp, accounts_bp
+        from app.routes import (
+            main_bp,
+            auth_bp,
+            transactions_bp,
+            accounts_bp,
+            file_import_bp,
+        )
 
-        blueprints = [main_bp, auth_bp, transactions_bp, accounts_bp]
+        blueprints = [main_bp, auth_bp, transactions_bp, accounts_bp, file_import_bp]
 
         for bp in blueprints:
             local_prefix = bp.url_prefix or ""
