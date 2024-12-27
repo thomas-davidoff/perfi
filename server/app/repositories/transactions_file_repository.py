@@ -2,7 +2,8 @@ from app.repositories.repositories import Repository
 from uuid import UUID
 from database import TransactionsFile
 from extensions import db
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
+from app.exceptions import AlreadyExistsError
 
 
 class TransactionsFileRepository(Repository[TransactionsFile]):
@@ -25,7 +26,12 @@ class TransactionsFileRepository(Repository[TransactionsFile]):
         :param data: Dictionary containing file import details.
         :return: The created file import record.
         """
-        return super().create(data)
+        try:
+            return super().create(data)
+        except IntegrityError as e:
+            if "violates unique constraint" in str(e):
+                raise AlreadyExistsError("Transaction file already exists")
+            raise
 
     def get_by_status(self, status: str) -> list[TransactionsFile]:
         """
