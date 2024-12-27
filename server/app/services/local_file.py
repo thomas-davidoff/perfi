@@ -4,7 +4,7 @@ from werkzeug.datastructures import FileStorage
 
 
 class LocalFileService:
-    def __init__(self, upload_folder: str):
+    def __init__(self, upload_folder):
         self.upload_folder = upload_folder
 
     def save_file(self, file: FileStorage, user_id: str) -> str:
@@ -18,7 +18,10 @@ class LocalFileService:
         user_folder = Path(self.upload_folder) / str(user_id)
         user_folder.mkdir(parents=True, exist_ok=True)
         file_path = user_folder / file.filename
-        file.save(file_path)
+
+        print(f"saving to {self.upload_folder}/{file_path}")
+        with open(file_path, "wb") as f:
+            f.write(file.stream.read())  # Explicitly close file after writing
         return str(file_path)
 
     def delete_file(self, file_path: str) -> None:
