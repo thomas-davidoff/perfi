@@ -38,13 +38,15 @@ class Transaction(TimestampMixin, db.Model):
 
     @property
     def category(self):
+        if self._category is None:
+            return None
         return self._category.value
 
     @category.setter
     def category(self, value):
         if isinstance(value, str):
             value = value.lower()
-        self._category = TransactionCategory(value)
+            self._category = TransactionCategory(value)
 
     def to_dict(self):
         base_dict = super().to_dict()
