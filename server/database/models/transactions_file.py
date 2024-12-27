@@ -68,3 +68,14 @@ class TransactionsFile(TimestampMixin, db.Model):
             }
         )
         return base_dict
+
+    def compact(self):
+        base_dict = super().to_dict()
+        base_dict.update(
+            {
+                "filename": self.filename,
+                "file_path": self.file_path,
+                "status": self.status,
+            }
+        )
+        return base_dict

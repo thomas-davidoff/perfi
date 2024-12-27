@@ -51,7 +51,9 @@ class FileImportService:
             )
 
         today = StandardDate(datetime.now()).to_string()
-        file_name = file.filename.replace(" ", "_") + f"_{today}"
+        file_name = (
+            f"{today}_" + file.filename.replace(" ", "_").replace("-", "_")
+        ).lower()
 
         # Save the file
         # TODO: Wrap save and repo create blocks in a rollback mechanism so a file is not
@@ -178,6 +180,11 @@ class FileImportService:
 
     def _validate_csv(self, file: FileStorage | None):
         return self.file_service.is_csv(file)
+
+    def list_files_for_user(self, user_id):
+        user_id = to_uuid(user_id)
+        user = self.user_service.get_by_id(user_id=user_id)
+        return [t.compact() for t in user.transactions_files]
 
 
 def create_file_import_service(upload_folder: str = "uploads") -> FileImportService:

@@ -7,7 +7,7 @@ file_import_bp = Blueprint("file_import", __name__, url_prefix="/files")
 file_service = create_file_import_service(current_app.config.get("UPLOAD_FOLDER"))
 
 
-@file_import_bp.route("/upload", methods=["POST", "GET"])
+@file_import_bp.route("/upload", methods=["POST"])
 @jwt_required()
 def upload_file():
 
@@ -29,6 +29,16 @@ def upload_file():
             "preview": file_record.preview_data,
         }
     )
+
+
+@file_import_bp.route("/", methods=["GET"])
+@jwt_required()
+def list_files():
+    transaction_files_service = create_file_import_service(
+        current_app.config.get("UPLOAD_FOLDER")
+    )
+
+    return jsonify(transaction_files_service.list_files_for_user(current_user.id)), 200
 
 
 # @file_import_bp.route("/map-headers/<file_id>", methods=["POST"])
