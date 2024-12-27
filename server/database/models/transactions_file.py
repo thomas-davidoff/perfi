@@ -38,11 +38,14 @@ class TransactionsFile(TimestampMixin, db.Model):
     preview_data = db.Column(JSON, nullable=True)
     mapped_headers = db.Column(JSON, nullable=True)
     error_log = db.Column(JSON, nullable=True)
-    user = db.relationship("User", back_populates="transactions_files")
 
     account_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), db.ForeignKey("accounts.id"), nullable=False
     )
+
+    # Relationships
+    user = db.relationship("User", back_populates="transactions_files")
+    transactions = db.relationship("Transaction", back_populates="file", lazy="dynamic")
 
     @property
     def status(self):
@@ -64,6 +67,7 @@ class TransactionsFile(TimestampMixin, db.Model):
                 "status": self.status,
                 "mapped_headers": self.mapped_headers,
                 "preview": self.preview_data,
+                "errors": self.error_log,
             }
         )
         return base_dict

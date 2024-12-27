@@ -3,17 +3,18 @@ from sqlalchemy import Float, String, DateTime, Enum, func
 from .timestamp_mixin import TimestampMixin
 import enum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class TransactionCategory(enum.Enum):
-    GROCERIES = "groceries"
-    UTILITIES = "utilities"
-    ENTERTAINMENT = "entertainment"
-    TRANSPORTATION = "transportation"
-    INCOME = "income"
-    OTHER = "other"
-    HOUSING = "housing"
-    UNCATEGORIZED = "uncategorized"
+    GROCERIES = "GROCERIES"
+    UTILITIES = "UTILITIES"
+    ENTERTAINMENT = "ENTERTAINMENT"
+    TRANSPORTATION = "TRANSPORTATION"
+    INCOME = "INCOME"
+    OTHER = "OTHER"
+    HOUSING = "HOUSING"
+    UNCATEGORIZED = "UNCATEGORIZED"
 
 
 class Transaction(TimestampMixin, db.Model):
@@ -30,10 +31,15 @@ class Transaction(TimestampMixin, db.Model):
         default=TransactionCategory.UNCATEGORIZED,
     )
 
-    # many-to-one with accounts
+    # Relationships
+    file = db.relationship("TransactionsFile", back_populates="transactions")
     account = db.relationship("Account", back_populates="transactions")
     account_id = db.Column(
         UUID(as_uuid=True), db.ForeignKey("accounts.id"), nullable=False
+    )
+
+    file_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), db.ForeignKey("transactions_files.id"), nullable=True
     )
 
     @property
@@ -45,7 +51,7 @@ class Transaction(TimestampMixin, db.Model):
     @category.setter
     def category(self, value):
         if isinstance(value, str):
-            value = value.lower()
+            value = value.upper()
             self._category = TransactionCategory(value)
 
     def to_dict(self):
