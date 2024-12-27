@@ -9,7 +9,7 @@ from app.services import UserService, LocalFileService
 from uuid import UUID
 import csv
 from app.utils import StandardDate
-from database import TransactionsFileImportStatus
+from database import TransactionsFileImportStatus, TransactionCategory
 from app.validators import to_uuid
 from app.exceptions import ApiError
 from datetime import datetime
@@ -139,12 +139,24 @@ class FileImportService:
         """
         Process the file and create transactions in the database.
         """
+
+        results = {
+            "imported_transactions": 0,
+            "skipped_transactions": 0,
+            "errors": [],
+            "warnings": [],
+        }
+
         file_id, user_id = to_uuid(file_id), to_uuid(user_id)
         file_record = self.file_repo.get_by_id(file_id, user_id=user_id)
         if not file_record:
             raise ApiError("File record not found.")
         if file_record.mapped_headers is None:
             raise ApiError("File must be validated before importing.")
+        if file_record.status == TransactionsFileImportStatus.IMPORTED.value:
+            raise ApiError(
+                "Transaction file has already been successfully imported.", code=400
+            )
 
         error_log = {}
         with open(file_record.file_path, mode="r") as f:
@@ -171,6 +183,21 @@ class FileImportService:
 
                     mapped_data["file_id"] = file_record.id
 
+                    # coerce category if imported category is not recognized
+                    provided_category = mapped_data.get("category")
+                    available_categories = [c.value for c in TransactionCategory]
+
+                    if provided_category.upper() not in available_categories:
+                        print(
+                            f"WARNING: category {provided_category} is not a transaction category."
+                        )
+                        results["warnings"].append(
+                            f"Coercing category to default for row num {row_num} because provided category {provided_category} does not exist."
+                        )
+                        mapped_data[
+                            "category"
+                        ] = TransactionCategory.UNCATEGORIZED.value
+
                     existing_transaction = self.transaction_repo.get_where(
                         dict(
                             file_id=file_record.id,
@@ -182,13 +209,20 @@ class FileImportService:
                         print(
                             f"skipping transaction from row {row_num} with existing ID {existing_transaction.id}"
                         )
+                        results["skipped_transactions"] += 1
+                        results["warnings"].append(
+                            f"Skipping transaction with ID {existing_transaction.id} because it already exists."
+                        )
                         continue
 
                     t = self.transaction_repo.create(mapped_data)
+                    results["imported_transactions"] += 1
                     print(f"transaction imported with id {t.id}")
                 except Exception as e:
-                    print(f"appending {str(e)} to errors for row number {row_num}")
                     error_log[row_num] = str(e)
+                    results["errors"].append(
+                        f"Error while handling row {row_num} in file: {str(e)}"
+                    )
 
         update_data = {
             "status": (
@@ -203,6 +237,7 @@ class FileImportService:
             data=update_data,
             user_id=user_id,
         )
+        return results
 
     def _validate_csv(self, file: FileStorage | None):
         return self.file_service.is_csv(file)

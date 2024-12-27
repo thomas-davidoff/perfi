@@ -25,16 +25,7 @@ class TransactionRepository(Repository[Transaction]):
 
     def create(self, data: dict) -> Transaction:
         """Creates a valid transaction."""
-
-        data_to_create = data
-
-        provided_category = data.get("category").upper()
-        if not provided_category in [c.value for c in TransactionCategory]:
-            print(
-                f"WARNING: category {provided_category} is not a transaction category."
-            )
-            data_to_create["category"] = TransactionCategory.UNCATEGORIZED.value
-        return super().create(data=data_to_create)
+        return super().create(data=data)
 
     def get_all(self):
         """Gets all transactions"""
