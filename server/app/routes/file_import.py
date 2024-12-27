@@ -69,22 +69,18 @@ def map_headers(file_id):
     print(mapped_headers)
 
     transaction_files_service.map_headers(
-        file_id=file_id, mapped_headers=mapped_headers
+        file_id=file_id, mapped_headers=mapped_headers, user_id=current_user.id
     )
     return mapped_headers
 
 
-# @file_import_bp.route("/map-headers/<file_id>", methods=["POST"])
-# def map_headers(file_id):
-#     mapped_headers = request.json.get("mapped_headers")
-#     if not mapped_headers:
-#         return jsonify({"error": "Mapped headers are required"}), 400
-
-#     file_service.map_headers(file_id, mapped_headers)
-#     return jsonify({"message": "Headers mapped successfully"})
-
-
-# @file_import_bp.route("/import/<file_id>", methods=["POST"])
-# def import_file(file_id):
-#     file_service.import_file(file_id)
-#     return jsonify({"message": "File imported successfully"})
+@file_import_bp.route("/import/<file_id>", methods=["POST"])
+@jwt_required()
+def import_file(file_id):
+    transaction_files_service = create_file_import_service(
+        current_app.config.get("UPLOAD_FOLDER")
+    )
+    transaction_files_service.import_transactions(
+        file_id=file_id, user_id=current_user.id
+    )
+    return jsonify({"message": "File imported successfully"})
