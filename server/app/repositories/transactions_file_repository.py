@@ -10,14 +10,19 @@ class TransactionsFileRepository(Repository[TransactionsFile]):
     def __init__(self) -> None:
         super().__init__(entity_name="transactions_file_import", model=TransactionsFile)
 
-    def get_by_id(self, id: UUID) -> TransactionsFile | None:
+    def get_by_id(self, id: UUID, user_id: UUID) -> TransactionsFile | None:
         """
         Get a file import record by its ID.
 
         :param id: The UUID of the file import record.
         :return: The file import record or None if not found.
         """
-        return super().get_by_id(id)
+        entity = (
+            db.session.query(TransactionsFile)
+            .filter(TransactionsFile.id == id, TransactionsFile.user_id == user_id)
+            .one_or_none()
+        )
+        return entity
 
     def create(self, data: dict) -> TransactionsFile:
         """
@@ -64,8 +69,15 @@ class TransactionsFileRepository(Repository[TransactionsFile]):
     def bulk_delete(self, ids):
         return super().bulk_delete(ids)
 
-    def update(self, id, data):
-        return super().update(id, data)
+    def update(self, id: UUID, data: dict, user_id: UUID):
+        """Updates an existing transaction file in the database."""
+        file = self.get_by_id(id, user_id=user_id)
+        if file is None:
+            raise NoResultFound(f"{self.entity_name} with ID {id} does not exist.")
+        for key, value in data.items():
+            setattr(file, key, value)
+        db.session.commit()
+        return file
 
     def get_by_status(self, status: str):
         try:
