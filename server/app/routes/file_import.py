@@ -80,7 +80,37 @@ def import_file(file_id):
     transaction_files_service = create_file_import_service(
         current_app.config.get("UPLOAD_FOLDER")
     )
-    transaction_files_service.import_transactions(
+    results = transaction_files_service.import_transactions(
         file_id=file_id, user_id=current_user.id
     )
-    return jsonify({"message": "File imported successfully"})
+
+    if results["errors"]:
+        return (
+            jsonify(
+                {
+                    "status": "fail",
+                    "message": "File import did not finish successfully",
+                    "data": {
+                        "num_imported": results["imported_transactions"],
+                        "num_skipped": results["skipped_transactions"],
+                    },
+                    "warnings": results["warnings"],
+                    "errors": results["errors"],
+                }
+            ),
+            400,
+        )
+    else:
+        return (
+            jsonify(
+                {
+                    "message": "File imported successfully",
+                    "data": {
+                        "num_imported": results["imported_transactions"],
+                        "num_skipped": results["skipped_transactions"],
+                    },
+                    "warnings": results["warnings"],
+                }
+            ),
+            201,
+        )
