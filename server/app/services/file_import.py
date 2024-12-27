@@ -5,18 +5,20 @@ from app.repositories import (
     AccountRepository,
     UserRepository,
 )
-from app.services import UserService
+from app.services import UserService, LocalFileService
 from uuid import UUID
 import csv
 from app.utils import StandardDate
 from database import TransactionsFileImportStatus
 from app.validators import to_uuid
+from app.exceptions import ApiError
+from datetime import datetime
 
 
 class FileImportService:
     def __init__(
         self,
-        file_service,
+        file_service: LocalFileService,
         file_repo: TransactionsFileRepository,
         transaction_repo: TransactionRepository,
         account_repo: AccountRepository,
@@ -29,34 +31,45 @@ class FileImportService:
         self.user_repo = user_repo
         self.user_service: UserService = UserService(user_repo)
 
-    def save_and_preview(self, file: FileStorage, user_id: str, account_id: UUID):
+    def save_and_preview(self, file: FileStorage, user_id: str, account_id: str):
         """
         Save the file and extract a preview for user confirmation.
         """
+
         user_id, account_id = to_uuid(user_id), to_uuid(account_id)
+
+        # validate the file as an accepted type (csv)
+        file_is_valid = self._validate_csv(file)
+
+        if not file_is_valid:
+            raise ApiError("Invalid file format. CSV required.")
 
         user_accounts = self.user_service.get_user_accounts(user_id=user_id)
         if not account_id in [a.id for a in user_accounts]:
-            raise ValueError(
-                f"Invalid account ID: Account with id {account_id} does not belong to user."
+            raise ApiError(
+                f"Invalid account ID: Account with id {account_id} does not exist, or does not belong to user."
             )
 
+        today = StandardDate(datetime.now()).to_string()
+        file_name = file.filename.replace(" ", "_") + f"_{today}"
+
         # Save the file
-        file_path = self.file_service.save_file(file, user_id)
+        # TODO: Wrap save and repo create blocks in a rollback mechanism so a file is not
+        # saved if it cannot also be added to the DB
+        file_path = self.file_service.save_file(file, user_id, file_name=file_name)
         try:
             preview_data, headers = self._extract_preview(file_path)
         except ValueError as e:
             raise ValueError(f"File validation error: {e}")
 
-        # Save file metadata with account association
         file_record = self.file_repo.create(
             {
-                "filename": file.filename,
+                "filename": file_name,
                 "file_path": file_path,
                 "user_id": user_id,
                 "status": TransactionsFileImportStatus.PENDING.value,
                 "preview_data": preview_data,
-                "account_id": account_id,  # Optional for single-account imports
+                "account_id": account_id,
             }
         )
         return file_record, headers
@@ -72,7 +85,7 @@ class FileImportService:
                     raise ValueError("File has no headers.")
                 headers = reader.fieldnames
                 preview_data = [
-                    row for _, row in zip(range(10), reader)
+                    row for _, row in zip(range(5), reader)
                 ]  # First 10 rows
             return preview_data, headers
         except Exception as e:
@@ -165,3 +178,19 @@ class FileImportService:
 
     def _validate_csv(self, file: FileStorage | None):
         return self.file_service.is_csv(file)
+
+
+def create_file_import_service(upload_folder: str = "uploads") -> FileImportService:
+    account_repo = AccountRepository()
+    file_service = LocalFileService(upload_folder=upload_folder)
+    transaction_repo = TransactionRepository()
+    transaction_file_repo = TransactionsFileRepository()
+    account_repo = AccountRepository()
+    user_repo = UserRepository()
+    return FileImportService(
+        file_service=file_service,
+        transaction_repo=transaction_repo,
+        file_repo=transaction_file_repo,
+        account_repo=account_repo,
+        user_repo=user_repo,
+    )

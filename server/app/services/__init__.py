@@ -5,4 +5,4 @@ from .transactions import (
     create_transactions_service,
 )
 from .local_file import LocalFileService
-from .file_import import FileImportService
+from .file_import import FileImportService, create_file_import_service

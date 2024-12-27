@@ -1,13 +1,16 @@
 import os
 from pathlib import Path
 from werkzeug.datastructures import FileStorage
+import csv
+from io import TextIOWrapper, BytesIO
+import shutil
 
 
 class LocalFileService:
     def __init__(self, upload_folder):
         self.upload_folder = upload_folder
 
-    def save_file(self, file: FileStorage, user_id: str) -> str:
+    def save_file(self, file: FileStorage, user_id: str, file_name: str) -> str:
         """
         Save the file to the local file system under a user-specific directory.
 
@@ -15,13 +18,15 @@ class LocalFileService:
         :param user_id: The ID of the user uploading the file.
         :return: The file path where the file is stored.
         """
+
         user_folder = Path(self.upload_folder) / str(user_id)
         user_folder.mkdir(parents=True, exist_ok=True)
-        file_path = user_folder / file.filename
 
-        print(f"saving to {self.upload_folder}/{file_path}")
+        file_path = user_folder / file_name
+
+        print(f"saving to {file_path}")
         with open(file_path, "wb") as f:
-            f.write(file.stream.read())  # Explicitly close file after writing
+            shutil.copyfileobj(file.stream, f)
         return str(file_path)
 
     def delete_file(self, file_path: str) -> None:
