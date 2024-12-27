@@ -46,12 +46,13 @@ class TransactionsFile(TimestampMixin, db.Model):
 
     @property
     def status(self):
-        return self._status.value.upper()
+        return self._status.value
 
     @status.setter
     def status(self, value):
         if isinstance(value, str):
-            value = value.upper()
+            value = value.lower()
+        # normalize to lowercase, but ensure that enum members are also lowered.
         self._status = TransactionsFileImportStatus(value)
 
     def to_dict(self):

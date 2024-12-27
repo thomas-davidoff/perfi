@@ -54,7 +54,7 @@ class Transaction(TimestampMixin, db.Model):
                 "description": self.description,
                 "merchant": self.merchant,
                 "date": self.date.strftime("%m-%d-%Y"),
-                "category": self.category.value,
+                "category": self.category,
                 "account": self.account.compact(),
             }
         )

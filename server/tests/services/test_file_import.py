@@ -11,6 +11,7 @@ from io import BytesIO
 from uuid import uuid4
 from pathlib import Path
 import tempfile
+from database import TransactionsFileImportStatus
 
 
 MOCK_CSV_ROWS = [
@@ -83,7 +84,7 @@ def test_save_and_preview(file_import_service, mock_file, mock_account_and_user_
     )
 
     assert file_record is not None
-    assert file_record.status == "PENDING"
+    assert file_record.status == "pending"
     assert headers == list(MOCK_CSV_ROWS[0].keys())
     assert file_record.preview_data == MOCK_CSV_ROWS
 
@@ -106,7 +107,7 @@ def test_map_headers(file_import_service, mock_file, mock_account_and_user_ids):
 
     updated_file = file_import_service.file_repo.get_by_id(file_record.id)
     assert updated_file.mapped_headers == mapped_headers
-    assert updated_file.status == "VALIDATED"
+    assert updated_file.status == TransactionsFileImportStatus.VALIDATED.value
 
 
 def test_import_transactions(
@@ -135,7 +136,7 @@ def test_import_transactions(
 
     # Check that the file status is updated to "IMPORTED"
     updated_file = file_import_service.file_repo.get_by_id(file_record.id)
-    assert updated_file.status == "IMPORTED"
+    assert updated_file.status == TransactionsFileImportStatus.IMPORTED.value
 
     # Verify transactions are created
     transactions = file_import_service.transaction_repo.get_all()

@@ -9,6 +9,7 @@ from app.services import UserService
 from uuid import UUID
 import csv
 from app.utils import StandardDate
+from database import TransactionsFileImportStatus
 
 
 class FileImportService:
@@ -55,7 +56,7 @@ class FileImportService:
                 "filename": file.filename,
                 "file_path": file_path,
                 "user_id": user_id,
-                "status": "PENDING",
+                "status": TransactionsFileImportStatus.PENDING.value,
                 "preview_data": preview_data,
                 "account_id": account_id,  # Optional for single-account imports
             }
@@ -107,7 +108,11 @@ class FileImportService:
             raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
 
         self.file_repo.update(
-            file_id, {"mapped_headers": mapped_headers, "status": "VALIDATED"}
+            file_id,
+            {
+                "mapped_headers": mapped_headers,
+                "status": TransactionsFileImportStatus.VALIDATED.value,
+            },
         )
 
     def import_transactions(self, file_id: UUID):
@@ -117,7 +122,7 @@ class FileImportService:
         file_record = self.file_repo.get_by_id(file_id)
         if not file_record:
             raise ValueError("File record not found.")
-        if file_record.status != "VALIDATED":
+        if file_record.status != TransactionsFileImportStatus.VALIDATED.value:
             raise ValueError("File must be validated before importing.")
 
         try:
@@ -147,7 +152,15 @@ class FileImportService:
 
                     self.transaction_repo.create(mapped_data)
 
-            self.file_repo.update(file_id, {"status": "IMPORTED"})
+            self.file_repo.update(
+                file_id, {"status": TransactionsFileImportStatus.IMPORTED.value}
+            )
         except Exception as e:
-            self.file_repo.update(file_id, {"status": "FAILED", "error_log": str(e)})
+            self.file_repo.update(
+                file_id,
+                {
+                    "status": TransactionsFileImportStatus.FAILED.value,
+                    "error_log": str(e),
+                },
+            )
             raise

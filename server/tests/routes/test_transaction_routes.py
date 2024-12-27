@@ -21,10 +21,13 @@ def test_get_all_transactions(
         headers=auth_headers,
     )
     transactions = r.json
+
     assert isinstance(transactions, list)
     assert len(transactions) == 10
     assert all([isinstance(t, dict) for t in transactions])
-    assert all([t.get("account_id") in account_id_list for t in transactions])
+    assert all(
+        [t.get("account", {}).get("id") in account_id_list for t in transactions]
+    )
 
 
 def test_create_transaction_success(client: FlaskClient, auth_headers, account_factory):
