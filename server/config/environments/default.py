@@ -45,6 +45,6 @@ class DefaultConfig:
             Path.joinpath(Path.cwd(), Path(uploads_folder))
         )
         # create the uploads folder
-        Path.mkdir(uploads_folder_absolute, mode=500, exist_ok=True)
+        Path.mkdir(uploads_folder_absolute, exist_ok=True)
 
         self.UPLOAD_FOLDER = uploads_folder_absolute
