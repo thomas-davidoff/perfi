@@ -132,6 +132,7 @@ def test_whoami_authorization_success(client: FlaskClient, user_factory):
         "id": str(u.id),
         "username": u.username,
         "created_at": u.created_at.strftime("%a, %d %b %Y %H:%M:%S GMT"),
+        "updated_at": u.updated_at.strftime("%a, %d %b %Y %H:%M:%S GMT"),
     }
 
 

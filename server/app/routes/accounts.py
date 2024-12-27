@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import current_user, jwt_required
 from app.services import create_user_service, create_accounts_service
-from database import Account
 
 accounts_bp = Blueprint("accounts", __name__, url_prefix="/accounts")
 

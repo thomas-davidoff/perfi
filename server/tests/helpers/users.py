@@ -1,8 +1,5 @@
 from database import User
-from datetime import datetime, timedelta
-from random import randint, uniform
 from typing import Literal, List
-from extensions import db
 import string
 import random
 import os

@@ -3,7 +3,7 @@ from database import User, Transaction, Account
 from extensions import db
 from typing import List
 from app import logger
-from sqlalchemy.exc import IntegrityError, NoResultFound, IdentifierError
+from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from app.utils import StandardDate
 
@@ -82,6 +82,9 @@ class TransactionRepository(Repository[Transaction]):
             .filter(Account.user_id == user_id)
         )
         return query.all()
+
+    def get_where(self, filter_data: dict):
+        return db.session.query(Transaction).filter_by(**filter_data).first()
 
 
 class UserRepository(Repository[User]):

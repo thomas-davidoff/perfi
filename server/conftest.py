@@ -1,5 +1,4 @@
 import pytest
-from flask.testing import FlaskClient
 import os
 from initializers import load_env, load_configuration, get_logger
 from tests.helpers import TransactionFactory, AccountFactory, UserFactory
@@ -9,6 +8,7 @@ import time
 import docker
 import uuid
 from database import Account, User
+from flask import Flask, testing
 
 environment = "testing"
 
@@ -32,16 +32,16 @@ def is_postgres_available(db_config):
                 cur.execute("SELECT 1")
         return True
     except psycopg.OperationalError as e:
-        print(f"OperationalError: {e}")
+        # print(f"OperationalError: {e}")
         return False
 
 
 def pytest_configure():
     load_env(f".env")
-    load_env(f".env.{environment}")
+    load_env(f".env.{environment}", override=True)
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def config(postgresql_container):
     environment = "testing"
 
@@ -159,7 +159,7 @@ def db_session():
 
 
 @pytest.fixture()
-def client(app) -> FlaskClient:
+def client(app) -> testing.FlaskClient:
     return app.test_client()
 
 
@@ -176,7 +176,7 @@ def user_factory(db_session):
 
 
 @pytest.fixture
-def account_factory(valid_user: User, db_session):
+def account_factory(app: Flask, valid_user: User, db_session):
     return AccountFactory(db_session, user=valid_user)
 
 

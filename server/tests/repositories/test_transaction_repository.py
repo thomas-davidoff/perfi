@@ -3,17 +3,15 @@ from flask import Flask
 from database import Transaction
 from app.repositories import TransactionRepository
 from sqlalchemy.exc import (
-    NoResultFound,
     StatementError,
     IntegrityError,
     SAWarning,
-    ArgumentError,
 )
 from extensions import db
 from datetime import datetime
 import warnings
 import uuid
-from app.exceptions import ResourceNotFoundError
+from app.exceptions import ResourceNotFoundError, ProgrammingError
 
 transaction_repository = TransactionRepository()
 
@@ -35,7 +33,7 @@ def test_get_by_id_no_result(app: Flask):
 
 
 def test_get_by_id_not_uuid(app: Flask):
-    with pytest.raises(ArgumentError):
+    with pytest.raises(ProgrammingError):
         transaction_repository.get_by_id(1)
 
 
@@ -50,8 +48,12 @@ def test_create_success(app: Flask, transaction_factory):
 def test_create_invalid_category(app: Flask, transaction_factory):
     # creates a valid transaction
     transaction = transaction_factory.get(variant="invalid_category")
-    with pytest.raises(StatementError):
+    failed_category = transaction.get("category")
+    with pytest.raises(ValueError) as e:
         t = transaction_repository.create(transaction)
+        assert (
+            e == f"ValueError: '{failed_category}' is not a valid TransactionCategory"
+        )
 
 
 def test_create_invalid_date(app: Flask, transaction_factory):
@@ -216,11 +218,14 @@ def test_update_success(app: Flask, transaction_factory):
 
 def test_update_invalid_category(app: Flask, transaction_factory):
     transaction = transaction_factory.create("valid")
+
+    bad_category = "NOT A REAL_CATEGORY"
     # update the amount to 200
-    with pytest.raises(StatementError):
+    with pytest.raises(ValueError) as e:
         updated = transaction_repository.update(
-            transaction.id, {"category": "NOT A REAL CATEGORY"}
+            transaction.id, {"category": bad_category}
         )
+        assert e == f"'{bad_category.lower()}' is not a valid TransactionCategory"
 
 
 def test_update_non_existent(app: Flask):

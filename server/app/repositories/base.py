@@ -1,11 +1,11 @@
 from abc import abstractmethod, ABC
 from typing import List
-from sqlalchemy.exc import NoResultFound, IntegrityError, ArgumentError
+from sqlalchemy.exc import IntegrityError
 from app import logger
 from extensions import db
 from typing import TypeVar, Generic
-from uuid import UUID
 from app.exceptions import ResourceNotFoundError
+from app.validators import to_uuid
 
 
 T = TypeVar("T")
@@ -43,7 +43,7 @@ class Repository(ABC, Generic[T]):
         :return entity:
             entity instance or None
         """
-        uuid = self._to_uuid(id)
+        uuid = to_uuid(id)
         entity = (
             db.session.query(self.model).filter(self.model.id == uuid).one_or_none()
         )
@@ -56,7 +56,7 @@ class Repository(ABC, Generic[T]):
 
     def delete(self, id: int) -> int:
         f"""Deletes an entity by ID"""
-        uuid = self._to_uuid(id)
+        uuid = to_uuid(id)
         instance = self.get_by_id(uuid)
         if instance:
             db.session.delete(instance)
@@ -73,7 +73,7 @@ class Repository(ABC, Generic[T]):
     @abstractmethod
     def update(self, id: int, data: dict) -> T:
         """Updates an existing entity in the database."""
-        uuid = self._to_uuid(id)
+        uuid = to_uuid(id)
         user = self.get_by_id(uuid)
         if user is None:
             raise ResourceNotFoundError(
@@ -83,14 +83,3 @@ class Repository(ABC, Generic[T]):
             setattr(user, key, value)
         db.session.commit()
         return user
-
-    def _to_uuid(self, id):
-        if isinstance(id, UUID):
-            return id
-        elif isinstance(id, str):
-            try:
-                return UUID(id)
-            except (TypeError, ValueError):
-                raise ArgumentError(f"id must be a valid uuid. You passed {id}")
-        else:
-            raise ArgumentError(f"id must be a valid uuid. You passed {type(id)}")

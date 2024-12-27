@@ -16,3 +16,7 @@ class InvalidEmailError(ValidationError):
 
 class UserAlreadyExistsError(ValidationError):
     msg = "User already exists"
+
+
+class AlreadyExistsError(ValidationError):
+    msg = "Resource already exists"

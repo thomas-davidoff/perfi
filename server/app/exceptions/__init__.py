@@ -3,6 +3,7 @@ from .validation import (
     InvalidEmailError,
     PasswordTooSimpleError,
     ValidationError,
+    AlreadyExistsError,
 )
 
 from .base import CustomException
@@ -15,3 +16,6 @@ from .user_error import (
 )
 
 from .not_found import ResourceNotFoundError
+
+from .programming_error import ProgrammingError
+from .api_error import ApiError

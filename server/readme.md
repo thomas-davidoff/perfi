@@ -26,3 +26,10 @@ Run the hooks when adding:
 
 Using flask jwt
 add JWT_SECRET_KEY to env file
+
+
+
+### File tracking
+During local development, you can specify where user uploads will go by setting `UPLOAD_FOLDER` in your env file. If not provided, it will default to 'uploads`.
+
+Add the uploads folder to .gitignore if you change it.

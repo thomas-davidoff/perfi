@@ -1,6 +1,7 @@
 import os
 from urllib.parse import quote_plus as url_quote_plus
 from datetime import timedelta
+from pathlib import Path
 
 
 class DefaultConfig:
@@ -38,3 +39,12 @@ class DefaultConfig:
         self.JWT_REFRESH_TOKEN_EXPIRES = timedelta(
             seconds=int(os.environ["JWT_REFRESH_TOKEN_EXPIRES"])
         )
+
+        uploads_folder = os.environ.get("UPLOAD_FOLDER", "uploads")
+        uploads_folder_absolute = Path.absolute(
+            Path.joinpath(Path.cwd(), Path(uploads_folder))
+        )
+        # create the uploads folder
+        Path.mkdir(uploads_folder_absolute, exist_ok=True)
+
+        self.UPLOAD_FOLDER = uploads_folder_absolute

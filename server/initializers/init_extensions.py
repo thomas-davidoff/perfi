@@ -1,5 +1,4 @@
 from extensions import db, bcrypt, migrate, jwt
-import os
 
 
 def init_extensions(app, logger):

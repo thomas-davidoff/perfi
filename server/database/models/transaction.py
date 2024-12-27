@@ -3,18 +3,18 @@ from sqlalchemy import Float, String, DateTime, Enum, func
 from .timestamp_mixin import TimestampMixin
 import enum
 from sqlalchemy.dialects.postgresql import UUID
-import uuid
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class TransactionCategory(enum.Enum):
-    GROCERIES = "groceries"
-    UTILITIES = "utilities"
-    ENTERTAINMENT = "entertainment"
-    TRANSPORTATION = "transportation"
-    INCOME = "income"
-    OTHER = "other"
-    HOUSING = "housing"
-    UNCATEGORIZED = "uncategorized"
+    GROCERIES = "GROCERIES"
+    UTILITIES = "UTILITIES"
+    ENTERTAINMENT = "ENTERTAINMENT"
+    TRANSPORTATION = "TRANSPORTATION"
+    INCOME = "INCOME"
+    OTHER = "OTHER"
+    HOUSING = "HOUSING"
+    UNCATEGORIZED = "UNCATEGORIZED"
 
 
 class Transaction(TimestampMixin, db.Model):
@@ -25,18 +25,34 @@ class Transaction(TimestampMixin, db.Model):
     description = db.Column(String(255), nullable=True)
     merchant = db.Column(String(255), nullable=False)
     date = db.Column(DateTime, default=func.now(), nullable=False)
-    category = db.Column(
+    _category = db.Column(
         Enum(TransactionCategory, validate_strings=True),
         nullable=True,
         default=TransactionCategory.UNCATEGORIZED,
     )
 
-    # relationships
+    # Relationships
+    file = db.relationship("TransactionsFile", back_populates="transactions")
     account = db.relationship("Account", back_populates="transactions")
-
     account_id = db.Column(
         UUID(as_uuid=True), db.ForeignKey("accounts.id"), nullable=False
     )
+
+    file_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), db.ForeignKey("transactions_files.id"), nullable=True
+    )
+
+    @property
+    def category(self):
+        if self._category is None:
+            return None
+        return self._category.value
+
+    @category.setter
+    def category(self, value):
+        if isinstance(value, str):
+            value = value.upper()
+            self._category = TransactionCategory(value)
 
     def to_dict(self):
         base_dict = super().to_dict()
@@ -46,7 +62,7 @@ class Transaction(TimestampMixin, db.Model):
                 "description": self.description,
                 "merchant": self.merchant,
                 "date": self.date.strftime("%m-%d-%Y"),
-                "category": self.category.value,
+                "category": self.category,
                 "account": self.account.compact(),
             }
         )

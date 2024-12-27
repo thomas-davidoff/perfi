@@ -3,17 +3,10 @@ from flask import Flask
 from database import Account
 from app.repositories import AccountRepository
 from sqlalchemy.exc import (
-    NoResultFound,
-    IdentifierError,
     StatementError,
     IntegrityError,
-    SAWarning,
 )
-from extensions import db
-from datetime import datetime
-import warnings
 import uuid
-from app.exceptions import ResourceNotFoundError
 
 account_repository = AccountRepository()
 
@@ -49,9 +42,10 @@ def test_create_invalid_category(app: Flask, account_factory):
     """
     it fails to create an account of an invalid type.
     """
-    # creates a valid transaction
+    # creates an invalid transaction
     transaction = account_factory.get(variant="invalid_account_type")
     with pytest.raises(StatementError):
+        # failed enum validation raises LookupError > KeyError > StatmentError
         t = account_repository.create(transaction)
 
 
