@@ -4,11 +4,14 @@ disable_existing_loggers: True
 
 formatters:
   basic:
-    format: '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    format: '[%(asctime)s] - %(name)s - %(levelname)s - %(name)s - %(message)s'
     datefmt: '%Y-%m-%d %H:%M:%S'
 
   colored:
-    (): config.logging.formatter.ColoredFormatter
+    (): config.logging.ColoredFormatter
+
+  request:
+    (): config.logging.RequestFormatter
 
 handlers:
   basic:
@@ -20,6 +23,11 @@ handlers:
     class: logging.StreamHandler
     level: DEBUG
     formatter: colored
+    stream: ext://sys.stdout
+  request:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: request
     stream: ext://sys.stdout
 
 loggers:
@@ -37,6 +45,12 @@ loggers:
     level: ERROR
     handlers: []
     propagate: no
+
+  request_logger:
+    level: INFO
+    handlers: [request]
+    propagate: no
+
 
 root:
   level: INFO

@@ -1,1 +1,1 @@
-from .formatter import ColoredFormatter
+from .formatter import ColoredFormatter, RequestFormatter
