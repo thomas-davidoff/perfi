@@ -1,4 +1,4 @@
-from app.repositories import TransactionsFileRepository
+from perfi.repositories import TransactionsFileRepository
 from flask import Flask
 from database import TransactionsFileImportStatus
 

@@ -80,7 +80,7 @@ def postgresql_container():
     test_db_config = DB_CONFIG.copy()
     test_db_config["port"] = host_port
 
-    timeout = 30
+    timeout = 300
     start = time.time()
     while not is_postgres_available(db_config=test_db_config):
         time.sleep(0.1)
@@ -139,7 +139,7 @@ def logger():
 @pytest.fixture
 def app(logger, config):
 
-    from app import create_app
+    from perfi import create_app
 
     app = create_app(config, logger)
     with app.app_context():

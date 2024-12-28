@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from database import Account
-from app.repositories import AccountRepository
+from perfi.repositories import AccountRepository
 from sqlalchemy.exc import (
     StatementError,
     IntegrityError,

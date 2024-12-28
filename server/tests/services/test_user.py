@@ -1,10 +1,10 @@
 from flask import Flask
 from database import User
-from app.services import create_user_service
+from perfi.services import create_user_service
 from extensions import db
 from tests.helpers import UserFactory
 import pytest
-from app.exceptions import PasswordTooSimpleError
+from perfi.exceptions import PasswordTooSimpleError
 
 user_service = create_user_service()
 

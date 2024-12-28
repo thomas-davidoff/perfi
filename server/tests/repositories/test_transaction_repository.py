@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from database import Transaction
-from app.repositories import TransactionRepository
+from perfi.repositories import TransactionRepository
 from sqlalchemy.exc import (
     StatementError,
     IntegrityError,
@@ -11,7 +11,7 @@ from extensions import db
 from datetime import datetime
 import warnings
 import uuid
-from app.exceptions import ResourceNotFoundError, ProgrammingError
+from perfi.exceptions import ResourceNotFoundError, ProgrammingError
 
 transaction_repository = TransactionRepository()
 

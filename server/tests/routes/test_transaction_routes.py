@@ -1,5 +1,5 @@
 from flask.testing import FlaskClient
-from app.services import create_user_service, UserService
+from perfi.services import create_user_service, UserService
 from pprint import pprint
 import pytest
 

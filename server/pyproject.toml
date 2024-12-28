@@ -1,16 +1,45 @@
-[project]
+[tool.poetry]
 name = "perfi"
 version = "0.0.1"
-description = "A CLI tool for Perfi"
-requires-python = ">= 3.7"
-dependencies = [
-    "greenlet==3.1.1"
+description = "Personal finances manager API"
+authors = ["Thomas Davidoff <thomas.davidoff@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "perfi" }
 ]
 
-[project.scripts]
-perfi = "app:cli"
+include = ["config/logging/logging.yml"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["app*", "config*"]
-namespaces = false
+
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+greenlet = "*"
+pyyaml = "*"
+asyncpg = "*"
+sqlalchemy = "*"
+pydantic-settings = "*"
+python-dotenv = "*"
+pyjwt = "*"
+fastapi = { version = "*", extras = ["standard"] }
+passlib = { version = "*", extras = ["bcrypt"] }
+psycopg2 = "*"
+jinja2 = ">=3.1.5"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+black = "*"
+pre-commit = "*"
+alembic = "*"
+
+
+[tool.poetry.scripts]
+perfi = "perfi.cli:cli"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

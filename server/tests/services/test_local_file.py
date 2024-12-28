@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 import csv
 from werkzeug.datastructures import FileStorage
-from app.services import LocalFileService
+from perfi.services import LocalFileService
 from flask import Flask
 import tempfile
 

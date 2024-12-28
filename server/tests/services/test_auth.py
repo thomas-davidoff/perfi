@@ -1,6 +1,6 @@
 from flask import Flask
 from database import User
-from app.services import create_auth_service
+from perfi.services import create_auth_service
 import os
 
 auth_service = create_auth_service()

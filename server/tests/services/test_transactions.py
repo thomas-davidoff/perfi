@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
-from app.services import create_transactions_service
-from app.exceptions import ValidationError
+from perfi.services import create_transactions_service
+from perfi.exceptions import ValidationError
 from pprint import pprint
 
 

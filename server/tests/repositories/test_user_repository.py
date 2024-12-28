@@ -1,10 +1,10 @@
 import pytest
 from flask import Flask
 from database import User
-from app.repositories import UserRepository
+from perfi.repositories import UserRepository
 from sqlalchemy.exc import IntegrityError
 import uuid
-from app.exceptions import ResourceNotFoundError
+from perfi.exceptions import ResourceNotFoundError
 
 
 user_repository = UserRepository()

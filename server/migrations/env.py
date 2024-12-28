@@ -1,10 +1,11 @@
-from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.engine.url import URL
-from app.core.database import Base
+from perfi.core.database import Base
 import logging
-from config import DATABASE_URL_SYNC
+from perfi.core.dependencies.settings import get_settings
+from config import get_database_urls
+
+DATABASE_URL_ASYNC, DATABASE_URL_SYNC = get_database_urls(get_settings())
 
 
 target_metadata = Base.metadata

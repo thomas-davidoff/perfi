@@ -1,5 +1,4 @@
 import logging
-from flask import has_request_context, request
 
 
 COMMON_PREFIX = "[%(asctime)s] - %(name)s - %(levelname)s - "
@@ -27,21 +26,4 @@ class ColoredFormatter(logging.Formatter):
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt, datefmt=DATE_FMT)
-        return formatter.format(record)
-
-
-class RequestFormatter(logging.Formatter):
-
-    log_fmt = COMMON_PREFIX + ("%(message)s")
-
-    def format(self, record):
-        if has_request_context():
-            record.url = request.url
-            record.remote_addr = request.remote_addr
-        else:
-            record.url = None
-            record.remote_addr = None
-
-        formatter = logging.Formatter(self.log_fmt, datefmt=DATE_FMT)
-
         return formatter.format(record)

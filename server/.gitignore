@@ -1,19 +1,19 @@
-# env-specific env files
+# Env files per-environment
 .env.*
 
-# local app stuff
+# App data
+# TODO: Find a better place for app data
 uploads/
 
-# caches
+# Cache
+__pycache__
 *_cache/
 
-# build stuff
+# Build
 *.egg-info
 
-# testing
+# Testing
 .coverage
 
-# temporary for writing notes to self
-.notes
-*_old
+# Local dev ignores
 .vscode

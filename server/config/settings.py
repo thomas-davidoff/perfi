@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
-from functools import lru_cache
 
 
 def fetch_external_secrets():
@@ -43,9 +42,14 @@ class Settings(BaseSettings):
     DB_NAME: str = "pfd"
 
     # App config
-    # SECRET_KEY: str
     APP_HOST: str
     APP_PORT: str
+    UPLOAD_FOLDER: str
+
+    # JWT config
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     @classmethod
     def load_settings(cls):
@@ -72,8 +76,3 @@ class Settings(BaseSettings):
             return cls()
         else:
             raise Exception(f"Unhandled environment {base_config.ENVIRONMENT}")
-
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings.load_settings()

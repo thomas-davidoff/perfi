@@ -1,11 +1,11 @@
 import pytest
-from app.repositories import (
+from perfi.repositories import (
     TransactionsFileRepository,
     TransactionRepository,
     AccountRepository,
     UserRepository,
 )
-from app.services import LocalFileService, FileImportService
+from perfi.services import LocalFileService, FileImportService
 from werkzeug.datastructures import FileStorage
 from io import BytesIO
 from uuid import uuid4
