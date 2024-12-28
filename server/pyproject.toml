@@ -1,0 +1,19 @@
+[project]
+name = "perfi"
+version = "0.0.1"
+description = "A CLI tool for Perfi"
+requires-python = ">= 3.7"
+dependencies = [
+    "greenlet==3.1.1"
+]
+
+[project.scripts]
+perfi = "perfi:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "config*"]
+namespaces = false
+
+[tool.setuptools]
+py-modules = ["perfi"]
