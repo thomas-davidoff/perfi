@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
+from functools import lru_cache
 
 
 def fetch_external_secrets():
@@ -69,3 +70,8 @@ class Settings(BaseSettings):
             return cls()
         else:
             raise Exception(f"Unhandled environment {base_config.ENVIRONMENT}")
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings.load_settings()

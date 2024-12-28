@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-from config import Settings
+from config import Settings, get_db
 
 
 @lru_cache
