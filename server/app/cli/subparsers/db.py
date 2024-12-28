@@ -4,6 +4,8 @@ from sqlalchemy.sql import text
 from app.core.database import Base, engine
 import subprocess
 import os
+from sqlalchemy.engine.url import make_url
+from config import DATABASE_URL_ASYNC
 
 db_cli = typer.Typer(help="Database management commands")
 
@@ -51,10 +53,8 @@ def drop_all():
 @db_cli.command("sh")
 def db_shell():
     """Open a database shell."""
-    from sqlalchemy.engine.url import make_url
-    from config.database import DATABASE_URL
 
-    url = make_url(DATABASE_URL)
+    url = make_url(DATABASE_URL_ASYNC)
     command = [
         "psql",
         f"-h{url.host}",
