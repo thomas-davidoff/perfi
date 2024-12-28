@@ -1,8 +1,19 @@
-
+# env-specific env files
 .env.*
+
+# local app stuff
+uploads/
+
+# caches
+*_cache/
+
+# build stuff
+*.egg-info
+
+# testing
+.coverage
+
 # temporary for writing notes to self
 .notes
-.coverage
-.mypy_cache/
-.pytest_cache/
-uploads/
+*_old
+.vscode
