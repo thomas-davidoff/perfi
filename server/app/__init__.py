@@ -1,12 +1,13 @@
-from initializers import init_extensions, get_logger
+from initializers import init_extensions
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 from extensions import db
-import os
 from .exceptions import CustomException
 import traceback
 
-logger = get_logger("APP_LOGGER", os.getenv("LOG_LEVEL"))
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def error_respond(message: str, status=200, **kwargs):
@@ -25,13 +26,12 @@ def error_respond(message: str, status=200, **kwargs):
     return jsonify(response_data), status
 
 
-def create_app(config, init_logger=None):
+def create_app(config):
+    logger.info(f"Creating app using {config.name} configuration")
     app = Flask(__name__, static_folder=None)
     app.config.from_object(config)
 
-    app.logger = logger
-
-    init_extensions(app, init_logger)
+    init_extensions(app)
 
     with app.app_context():
         from app.routes import (

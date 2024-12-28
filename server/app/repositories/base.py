@@ -1,11 +1,14 @@
 from abc import abstractmethod, ABC
 from typing import List
 from sqlalchemy.exc import IntegrityError
-from app import logger
 from extensions import db
 from typing import TypeVar, Generic
 from app.exceptions import ResourceNotFoundError
 from app.validators import to_uuid
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 T = TypeVar("T")
