@@ -1,19 +1,11 @@
 from typing import Union
 from fastapi import FastAPI
-from functools import lru_cache
 from pydantic import BaseModel
+from config import get_settings, get_db
+import uvicorn
+
 
 app = FastAPI()
-
-from config import Settings, get_db
-
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings.load_settings()
-
-
-api_settings = get_settings()
 
 
 class Item(BaseModel):
@@ -35,3 +27,13 @@ def read_item(item_id: int, q: Union[str, None] = None):
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
+
+
+if __name__ == "__main__":
+    api_settings = get_settings()
+    uvicorn.run(
+        "main:app",
+        host=api_settings.APP_HOST,
+        port=int(api_settings.APP_PORT),
+        reload=True,
+    )

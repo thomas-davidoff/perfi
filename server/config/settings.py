@@ -44,6 +44,8 @@ class Settings(BaseSettings):
 
     # App config
     # SECRET_KEY: str
+    APP_HOST: str
+    APP_PORT: str
 
     @classmethod
     def load_settings(cls):
