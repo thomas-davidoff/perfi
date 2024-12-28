@@ -28,12 +28,13 @@ loggers:
     handlers: [app_log]
     propagate: no
 
-  # sqlalchemy:
-  #   level: DEBUG
-  #   handlers: [app_log]
-  #   propagate: no
+  sqlalchemy:
+    level: WARNING
+    handlers: [app_log]
+    propagate: no
 
   werkzeug:
+    level: ERROR
     handlers: []
     propagate: no
 
