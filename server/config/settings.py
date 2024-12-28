@@ -11,7 +11,7 @@ def fetch_external_secrets():
     pass
 
 
-ENVIRONMENT_FILE = ".env"  # set to whatever - just used for environment name
+ENVIRONMENT_FILE = ".env.local"  # set to whatever - just used for environment name
 
 
 # The below values are set in the following order of precedence:
