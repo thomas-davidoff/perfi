@@ -51,6 +51,15 @@ loggers:
     handlers: [request]
     propagate: no
 
+  alembic:
+    level: DEBUG
+    handlers: [app_log]
+    propagate: no
+
+  migrations:
+    level: DEBUG
+    handlers: [basic]
+    propagate: no
 
 root:
   level: WARNING
