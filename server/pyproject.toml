@@ -8,12 +8,9 @@ dependencies = [
 ]
 
 [project.scripts]
-perfi = "perfi:cli"
+perfi = "app:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["app*", "config*"]
 namespaces = false
-
-[tool.setuptools]
-py-modules = ["perfi"]
