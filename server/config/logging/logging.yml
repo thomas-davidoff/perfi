@@ -1,0 +1,57 @@
+version: 1
+disable_existing_loggers: True
+
+
+formatters:
+  basic:
+    format: '[%(asctime)s] - %(name)s - %(levelname)s - %(name)s - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+  colored:
+    (): config.logging.ColoredFormatter
+
+  request:
+    (): config.logging.RequestFormatter
+
+handlers:
+  basic:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: basic
+    stream: ext://sys.stdout
+  app_log:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: colored
+    stream: ext://sys.stdout
+  request:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: request
+    stream: ext://sys.stdout
+
+loggers:
+  app:
+    level: DEBUG
+    handlers: [app_log]
+    propagate: no
+
+  sqlalchemy:
+    level: WARNING
+    handlers: [app_log]
+    propagate: no
+
+  werkzeug:
+    level: ERROR
+    handlers: []
+    propagate: no
+
+  request_logger:
+    level: INFO
+    handlers: [request]
+    propagate: no
+
+
+root:
+  level: WARNING
+  handlers: [basic]
