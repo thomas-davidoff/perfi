@@ -1,12 +1,15 @@
-from initializers import init_extensions, get_logger
-from flask import Flask, jsonify, request
+from initializers import init_extensions
+from flask import Flask, jsonify, request, g
 from werkzeug.exceptions import HTTPException
 from extensions import db
-import os
 from .exceptions import CustomException
 import traceback
+import time
 
-logger = get_logger("APP_LOGGER", os.getenv("LOG_LEVEL"))
+import logging
+
+logger = logging.getLogger(__name__)
+request_logger = logging.getLogger("request_logger")
 
 
 def error_respond(message: str, status=200, **kwargs):
@@ -25,13 +28,12 @@ def error_respond(message: str, status=200, **kwargs):
     return jsonify(response_data), status
 
 
-def create_app(config, init_logger=None):
+def create_app(config):
+    logger.info(f"Creating app using {config.name} configuration")
     app = Flask(__name__, static_folder=None)
     app.config.from_object(config)
 
-    app.logger = logger
-
-    init_extensions(app, init_logger)
+    init_extensions(app)
 
     with app.app_context():
         from app.routes import (
@@ -55,15 +57,24 @@ def create_app(config, init_logger=None):
             app.cli.add_command(group)
 
         @app.before_request
-        def log_request():
-            remote_ip = request.environ.get("REMOTE_ADDR")
-            remote_port = request.environ.get("REMOTE_PORT")
-            url = request.url
-            method = request.method
-            user_agent = request.user_agent
-            logger.info(
-                f"{method} request from {remote_ip}:{remote_port} to {url}; user-agent: {user_agent}"
-            )
+        def save_request_start():
+            g.start_time = time.time()
+
+        @app.after_request
+        def log_request_end(response):
+            duration = time.time() - g.start_time
+            msg = f"Completed {request.method} @ {request.url} for {request.environ.get('REMOTE_ADDR')} with status {response.status_code} in {duration:.3f} seconds"
+
+            if 200 <= response.status_code < 300:
+                request_logger.info(msg)
+            elif 300 <= response.status_code < 400:
+                request_logger.warning(msg)
+            elif 400 <= response.status_code < 400:
+                request_logger.error(msg)
+            else:
+                request_logger.critical(msg)
+
+            return response
 
         @app.after_request
         def remove_session(response):

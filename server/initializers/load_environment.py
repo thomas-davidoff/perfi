@@ -20,9 +20,9 @@ def load_env(env_filename, override=False):
 
 
 # get the configuration
-def load_configuration(environment, logger=None):
+def load_configuration(environment):
     if environment in ENVIRONMENTS:
-        return ENVIRONMENTS[environment](logger)
+        return ENVIRONMENTS[environment]()
     else:
         msg = f"""
 The provided environment does not have a corresponding configuration: {environment}.

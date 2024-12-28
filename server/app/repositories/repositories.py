@@ -2,10 +2,12 @@ from .base import Repository
 from database import User, Transaction, Account
 from extensions import db
 from typing import List
-from app import logger
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from app.utils import StandardDate
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TransactionRepository(Repository[Transaction]):

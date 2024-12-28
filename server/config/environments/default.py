@@ -2,14 +2,18 @@ import os
 from urllib.parse import quote_plus as url_quote_plus
 from datetime import timedelta
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DefaultConfig:
     name = "default"
 
-    def __init__(self, logger=None) -> None:
-        if logger:
-            logger.debug(f"Loading {self.name} config...")
+    def __init__(self) -> None:
+
+        logger.info("Loading default config...")
+
         # misc secrets
         self.SECRET_KEY = os.environ["SECRET_KEY"]
 
