@@ -1,2 +1,2 @@
 from .settings import get_settings
-from .database import get_db
+from .database import DATABASE_URL
