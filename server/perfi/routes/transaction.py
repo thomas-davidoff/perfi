@@ -11,9 +11,12 @@ from perfi.schemas import (
     TransactionUpdateRequest,
 )
 from perfi.core.dependencies.current_user import get_current_user
-from perfi.core.dependencies.service_factories import get_transactions_service
+from perfi.core.dependencies.service_factories import (
+    get_transactions_service,
+    get_accounts_service,
+)
 from perfi.core.dependencies.resource_ownership import get_validated_transaction
-from perfi.services import TransactionsService
+from perfi.services import TransactionsService, AccountsService
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 import logging
@@ -65,15 +68,15 @@ async def list_transactions(
 @router.post("/", response_model=TransactionSchema)
 async def create_transaction(
     transaction_data: TransactionCreateRequest,
-    current_user: User = Depends(get_current_user),
     transactions_service: TransactionsService = Depends(get_transactions_service),
+    current_user: User = Depends(get_current_user),
+    accounts_service: AccountsService = Depends(get_accounts_service),
 ) -> TransactionSchema:
     """
     Create a new transaction for the current user.
 
     Args:
         transaction_data (TransactionCreateRequest): The transaction details to be created.
-        current_user (User): The currently authenticated user (from dependency).
         transactions_service (TransactionsService): The service for managing transactions.
 
     Returns:
@@ -81,7 +84,7 @@ async def create_transaction(
     """
     logger.debug("Request for transaction creation")
     transaction = await transactions_service.create_transaction(
-        data=transaction_data.model_dump()
+        user=current_user, data=transaction_data, accounts_service=accounts_service
     )
     logger.debug(f"Created transaction: {str(transaction)}")
     return TransactionSchema.model_validate(transaction)

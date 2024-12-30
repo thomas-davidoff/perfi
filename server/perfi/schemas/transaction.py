@@ -8,11 +8,11 @@ from pydantic import (
 from typing import List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
-from perfi.core.utils import CaseInsensitiveEnum
+from perfi.core.utils import CaseInsensitiveEnum, StandardDate
+from perfi.core.exc import ValidationError as CustomValidationError
 from .generics import Record
 from .account import AccountCompact
 from enum import Enum
-from perfi.core.utils import StandardDate
 
 
 class TransactionFields(str, Enum):
@@ -74,9 +74,22 @@ class TransactionRequest(BaseModel):
     amount: float = Field(default=0.0, ge=-10000)
     description: str = Field(..., max_length=255)
     merchant: str = Field(..., max_length=100)
-    date: str = Field(..., max_length=50)
+    date: str
     account_id: UUID
     category: TransactionCategory
+
+    @field_validator("date", mode="before")
+    def ensure_correct_date_format(cls, date: str):
+
+        for format in StandardDate.SUPPORTED_FORMATS:
+            try:
+                return datetime.strptime(date, format).strftime("%Y-%m-%d")
+            except:
+                print("fuck")
+        raise CustomValidationError(
+            "date must be a valid date in one of the supported formats: "
+            f'{", ".join(StandardDate.SUPPORTED_FORMATS)}'
+        )
 
     @field_validator("category", mode="before")
     def coerce_invalid_category(cls, value):

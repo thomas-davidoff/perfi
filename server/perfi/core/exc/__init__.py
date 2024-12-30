@@ -5,4 +5,4 @@
 from .repo import RepositoryError, ResourceNotFound
 from .service import ServiceError
 from .base import CustomException
-from .validation import ValidationError
+from .validation import ValidationError, UnauthorizedAccessError

@@ -29,11 +29,11 @@ class AsyncRepository(ABC, Generic[T]):
         except IntegrityError as e:
             logger.error(f"Integrity error when attempting to create {entity}")
             await self.session.rollback()
-            raise RepositoryError(str(e)) from e
+            raise RepositoryError(f"Integrity error when attempting to create.") from e
         except Exception as e:
             logger.error(f"Unexpected error: {e} when attempting to create {entity}")
             await self.session.rollback()
-            raise RepositoryError(str(e)) from e
+            raise RepositoryError(f"Unexpected error") from e
 
     async def get_by_id(self, id: int) -> Optional[T]:
         """Gets an entity by ID."""
@@ -54,7 +54,7 @@ class AsyncRepository(ABC, Generic[T]):
 
     async def delete(self, id: int) -> int:
         """Deletes an entity by ID."""
-        entity = await self.get_by_id(self.session, id)
+        entity = await self.get_by_id(id)
         if entity:
             await self.session.delete(entity)
             await self.session.commit()

@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status, Path
 from typing import TypeVar, Generic
 from uuid import UUID
 import logging
-from perfi.core.exc import ValidationError
+from perfi.core.exc import ValidationError, UnauthorizedAccessError
 from perfi.core.database import Account, Transaction, User, TransactionsFile
 from perfi.services import AccountsService, TransactionsService, FileImportService
 from .current_user import get_current_user
@@ -56,10 +56,7 @@ async def validate_ownership(
         )
 
     if resource.user_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource.",
-        )
+        raise UnauthorizedAccessError
 
     return resource
 

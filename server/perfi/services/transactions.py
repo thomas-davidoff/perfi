@@ -1,15 +1,16 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
-from perfi.core.database import Transaction, TransactionCategory
+from perfi.core.database import Transaction, TransactionCategory, User
 from perfi.core.repositories import TransactionRepository
-from perfi.core.exc import ValidationError
+from perfi.core.exc import ValidationError, UnauthorizedAccessError
 from perfi.core.utils import StandardDate
 from perfi.core.validators import TransactionAmount
+from perfi.schemas import TransactionCreateRequest
 import logging
 from .resource_service import ResourceService
-
 from perfi.core.exc import ServiceError, ResourceNotFound
+from .account import AccountsService
 
 
 logger = logging.getLogger(__name__)
@@ -63,18 +64,20 @@ class TransactionsService(ResourceService[Transaction]):
         except Exception:
             raise ValidationError("Invalid amount.")
 
-    async def create_transaction(self, data: dict) -> Transaction:
-        logger.debug(data)
-        transaction_data = {
-            "amount": self.validate_amount(data.get("amount")),
-            "merchant": self.validate_merchant(data.get("merchant")),
-            "date": self.validate_date(data.get("date")).date,
-            "category": self.validate_category(data.get("category")),
-            "description": data.get("description", ""),
-            "account_id": self._validate_uuid(data.get("account_id")),
-        }
+    async def create_transaction(
+        self,
+        user: User,
+        data: TransactionCreateRequest,
+        accounts_service: AccountsService,
+    ) -> Transaction:
+        account = await accounts_service.fetch_by_id(account_id=data.account_id)
 
-        return await self.repo.create(data=transaction_data)
+        if account.user_id != user.id:
+            raise UnauthorizedAccessError(
+                "Unauthorized account access in create transaction"
+            )
+
+        return await self.repo.create(data=data.model_dump())
 
     async def get_transactions_by_user_id(self, user_id: UUID) -> List[Transaction]:
         return await self.repo.get_user_transactions(user_id=user_id)
