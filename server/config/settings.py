@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
+import os
 
 
 def fetch_external_secrets():
@@ -10,28 +11,11 @@ def fetch_external_secrets():
     pass
 
 
-ENVIRONMENT_FILE = ".env.local"  # set to whatever - just used for environment name
-
-
-# The below values are set in the following order of precedence:
-# 1. Set directly via env vars   command line or injected
-# 2. Set via .env file           only searched if missing
-# 3. Fallback defined here       only used if both above are missing
-class BaseConfig(BaseSettings):
-    ENVIRONMENT: str = "development"
-    APP_NAME: str = "Perfi-API"
-    model_config = SettingsConfigDict(env_file=ENVIRONMENT_FILE)
-
-
-# create instance of BaseConfig to load ENVIRONMENT
-base_config = BaseConfig()
-
-
 class Settings(BaseSettings):
     """
     Dynamic settings class
 
-    By this point, env vars may have been loaded.
+    Requires `ENVIRONMENT` to have already been loaded
     """
 
     # DB config
@@ -45,6 +29,7 @@ class Settings(BaseSettings):
     APP_HOST: str
     APP_PORT: str
     UPLOAD_FOLDER: str
+    APP_NAME: str = "perfi-api"
 
     # JWT config
     SECRET_KEY: str
@@ -58,26 +43,22 @@ class Settings(BaseSettings):
         Dynamically load settings based on environment,
         and returns an instance of the class.
         """
-        import logging
 
-        logger = logging.getLogger()
-        logger.critical("loading app settings")
-        if base_config.ENVIRONMENT in {"staging", "production"}:
+        current_env = os.environ.get("ENVIRONMENT", "development")
+        if current_env in {"staging", "production"}:
             # in non-local configs, env vars should be injected to the container
             # or fetched directly from a secrets manager
             secrets = json.loads(fetch_external_secrets())
             return cls(**secrets)
 
-        elif base_config.ENVIRONMENT in {"development", "test"}:
+        elif current_env in {"development", "test"}:
             # during local development, .env files are fine
             # the reason they are not being loaded in using python-dotenv
             # is because SettingsConfigDict gives use the added benefit
             # of detected "extra" env vars in a file
 
             # env vars injected or set directly are still given priority
-            cls.model_config = SettingsConfigDict(
-                env_file=f".env.{base_config.ENVIRONMENT}"
-            )
+            cls.model_config = SettingsConfigDict(env_file=f".env.{current_env}")
             return cls()
         else:
-            raise Exception(f"Unhandled environment {base_config.ENVIRONMENT}")
+            raise Exception(f"Unhandled environment {current_env}")
