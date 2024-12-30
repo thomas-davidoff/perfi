@@ -5,43 +5,42 @@ description = "Personal finances manager API"
 authors = ["Thomas Davidoff <thomas.davidoff@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "perfi" }
-]
-
+packages = [ { include = "perfi" } ]
 include = ["config/logging/logging.yml"]
-
 
 
 [tool.poetry.dependencies]
 python = ">=3.11"
-greenlet = "*"
-pyyaml = "*"
-asyncpg = "*"
-sqlalchemy = "*"
-pydantic-settings = "*"
-python-dotenv = "*"
-pyjwt = "*"
-fastapi = { version = "*", extras = ["standard"] }
-psycopg2 = "*"
 jinja2 = ">=3.1.5"
 pytest-env = "^1.1.5"
 bcrypt = "^4.2.1"
-
-
-[tool.poetry.dev-dependencies]
-pytest = "*"
-black = "*"
-pre-commit = "*"
-alembic = "*"
-docker = "*"
-faker = "*"
-pytest-asyncio = "^0.25.0"
+greenlet = "^3.1.1"
+pyyaml = "^6.0.2"
+asyncpg = "^0.30.0"
+pydantic-settings = "^2.7.0"
+pyjwt = "^2.10.1"
+fastapi = {extras = ["standard"], version = "^0.115.6"}
+sqlalchemy = "^2.0.36"
 
 
 [tool.poetry.scripts]
-perfi = "perfi.cli:cli"
+perfi = "perfi:cli"
+server = "perfi.entry:run"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+alembic = "^1.14.0"
+pre-commit = "^4.0.1"
+debugpy = "^1.8.11"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.4"
+pytest-asyncio = "^0.25.0"
+docker = "^7.1.0"
+psycopg2 = "^2.9.10"
+faker = "^33.1.0"
 
 
 [build-system]
