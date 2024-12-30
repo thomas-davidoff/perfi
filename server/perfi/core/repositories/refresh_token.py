@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 
 from perfi.core.database import RefreshToken
@@ -39,9 +39,7 @@ class RefreshTokenRepository:
             await self.session.commit()
 
     async def delete_expired(self) -> None:
-        query = select(RefreshToken).where(
-            RefreshToken.expires_at < datetime.now(datetime.timezone.utc)
-        )
+        query = select(RefreshToken).where(RefreshToken.expires_at < datetime.now(UTC))
         result = await self.session.execute(query)
         for refresh_token in result.scalars().all():
             await self.session.delete(refresh_token)

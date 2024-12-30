@@ -15,6 +15,7 @@ from perfi.core.repositories import (
     UserRepository,
     TransactionRepository,
     TransactionsFileRepository,
+    RefreshTokenRepository,
 )
 from config import Settings
 from .settings import get_settings
@@ -25,6 +26,7 @@ from .repo_factories import (
     get_user_repo,
     get_transaction_repo,
     get_file_repo,
+    get_refresh_token_repo,
 )
 from .session import get_async_session
 
@@ -52,8 +54,9 @@ def get_transactions_service(
 
 def get_auth_service(
     user_service: UserService = Depends(get_user_service),
+    refresh_token_repo: RefreshTokenRepository = Depends(get_refresh_token_repo),
 ) -> AuthService:
-    return AuthService(user_service)
+    return AuthService(user_service=user_service, refresh_token_repo=refresh_token_repo)
 
 
 def get_local_file_service(

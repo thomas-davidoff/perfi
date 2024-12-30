@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from typing import Optional
 import jwt
 import uuid
@@ -75,13 +75,17 @@ class AuthService:
         except jwt.InvalidTokenError:
             raise ServiceError("Invalid token.")
 
-    def create_refresh_token(self, user_id: uuid.UUID, expires_in: int = 30) -> str:
-        expires_at = datetime.now(datetime.timezone.utc) + timedelta(days=expires_in)
+    def create_refresh_token(self, expires_in: int = 30) -> str:
+        expires_at = datetime.now(UTC) + timedelta(days=expires_in)
         token = str(uuid.uuid4())
         return token, expires_at
 
     async def issue_refresh_token(self, user_id: uuid.UUID) -> str:
-        token, expires_at = self.create_refresh_token(user_id)
+        """
+        Creates a fresh refresh token, and manually expires any existing ones.
+        """
+        token, expires_at = self.create_refresh_token()
+
         await self.refresh_token_repo.create(user_id, token, expires_at)
         return token
 
