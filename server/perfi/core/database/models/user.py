@@ -1,8 +1,8 @@
 from sqlalchemy import Text, Column, String
 from sqlalchemy.orm import relationship
 from passlib.context import CryptContext
-from perfi.core.database import Base
 from .mixins import RecordMixin
+from .base import Base
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

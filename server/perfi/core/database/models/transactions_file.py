@@ -2,9 +2,9 @@ from sqlalchemy import String, Enum, JSON, ForeignKey, Column, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import mapped_column, Mapped
-from perfi.core.database import Base
 from perfi.schemas import TransactionsFileImportStatus
 from .mixins import RecordMixin
+from .base import Base
 
 
 class TransactionsFile(Base, RecordMixin):

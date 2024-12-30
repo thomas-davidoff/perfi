@@ -1,9 +1,9 @@
 from sqlalchemy import Float, String, Enum, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
-from perfi.core.database import Base
 from perfi.schemas.account import AccountType
 from .mixins import RecordMixin
+from .base import Base
 
 
 class Account(Base, RecordMixin):
