@@ -18,7 +18,7 @@ ENVIRONMENT_FILE = ".env.local"  # set to whatever - just used for environment n
 # 2. Set via .env file           only searched if missing
 # 3. Fallback defined here       only used if both above are missing
 class BaseConfig(BaseSettings):
-    ENVIRONMENT: str
+    ENVIRONMENT: str = "development"
     APP_NAME: str = "Perfi-API"
     model_config = SettingsConfigDict(env_file=ENVIRONMENT_FILE)
 
@@ -58,13 +58,17 @@ class Settings(BaseSettings):
         Dynamically load settings based on environment,
         and returns an instance of the class.
         """
+        import logging
+
+        logger = logging.getLogger()
+        logger.critical("loading app settings")
         if base_config.ENVIRONMENT in {"staging", "production"}:
             # in non-local configs, env vars should be injected to the container
             # or fetched directly from a secrets manager
             secrets = json.loads(fetch_external_secrets())
             return cls(**secrets)
 
-        elif base_config.ENVIRONMENT == "development":
+        elif base_config.ENVIRONMENT in {"development", "test"}:
             # during local development, .env files are fine
             # the reason they are not being loaded in using python-dotenv
             # is because SettingsConfigDict gives use the added benefit
