@@ -1,14 +1,14 @@
 from sqlalchemy import Text, Column, String
 from sqlalchemy.orm import relationship
-from .base_mixin import BaseMixin
 from passlib.context import CryptContext
-from perfi.core.database import Base
+from .mixins import RecordMixin
+from .base import Base
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class User(Base, BaseMixin):
+class User(Base, RecordMixin):
     __tablename__ = "users"
 
     username = Column(String(80), unique=True, nullable=False)
@@ -45,6 +45,13 @@ class User(Base, BaseMixin):
 
     transactions_files = relationship(
         "TransactionsFile",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    refresh_tokens = relationship(
+        "RefreshToken",
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="selectin",

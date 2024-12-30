@@ -3,7 +3,11 @@ from perfi.core.repositories import (
     UserRepository,
     TransactionRepository,
     TransactionsFileRepository,
+    RefreshTokenRepository,
 )
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from .session import get_async_session
 
 
 def get_account_repo() -> AccountRepository:
@@ -20,3 +24,9 @@ def get_transaction_repo() -> TransactionRepository:
 
 def get_file_repo() -> TransactionsFileRepository:
     return TransactionsFileRepository()
+
+
+def get_refresh_token_repo(
+    session: AsyncSession = Depends(get_async_session),
+) -> RefreshTokenRepository:
+    return RefreshTokenRepository(session=session)

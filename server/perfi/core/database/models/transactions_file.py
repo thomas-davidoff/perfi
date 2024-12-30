@@ -2,12 +2,12 @@ from sqlalchemy import String, Enum, JSON, ForeignKey, Column, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import mapped_column, Mapped
-from .base_mixin import BaseMixin
-from perfi.core.database import Base
 from perfi.schemas import TransactionsFileImportStatus
+from .mixins import RecordMixin
+from .base import Base
 
 
-class TransactionsFile(Base, BaseMixin):
+class TransactionsFile(Base, RecordMixin):
     __tablename__ = "transactions_files"
     __table_args__ = (UniqueConstraint("filename", "user_id", name="uq_filename_user"),)
     filename = Column(String(255), nullable=False)

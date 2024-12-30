@@ -2,12 +2,12 @@ from sqlalchemy import Float, String, DateTime, Enum, func, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
-from .base_mixin import BaseMixin
-from perfi.core.database import Base
 from perfi.schemas.transaction import TransactionCategory
+from .mixins import RecordMixin
+from .base import Base
 
 
-class Transaction(Base, BaseMixin):
+class Transaction(Base, RecordMixin):
 
     __tablename__ = "transactions"
 
