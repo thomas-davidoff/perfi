@@ -7,17 +7,20 @@ from perfi.services.user import UserService
 from perfi.core.database import User
 from perfi.core.exc import ServiceError
 from perfi.core.dependencies.settings import get_settings
-
-# JWT Configuration
-application_settings = get_settings()
-SECRET_KEY = application_settings.SECRET_KEY
-ALGORITHM = application_settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = application_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+from perfi.core.repositories import RefreshTokenRepository
 
 
 class AuthService:
-    def __init__(self, user_service: UserService) -> None:
+    def __init__(
+        self, user_service: UserService, refresh_token_repo: RefreshTokenRepository
+    ) -> None:
         self.user_service = user_service
+        application_settings = get_settings()
+        self.SECRET_KEY = application_settings.SECRET_KEY
+        self.ALGORITHM = application_settings.ALGORITHM
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = (
+            application_settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
     async def authenticate(
         self, session: AsyncSession, username_or_email: str, password: str
@@ -55,17 +58,17 @@ class AuthService:
             datetime.now(timezone.utc) + expires_delta
             if expires_delta
             else datetime.now(timezone.utc)
-            + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         to_encode.update({"exp": expire})
-        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
 
     def decode_access_token(self, token: str) -> dict:
         """
         Decodes and validates a JWT access token.
         """
         try:
-            return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            return jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
         except jwt.ExpiredSignatureError:
             raise ServiceError("Token has expired.")
         except jwt.InvalidTokenError:
