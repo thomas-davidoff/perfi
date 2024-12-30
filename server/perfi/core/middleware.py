@@ -5,8 +5,6 @@ import time
 import secrets
 import logging
 
-from uuid import uuid1
-
 logger = logging.getLogger(__name__)
 
 

@@ -15,12 +15,11 @@ class AccountsService(ResourceService[Account]):
     def __init__(self, accounts_repo: AccountRepository):
         self.repo = accounts_repo
 
-    async def fetch_by_id(self, session: AsyncSession, account_id: UUID) -> Account:
+    async def fetch_by_id(self, account_id: UUID) -> Account:
         """
         Fetch an account by its ID.
 
         Args:
-            session (AsyncSession): The database session.
             account_id (UUID): The account ID to fetch.
 
         Returns:
@@ -30,7 +29,7 @@ class AccountsService(ResourceService[Account]):
             ServiceError: If the account is not found.
         """
         try:
-            account = await self.repo.get_by_id(session, account_id)
+            account = await self.repo.get_by_id(account_id)
         except ResourceNotFound as e:
             logger.debug("Caught resource not found in accounts_service")
             raise ServiceError(str(e)) from e
@@ -51,14 +50,13 @@ class AccountsService(ResourceService[Account]):
             raise ServiceError("You do not have access to this resource.")
 
     async def get_account(
-        self, account: Optional[Account], session: AsyncSession, account_id: UUID
+        self, account: Optional[Account], account_id: UUID
     ) -> Account:
         """
         Get account details by account ID. If an account is already provided, reuse it.
 
         Args:
             account (Optional[Account]): The already validated account object, if available.
-            session (AsyncSession): The database session.
             account_id (UUID): The account ID to fetch if the account is not provided.
 
         Returns:
@@ -66,31 +64,25 @@ class AccountsService(ResourceService[Account]):
         """
         if account:
             return account
-        return await self.fetch_by_id(session, account_id)
+        return await self.fetch_by_id(account_id)
 
-    async def get_accounts_by_user_id(
-        self, session: AsyncSession, user_id: UUID
-    ) -> List[Account]:
+    async def get_accounts_by_user_id(self, user_id: UUID) -> List[Account]:
         """
         Get all accounts for a specific user.
 
         Args:
-            session (AsyncSession): The database session.
             user_id (UUID): The user ID whose accounts to fetch.
 
         Returns:
             List[Account]: A list of the user's accounts.
         """
-        return await self.repo.get_by_user_id(session, user_id)
+        return await self.repo.get_by_user_id(user_id)
 
-    async def create_account(
-        self, session: AsyncSession, user_id: UUID, data: dict
-    ) -> Account:
+    async def create_account(self, user_id: UUID, data: dict) -> Account:
         """
         Create a new account for a user.
 
         Args:
-            session (AsyncSession): The database session.
             user_id (UUID): The user ID creating the account.
             data (dict): The account data.
 
@@ -102,7 +94,7 @@ class AccountsService(ResourceService[Account]):
             raise ServiceError("You must provide a valid account name.")
 
         # Ensure account name is unique for the user
-        existing_accounts = await self.get_accounts_by_user_id(session, user_id)
+        existing_accounts = await self.get_accounts_by_user_id(user_id)
         if account_name in [account.name for account in existing_accounts]:
             raise ServiceError(f"Account with name '{account_name}' already exists.")
 
@@ -127,30 +119,28 @@ class AccountsService(ResourceService[Account]):
             "balance": balance,
             "account_type": account_type,
         }
-        return await self.repo.create(session, account_data)
+        return await self.repo.create(account_data)
 
     async def update_account(
         self,
         account: Account,
-        session: AsyncSession,
         data: dict,
     ) -> Account:
         """
         Update an account's details.
         """
-        return await self.repo.update(session=session, entity=account, data=data)
+        return await self.repo.update(entity=account, data=data)
 
     async def delete_account(
-        self, account: Optional[Account], session: AsyncSession, account_id: UUID
+        self, account: Optional[Account], account_id: UUID
     ) -> None:
         """
         Delete an account. If an account is already provided, reuse it.
 
         Args:
             account (Optional[Account]): The already validated account object, if available.
-            session (AsyncSession): The database session.
             account_id (UUID): The ID of the account to delete if the account is not provided.
         """
         if not account:
-            account = await self.fetch_by_id(session, account_id)
-        await self.repo.delete(session, account.id)
+            account = await self.fetch_by_id(account_id)
+        await self.repo.delete(account.id)

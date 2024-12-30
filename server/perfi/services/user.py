@@ -10,34 +10,30 @@ class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repo = user_repository
 
-    async def create_user(
-        self, session: AsyncSession, username: str, email: str, password: str
-    ) -> User:
+    async def create_user(self, username: str, email: str, password: str) -> User:
         if not all([username, email, password]):
             raise ServiceError("All fields (username, email, password) are required.")
 
         user_data = {"username": username, "email": email, "password": password}
-        await self._validate_user_data(user_data, session)
+        await self._validate_user_data(user_data)
 
-        if await self._user_exists(session, username):
+        if await self._user_exists(username):
             raise ServiceError("Username")
-        if await self._user_exists(session, email):
+        if await self._user_exists(email):
             raise ServiceError("Email")
 
-        return await self.user_repo.create(session, user_data)
+        return await self.user_repo.create(user_data)
 
-    async def get_by_id(self, session: AsyncSession, user_id: int) -> User:
-        user = await self.user_repo.get_by_id(session, user_id)
+    async def get_by_id(self, user_id: int) -> User:
+        user = await self.user_repo.get_by_id(user_id)
         if not user:
             raise ServiceError(f"User with ID {user_id} does not exist.")
         return user
 
-    async def get_by_username_or_email(
-        self, session: AsyncSession, username_or_email: str
-    ) -> Optional[User]:
-        return await self.user_repo.get_by_username_or_email(session, username_or_email)
+    async def get_by_username_or_email(self, username_or_email: str) -> Optional[User]:
+        return await self.user_repo.get_by_username_or_email(username_or_email)
 
-    async def _validate_user_data(self, user_data: dict, session: AsyncSession):
+    async def _validate_user_data(self, user_data: dict):
         if not self._validate_email(user_data["email"]):
             raise ServiceError("Invalid email address.")
         if not self._validate_username(user_data["username"]):
@@ -55,21 +51,17 @@ class UserService:
     def _validate_password_complexity(self, password: str) -> bool:
         return len(password) > 8
 
-    async def _user_exists(self, session: AsyncSession, username_or_email: str) -> bool:
-        return bool(
-            await self.user_repo.get_by_username_or_email(session, username_or_email)
-        )
+    async def _user_exists(self, username_or_email: str) -> bool:
+        return bool(await self.user_repo.get_by_username_or_email(username_or_email))
 
-    async def get_user_accounts(
-        self, session: AsyncSession, user_id: int
-    ) -> List[Account]:
-        user = await self.get_by_id(session, user_id)
+    async def get_user_accounts(self, user_id: int) -> List[Account]:
+        user = await self.get_by_id(user_id)
         if not user:
             raise ValueError("User not found")
         return list(user.accounts)
 
-    async def get_transactions(self, session: AsyncSession, user_id: int):
-        accounts = await self.get_user_accounts(session, user_id)
+    async def get_transactions(self, user_id: int):
+        accounts = await self.get_user_accounts(user_id)
         if not accounts:
             raise ServiceError("User has no accounts.")
 

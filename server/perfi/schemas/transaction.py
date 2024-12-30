@@ -73,7 +73,7 @@ class TransactionRequest(BaseModel):
 
     amount: float = Field(default=0.0, ge=-10000)
     description: str = Field(..., max_length=255)
-    merchant: str = Field(..., max_length=50)
+    merchant: str = Field(..., max_length=100)
     date: str = Field(..., max_length=50)
     account_id: UUID
     category: TransactionCategory

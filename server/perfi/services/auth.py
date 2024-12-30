@@ -25,29 +25,25 @@ class AuthService:
         self.REFRESH_TOKEN_EXPIRE_DAYS = application_settings.REFRESH_TOKEN_EXPIRE_DAYS
 
     async def authenticate(
-        self, session: AsyncSession, username_or_email: str, password: str
+        self, username_or_email: str, password: str
     ) -> Optional[User]:
         """
         Authenticates a user by verifying their password and returning the user object.
         """
-        user = await self.user_service.get_by_username_or_email(
-            session, username_or_email
-        )
+        user = await self.user_service.get_by_username_or_email(username_or_email)
 
         if not user or not user.verify_password(password):
             raise ServiceError("Invalid username/email or password.")
         return user
 
-    async def register_user(
-        self, session: AsyncSession, username: str, email: str, password: str
-    ) -> User:
+    async def register_user(self, username: str, email: str, password: str) -> User:
         """
         Registers a new user with hashed password.
         """
         if not all([username, email, password]):
             raise ServiceError("All fields (username, email, password) are required.")
 
-        return await self.user_service.create_user(session, username, email, password)
+        return await self.user_service.create_user(username, email, password)
 
     def create_access_token(
         self, data: dict, expires_delta: timedelta | None = None

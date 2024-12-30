@@ -19,6 +19,8 @@ class TransactionsService(ResourceService[Transaction]):
     def __init__(self, transaction_repository: TransactionRepository) -> None:
         self.repo = transaction_repository
 
+        # TODO: Massive refactor to use pydantic transaction request schema for validation
+
     def _validate_uuid(self, id_value: str | UUID) -> UUID:
         """Validates and converts an ID to a UUID object."""
         if isinstance(id_value, UUID):
@@ -61,9 +63,7 @@ class TransactionsService(ResourceService[Transaction]):
         except Exception:
             raise ValidationError("Invalid amount.")
 
-    async def create_transaction(
-        self, session: AsyncSession, data: dict
-    ) -> Transaction:
+    async def create_transaction(self, data: dict) -> Transaction:
         logger.debug(data)
         transaction_data = {
             "amount": self.validate_amount(data.get("amount")),
@@ -74,27 +74,20 @@ class TransactionsService(ResourceService[Transaction]):
             "account_id": self._validate_uuid(data.get("account_id")),
         }
 
-        return await self.repo.create(session, data=transaction_data)
+        return await self.repo.create(data=transaction_data)
 
-    async def get_transactions_by_user_id(
-        self, session: AsyncSession, user_id: UUID
-    ) -> List[Transaction]:
-        return await self.repo.get_user_transactions(session, user_id=user_id)
+    async def get_transactions_by_user_id(self, user_id: UUID) -> List[Transaction]:
+        return await self.repo.get_user_transactions(user_id=user_id)
 
-    async def delete_transaction(
-        self, session: AsyncSession, transaction_id: UUID
-    ) -> None:
+    async def delete_transaction(self, transaction_id: UUID) -> None:
         transaction_id = self._validate_uuid(transaction_id)
-        await self.repo.delete(session, transaction_id)
+        await self.repo.delete(transaction_id)
 
-    async def fetch_by_id(
-        self, session: AsyncSession, transaction_id: UUID
-    ) -> Transaction:
+    async def fetch_by_id(self, transaction_id: UUID) -> Transaction:
         """
         Fetch an transaction by its ID.
 
         Args:
-            session (AsyncSession): The database session.
             account_id (UUID): The transaction ID to fetch.
 
         Returns:
@@ -104,15 +97,15 @@ class TransactionsService(ResourceService[Transaction]):
             ServiceError: If the transaction is not found.
         """
         try:
-            transaction = await self.repo.get_by_id(session, transaction_id)
+            transaction = await self.repo.get_by_id(transaction_id)
         except ResourceNotFound as e:
             raise ServiceError(str(e)) from e
         return transaction
 
     async def update_transaction(
-        self, transaction: Transaction, session: AsyncSession, data: dict
+        self, transaction: Transaction, data: dict
     ) -> Transaction:
         """
         Update an existing transaction
         """
-        return await self.repo.update(session=session, entity=transaction, data=data)
+        return await self.repo.update(entity=transaction, data=data)

@@ -1,5 +1,4 @@
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from perfi.services import (
     UserService,
@@ -9,7 +8,6 @@ from perfi.services import (
     AccountsService,
     TransactionsService,
 )
-
 from perfi.core.repositories import (
     AccountRepository,
     UserRepository,
@@ -19,8 +17,6 @@ from perfi.core.repositories import (
 )
 from config import Settings
 from .settings import get_settings
-
-
 from .repo_factories import (
     get_account_repo,
     get_user_repo,
@@ -28,16 +24,14 @@ from .repo_factories import (
     get_file_repo,
     get_refresh_token_repo,
 )
-from .session import get_async_session
 
 
-# user service factory
-def get_user_service(session: AsyncSession = Depends(get_async_session)) -> UserService:
-    user_repo = get_user_repo()
+def get_user_service(
+    user_repo: UserRepository = Depends(get_user_repo),
+) -> UserService:
     return UserService(user_repo)
 
 
-# accounts service factory
 def get_accounts_service(
     accounts_repo: AccountRepository = Depends(get_account_repo),
 ) -> AccountsService:
@@ -45,7 +39,6 @@ def get_accounts_service(
     return AccountsService(accounts_repo=accounts_repo)
 
 
-# transactions service factory
 def get_transactions_service(
     transaction_repo: TransactionRepository = Depends(get_transaction_repo),
 ) -> TransactionsService:
@@ -66,7 +59,6 @@ def get_local_file_service(
     return LocalFileService(upload_folder=upload_folder)
 
 
-# factory for file import service
 def get_file_import_service(
     file_service: LocalFileService = Depends(get_local_file_service),
     file_repo: TransactionsFileRepository = Depends(get_file_repo),

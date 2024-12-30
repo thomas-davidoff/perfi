@@ -54,7 +54,7 @@ class FileImportService(ResourceService[TransactionsFile]):
         self.user_repo = user_repo
 
     async def save_and_preview(
-        self, session: AsyncSession, file: UploadFile, user: User, account: Account
+        self, file: UploadFile, user: User, account: Account
     ) -> UploadTransactionFileInfo:
         """
         Save the file and extract a preview for user confirmation.
@@ -78,7 +78,6 @@ class FileImportService(ResourceService[TransactionsFile]):
         # Save record in the database
         try:
             file_record = await self.file_repo.create(
-                session=session,
                 data={
                     "filename": file_name,
                     "file_path": file_path,
@@ -112,10 +111,8 @@ class FileImportService(ResourceService[TransactionsFile]):
 
     async def map_headers(
         self,
-        session: AsyncSession,
         file_record: TransactionsFile,
         mapped_headers: Dict,
-        user_id: UUID,
     ) -> None:
         """
         Map file headers to transaction fields and validate the mapping.
@@ -139,7 +136,6 @@ class FileImportService(ResourceService[TransactionsFile]):
             raise ServiceError(f"Missing required fields: {', '.join(missing_fields)}")
 
         return await self.file_repo.update_by_id(
-            session,
             file_record.id,
             {
                 "mapped_headers": json.dumps(mapped_headers),
@@ -147,9 +143,7 @@ class FileImportService(ResourceService[TransactionsFile]):
             },
         )
 
-    async def import_transactions(
-        self, session: AsyncSession, file_record: TransactionsFile
-    ) -> Dict:
+    async def import_transactions(self, file_record: TransactionsFile) -> Dict:
         """
         Process the file and create transactions in the database.
         """
@@ -180,13 +174,10 @@ class FileImportService(ResourceService[TransactionsFile]):
 
                         # find existing
                         existing_transaction = await self.transaction_repo.get_where(
-                            session=session,
                             filter_data=req.model_dump(
                                 include=["merchant", "date", "amount"]
                             ),
                         )
-
-                        logger.error(existing_transaction.amount)
 
                         if existing_transaction:
                             msg = f"Duplicate transaction detected while importing row num {row_num}"
@@ -194,7 +185,7 @@ class FileImportService(ResourceService[TransactionsFile]):
                             warns.append(msg)
                             continue
 
-                        await self.transaction_repo.create(session, req.model_dump())
+                        await self.transaction_repo.create(req.model_dump())
                         logger.debug(f"Transaction in row {row_num} imported")
                         messages.append(f"row {row_num} successfully imported")
 
@@ -225,9 +216,7 @@ class FileImportService(ResourceService[TransactionsFile]):
                 if not errs
                 else TransactionsFileImportStatus.FAILED.value
             )
-            await self.file_repo.update_by_id(
-                session, file_record.id, {"status": status}
-            )
+            await self.file_repo.update_by_id(file_record.id, {"status": status})
         except Exception as e:
             errs.append(f"File processing error: {str(e)}")
 
@@ -240,22 +229,18 @@ class FileImportService(ResourceService[TransactionsFile]):
             "num_failed": len(errs),
         }
 
-    async def get_user_files(
-        self, session: AsyncSession, user: User
-    ) -> List[TransactionsFile]:
+    async def get_user_files(self, user: User) -> List[TransactionsFile]:
         """
         List all files for a user.
         """
 
         return user.transactions_files
 
-    async def get_file_metadata(
-        self, session: AsyncSession, user_id: UUID, file_id: UUID
-    ) -> TransactionsFileSchema:
+    async def get_file_metadata(self, file_id: UUID) -> TransactionsFileSchema:
         """
         Get metadata for a specific file.
         """
-        file_record = await self.file_repo.get_by_id(session, file_id, user_id=user_id)
+        file_record = await self.file_repo.get_by_id(file_id)
 
         logger.debug(file_record.preview_data)
         logger.debug(type(file_record.preview_data))
@@ -266,14 +251,11 @@ class FileImportService(ResourceService[TransactionsFile]):
     async def _validate_csv(self, file: UploadFile | None) -> bool:
         return await self.file_service.is_csv(file)
 
-    async def fetch_by_id(
-        self, session: AsyncSession, transaction_file_id: UUID
-    ) -> TransactionsFile:
+    async def fetch_by_id(self, transaction_file_id: UUID) -> TransactionsFile:
         """
         Fetch a transaction file by its ID.
 
         Args:
-            session (AsyncSession): The database session.
             transaction_file_id (UUID): The transaction file ID to fetch.
 
         Returns:
@@ -283,7 +265,7 @@ class FileImportService(ResourceService[TransactionsFile]):
             ServiceError: If the file is not found.
         """
         try:
-            file = await self.file_repo.get_by_id(session, transaction_file_id)
+            file = await self.file_repo.get_by_id(transaction_file_id)
         except ResourceNotFound as e:
             raise ServiceError(str(e)) from e
         return file
