@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
-from passlib.context import CryptContext
+import uuid
 from perfi.services.user import UserService
 from perfi.core.database import User
 from perfi.core.exc import ServiceError
@@ -15,6 +15,7 @@ class AuthService:
         self, user_service: UserService, refresh_token_repo: RefreshTokenRepository
     ) -> None:
         self.user_service = user_service
+        self.refresh_token_repo = refresh_token_repo
         application_settings = get_settings()
         self.SECRET_KEY = application_settings.SECRET_KEY
         self.ALGORITHM = application_settings.ALGORITHM
@@ -73,3 +74,25 @@ class AuthService:
             raise ServiceError("Token has expired.")
         except jwt.InvalidTokenError:
             raise ServiceError("Invalid token.")
+
+    def create_refresh_token(self, user_id: uuid.UUID, expires_in: int = 30) -> str:
+        expires_at = datetime.now(datetime.timezone.utc) + timedelta(days=expires_in)
+        token = str(uuid.uuid4())
+        return token, expires_at
+
+    async def issue_refresh_token(self, user_id: uuid.UUID) -> str:
+        token, expires_at = self.create_refresh_token(user_id)
+        await self.refresh_token_repo.create(user_id, token, expires_at)
+        return token
+
+    async def validate_refresh_token(self, token: str) -> User:
+        refresh_token = await self.refresh_token_repo.get_by_token(token)
+        if not refresh_token or refresh_token.expires_at < datetime.utcnow():
+            raise ValueError("Invalid or expired refresh token")
+        return refresh_token.user
+
+    async def revoke_refresh_token(self, token: str) -> None:
+        await self.refresh_token_repo.delete(token)
+
+    async def revoke_expired_tokens(self) -> None:
+        await self.refresh_token_repo.delete_expired()
