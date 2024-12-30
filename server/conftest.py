@@ -127,9 +127,6 @@ def db_config_from_settings(settings):
 @pytest.fixture(scope="session")
 def test_database_url(postgresql_container, db_config_from_settings):
     """Generate the test database URL from the container config."""
-
-    print(f"db_config: {postgresql_container}")
-    print(f"db_config: {db_config_from_settings}")
     return (
         f"postgresql+asyncpg://{postgresql_container['user']}:{postgresql_container['password']}"
         f"@{postgresql_container['host']}:{postgresql_container['port']}/{postgresql_container['dbname']}"
