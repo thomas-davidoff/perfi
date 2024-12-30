@@ -22,6 +22,7 @@ class AuthService:
         self.ACCESS_TOKEN_EXPIRE_MINUTES = (
             application_settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
+        self.REFRESH_TOKEN_EXPIRE_DAYS = application_settings.REFRESH_TOKEN_EXPIRE_DAYS
 
     async def authenticate(
         self, session: AsyncSession, username_or_email: str, password: str
@@ -50,9 +51,9 @@ class AuthService:
 
     def create_access_token(
         self, data: dict, expires_delta: timedelta | None = None
-    ) -> str:
+    ) -> tuple[str, datetime]:
         """
-        Creates a JWT access token.
+        Creates a JWT access token and returns it with its expiration time.
         """
         to_encode = data.copy()
         expire = (
@@ -62,7 +63,8 @@ class AuthService:
             + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         to_encode.update({"exp": expire})
-        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return token, expire
 
     def decode_access_token(self, token: str) -> dict:
         """
@@ -75,20 +77,19 @@ class AuthService:
         except jwt.InvalidTokenError:
             raise ServiceError("Invalid token.")
 
-    def create_refresh_token(self, expires_in: int = 30) -> str:
-        expires_at = datetime.now(UTC) + timedelta(days=expires_in)
+    def create_refresh_token(self) -> str:
+        expires_at = datetime.now(UTC) + timedelta(days=self.REFRESH_TOKEN_EXPIRE_DAYS)
         token = str(uuid.uuid4())
         return token, expires_at
 
-    async def issue_refresh_token(self, user_id: uuid.UUID) -> str:
+    async def issue_refresh_token(self, user_id: uuid.UUID) -> tuple[str, datetime]:
         """
-        Creates a fresh refresh token, and expires any expired ones.
+        Creates a fresh refresh token and returns it with its expiration time.
         """
         token, expires_at = self.create_refresh_token()
-
         await self.refresh_token_repo.create(user_id, token, expires_at)
         self.revoke_expired_tokens()
-        return token
+        return token, expires_at
 
     async def validate_refresh_token(self, token: str) -> User:
         refresh_token = await self.refresh_token_repo.get_by_token(token)

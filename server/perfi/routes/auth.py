@@ -35,9 +35,19 @@ async def login(
     user = await auth_service.authenticate(
         session, form_data.username, form_data.password
     )
-    access_token = auth_service.create_access_token({"sub": str(user.id)})
-    refresh_token = await auth_service.issue_refresh_token(user.id)
-    return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+    access_token, access_token_expires_at = auth_service.create_access_token(
+        {"sub": str(user.id)}
+    )
+    refresh_token, refresh_token_expires_at = await auth_service.issue_refresh_token(
+        user.id
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        access_token_expires_at=access_token_expires_at,
+        refresh_token_expires_at=refresh_token_expires_at,
+    )
 
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -46,9 +56,17 @@ async def refresh_access_token(
     auth_service: AuthService = Depends(get_auth_service),
 ):
     user = await auth_service.validate_refresh_token(refresh_token)
+    access_token, access_token_expires_at = auth_service.create_access_token(
+        {"sub": str(user.id)}
+    )
+    (
+        new_refresh_token,
+        refresh_token_expires_at,
+    ) = await auth_service.issue_refresh_token(user.id)
 
-    access_token = auth_service.create_access_token({"sub": str(user.id)})
-
-    new_refresh_token = await auth_service.issue_refresh_token(user.id)
-
-    return TokenResponse(access_token=access_token, refresh_token=new_refresh_token)
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=new_refresh_token,
+        access_token_expires_at=access_token_expires_at,
+        refresh_token_expires_at=refresh_token_expires_at,
+    )
