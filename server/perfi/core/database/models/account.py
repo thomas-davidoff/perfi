@@ -1,13 +1,12 @@
 from sqlalchemy import Float, String, Enum, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
-from .base_mixin import BaseMixin
 from perfi.core.database import Base
-import enum
 from perfi.schemas.account import AccountType
+from .mixins import RecordMixin
 
 
-class Account(Base, BaseMixin):
+class Account(Base, RecordMixin):
     __tablename__ = "accounts"
 
     name = Column(String(255), nullable=False)

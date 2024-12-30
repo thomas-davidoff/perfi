@@ -1,16 +1,18 @@
-from sqlalchemy import func, Column, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import func, DateTime
 from sqlalchemy.orm import mapped_column, Mapped
-import uuid
+from .id_mixin import IDMixin
 
 
-class BaseMixin:
-    id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+class RecordMixin(IDMixin):
+    """
+    Mixin providing a created_at and updated_at record, which subclasses IDMixin.
+    """
+
+    _created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), default=func.now(), nullable=False
     )
-    _created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
 
-    _updated_at = Column(
+    _updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
         default=func.now(),
         onupdate=func.now(),

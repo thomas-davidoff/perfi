@@ -1,14 +1,14 @@
 from sqlalchemy import Text, Column, String
 from sqlalchemy.orm import relationship
-from .base_mixin import BaseMixin
 from passlib.context import CryptContext
 from perfi.core.database import Base
+from .mixins import RecordMixin
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class User(Base, BaseMixin):
+class User(Base, RecordMixin):
     __tablename__ = "users"
 
     username = Column(String(80), unique=True, nullable=False)
