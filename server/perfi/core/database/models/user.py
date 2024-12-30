@@ -1,11 +1,8 @@
 from sqlalchemy import Text, Column, String
 from sqlalchemy.orm import relationship
-from passlib.context import CryptContext
 from .mixins import RecordMixin
 from .base import Base
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from perfi.core.utils import hash_password, verify_password
 
 
 class User(Base, RecordMixin):
@@ -27,13 +24,13 @@ class User(Base, RecordMixin):
         """
         Hashes a plain password.
         """
-        self._password_hash = pwd_context.hash(plain_text_password)
+        self._password_hash = hash_password(plain_text_password)
 
     def verify_password(self, password):
         """
         Verifies a password against its hashed version.
         """
-        return pwd_context.verify(password, self._password_hash)
+        return verify_password(password, self._password_hash)
 
     # relationships
     accounts = relationship(

@@ -84,7 +84,7 @@ class AuthService:
         """
         token, expires_at = self.create_refresh_token()
         await self.refresh_token_repo.create(user_id, token, expires_at)
-        self.revoke_expired_tokens()
+        await self.revoke_expired_tokens()
         return token, expires_at
 
     async def validate_refresh_token(self, token: str) -> User:
