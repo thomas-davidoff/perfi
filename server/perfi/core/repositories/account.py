@@ -10,21 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 class AccountRepository(AsyncRepository[Account]):
-    def __init__(self) -> None:
-        super().__init__(entity_name="account", model=Account)
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(entity_name="account", model=Account, session=session)
 
-    async def get_by_user_id(
-        self, session: AsyncSession, user_id: UUID
-    ) -> list[Account]:
+    async def get_by_user_id(self, user_id: UUID) -> list[Account]:
         query = select(self.model).filter(self.model.user_id == user_id)
-        result = await session.execute(query)
+        result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def bulk_update_status(
-        self, session: AsyncSession, ids: list[UUID], status: str
-    ) -> None:
+    async def bulk_update_status(self, ids: list[UUID], status: str) -> None:
         query = select(self.model).filter(self.model.id.in_(ids))
-        result = await session.execute(query)
+        result = await self.session.execute(query)
         entities = result.scalars().all()
         if not entities:
             return
@@ -33,7 +29,7 @@ class AccountRepository(AsyncRepository[Account]):
             entity.status = status
 
         try:
-            await session.commit()
+            await self.session.commit()
         except Exception as e:
-            await session.rollback()
+            await self.session.rollback()
             raise e

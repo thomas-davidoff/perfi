@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class UserRepository(AsyncRepository[User]):
-    def __init__(self) -> None:
-        super().__init__(entity_name="user", model=User)
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(entity_name="user", model=User, session=session)
 
-    async def get_by_id(self, session: AsyncSession, id: int) -> Optional[User]:
+    async def get_by_id(self, id: int) -> Optional[User]:
         """
         Gets a user by ID.
 
@@ -21,11 +21,9 @@ class UserRepository(AsyncRepository[User]):
         :param id: The ID of the user
         :return: User instance or None
         """
-        return await super().get_by_id(session, id)
+        return await super().get_by_id(id)
 
-    async def get_by_username_or_email(
-        self, session: AsyncSession, username_or_email: str
-    ) -> Optional[User]:
+    async def get_by_username_or_email(self, username_or_email: str) -> Optional[User]:
         """
         Gets a user by their username or email.
 
@@ -36,10 +34,10 @@ class UserRepository(AsyncRepository[User]):
         query = select(User).filter(
             (User.username == username_or_email) | (User.email == username_or_email)
         )
-        result = await session.execute(query)
+        result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def update_by_id(self, session: AsyncSession, id: int, data: dict) -> User:
+    async def update_by_id(self, id: int, data: dict) -> User:
         """
         Updates a user in the database.
 
@@ -48,9 +46,9 @@ class UserRepository(AsyncRepository[User]):
         :param data: Dictionary of fields to update
         :return: Updated User instance
         """
-        return await super().update_by_id(session, id, data)
+        return await super().update_by_id(id, data)
 
-    async def bulk_delete(self, session: AsyncSession, ids: List[int]) -> List[int]:
+    async def bulk_delete(self, ids: List[int]) -> List[int]:
         """
         Deletes multiple users by their IDs.
 
@@ -61,7 +59,7 @@ class UserRepository(AsyncRepository[User]):
         deleted_ids = []
         for id in ids:
             try:
-                await self.delete(session, id)
+                await self.delete(id)
                 deleted_ids.append(id)
             except NoResultFound:
                 logger.warning(
@@ -70,16 +68,16 @@ class UserRepository(AsyncRepository[User]):
                 continue
         return deleted_ids
 
-    async def get_all(self, session: AsyncSession) -> List[User]:
+    async def get_all(self) -> List[User]:
         """
         Gets all users.
 
         :param session: Async database session
         :return: List of User instances
         """
-        return await super().get_all(session)
+        return await super().get_all()
 
-    async def create(self, session: AsyncSession, data: dict) -> User:
+    async def create(self, data: dict) -> User:
         """
         Creates a new user in the database.
 
@@ -87,4 +85,4 @@ class UserRepository(AsyncRepository[User]):
         :param data: Dictionary of user fields
         :return: Created User instance
         """
-        return await super().create(session, data)
+        return await super().create(data)

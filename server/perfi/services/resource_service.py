@@ -12,7 +12,7 @@ class ResourceService(ABC, Generic[T]):
         pass
 
     @abstractmethod
-    async def fetch_by_id(self, session: AsyncSession, resource_id: UUID) -> T:
+    async def fetch_by_id(self, resource_id: UUID) -> T:
         """
         Gets a generic resource by ID
         """
