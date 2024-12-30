@@ -82,16 +82,17 @@ class AuthService:
 
     async def issue_refresh_token(self, user_id: uuid.UUID) -> str:
         """
-        Creates a fresh refresh token, and manually expires any existing ones.
+        Creates a fresh refresh token, and expires any expired ones.
         """
         token, expires_at = self.create_refresh_token()
 
         await self.refresh_token_repo.create(user_id, token, expires_at)
+        self.revoke_expired_tokens()
         return token
 
     async def validate_refresh_token(self, token: str) -> User:
         refresh_token = await self.refresh_token_repo.get_by_token(token)
-        if not refresh_token or refresh_token.expires_at < datetime.utcnow():
+        if not refresh_token or refresh_token.expires_at < datetime.now(UTC):
             raise ValueError("Invalid or expired refresh token")
         return refresh_token.user
 
