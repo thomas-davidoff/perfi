@@ -61,7 +61,7 @@ async def list_transactions(
         user_id=current_user.id
     )
     return GenericResponse(
-        data=[TransactionSchema.model_validate(t) for t in transactions]
+        data=[TransactionSchema.model_validate(t).model_dump() for t in transactions]
     )
 
 

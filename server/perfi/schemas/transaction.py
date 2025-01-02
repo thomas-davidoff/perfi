@@ -65,10 +65,18 @@ class Transaction(Record):
     def format_date(self, date: datetime):
         return date.strftime("%Y-%m-%d")
 
+    @field_serializer("amount", when_used="always")
+    def format_as_currency(self, amount: float):
+        """
+        Converts an amount float to a standard currency number, e.g. $123.45
+        """
+        # TODO: Eventually, handle other currencies.
+        return f"${amount:.2f}"
+
 
 class TransactionRequest(BaseModel):
     """
-    Generic transaction requests schema
+    Generic transaction requests schema.
     """
 
     amount: float = Field(default=0.0, ge=-10000)
@@ -80,16 +88,14 @@ class TransactionRequest(BaseModel):
 
     @field_validator("date", mode="before")
     def ensure_correct_date_format(cls, date: str):
-
         for format in StandardDate.SUPPORTED_FORMATS:
             try:
                 return datetime.strptime(date, format).strftime("%Y-%m-%d")
-            except:
-                print("fuck")
-        raise CustomValidationError(
-            "date must be a valid date in one of the supported formats: "
-            f'{", ".join(StandardDate.SUPPORTED_FORMATS)}'
-        )
+            except Exception as e:
+                raise CustomValidationError(
+                    "date must be a valid date in one of the supported formats: "
+                    f'{", ".join(StandardDate.SUPPORTED_FORMATS)}'
+                ) from e
 
     @field_validator("category", mode="before")
     def coerce_invalid_category(cls, value):
