@@ -29,7 +29,9 @@ from .core.middleware import (
 from .core.exc import CustomException
 
 
-app = FastAPI(title="Perfi", description="Manage yo finances", openapi_url="/spec")
+app = FastAPI(
+    title="Perfi", description="Personal finance manager", openapi_url="/spec"
+)
 
 for router in routers:
     app.include_router(router=router)

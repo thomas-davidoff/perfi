@@ -23,7 +23,7 @@ def run():
             debugpy.wait_for_client()
         except ImportError as e:
             print(
-                "debugpy is not installed. Please install it with `poetry add debugpy --dev`."
+                "debugpy is not installed. Please install it with `poetry add debugpy --group dev`."
             )
             raise e
 
