@@ -94,7 +94,8 @@ class TransactionRequest(BaseModel):
             except Exception as e:
                 raise CustomValidationError(
                     "date must be a valid date in one of the supported formats: "
-                    f'{", ".join(StandardDate.SUPPORTED_FORMATS)}'
+                    f'{", ".join(StandardDate.SUPPORTED_FORMATS)}. '
+                    f"You passed {date}"
                 ) from e
 
     @field_validator("category", mode="before")

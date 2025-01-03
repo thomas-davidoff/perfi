@@ -6,7 +6,10 @@ from perfi.core.dependencies.service_factories import get_auth_service
 from perfi.core.exc import ServiceError
 from perfi.schemas.auth import TokenResponse
 from perfi.schemas.user import UserResponse, UserCreate
+import logging
 
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 

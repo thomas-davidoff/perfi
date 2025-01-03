@@ -10,7 +10,7 @@ export function useAccounts() {
         setIsLoading(true);
         try {
             const data = await fetchAccounts();
-            setAccounts(data);
+            setAccounts(data.data);
         } catch (error) {
             console.error('Error fetching accounts:', error);
         } finally {

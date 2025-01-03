@@ -12,11 +12,21 @@ export interface Transaction extends FullRecordResponse {
     merchant: string,
 }
 
+
+export interface ListTransactionsResponse {
+    data: Transaction[]
+}
+
+
 export interface Account extends FullRecordResponse {
     account_type: string,
     balance: number,
     name: string,
     user_id: User
+}
+
+export interface ListAccountsResponse {
+    data: Account[]
 }
 
 export interface User extends FullRecordResponse {

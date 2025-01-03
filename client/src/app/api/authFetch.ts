@@ -15,7 +15,7 @@ export async function authFetch(
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        const response = await fetch(`${API_BASE_URL}/${endpoint}/`, {
             ...options,
             headers: {
                 Authorization: `Bearer ${session.access_token}`,

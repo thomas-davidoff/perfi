@@ -10,7 +10,7 @@ export function useTransactions() {
         setIsLoading(true);
         try {
             const data = await fetchTransactions();
-            setTransactions(data);
+            setTransactions(data.data);
         } catch (error) {
             console.error('Error fetching transactions:', error);
         } finally {

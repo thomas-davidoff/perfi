@@ -13,7 +13,7 @@ from perfi.core.dependencies.current_user import get_current_user
 from perfi.core.dependencies.service_factories import get_accounts_service
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/account", tags=["Account"])
+router = APIRouter(prefix="/accounts", tags=["Account"])
 
 
 @router.post("/", response_model=AccountSchema)
