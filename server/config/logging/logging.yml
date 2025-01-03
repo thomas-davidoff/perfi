@@ -1,5 +1,5 @@
 version: 1
-disable_existing_loggers: True
+disable_existing_loggers: False
 
 
 formatters:
@@ -10,8 +10,6 @@ formatters:
   colored:
     (): config.logging.ColoredFormatter
 
-  request:
-    (): config.logging.RequestFormatter
 
 handlers:
   basic:
@@ -24,14 +22,15 @@ handlers:
     level: DEBUG
     formatter: colored
     stream: ext://sys.stdout
-  request:
-    class: logging.StreamHandler
-    level: INFO
-    formatter: request
-    stream: ext://sys.stdout
+
+
+filters:
+  disable_log:
+    (): config.logging.DisableLogFilter
+
 
 loggers:
-  app:
+  perfi:
     level: DEBUG
     handlers: [app_log]
     propagate: no
@@ -46,12 +45,22 @@ loggers:
     handlers: []
     propagate: no
 
-  request_logger:
-    level: INFO
-    handlers: [request]
+  alembic:
+    level: DEBUG
+    handlers: [app_log]
     propagate: no
 
+  migrations:
+    level: DEBUG
+    handlers: [basic]
+    propagate: no
+
+  uvicorn.access:
+    handlers: []
+    propagate: no
+    level: WARNING
+    filters: [disable_log]
 
 root:
-  level: INFO
+  level: WARNING
   handlers: [basic]

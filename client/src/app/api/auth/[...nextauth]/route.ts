@@ -11,12 +11,12 @@ export const authOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                const res = await fetch(`${API_BASE_URL}/auth/token`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: credentials?.username,
-                        password: credentials?.password
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        username: credentials?.username || '',
+                        password: credentials?.password || ''
                     })
                 });
 
@@ -26,13 +26,11 @@ export const authOptions = {
                 }
 
                 return {
-                    id: data.id,
-                    name: data.user.name,
-                    email: data.user.email,
                     access_token: data.access_token,
                     refresh_token: data.refresh_token,
-                    access_token_expires: new Date(data.access_token_expires),
-                    refresh_token_expires: new Date(data.refresh_token_expires)
+                    access_token_expires_at: new Date(data.access_token_expires),
+                    refresh_token_expires_at: new Date(data.refresh_token_expires),
+                    token_type: data.token_type
                 };
             },
         }),

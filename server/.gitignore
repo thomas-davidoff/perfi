@@ -1,8 +1,19 @@
-
+# Env files per-environment
 .env.*
-# temporary for writing notes to self
-.notes
-.coverage
-.mypy_cache/
-.pytest_cache/
+
+# App data
+# TODO: Find a better place for app data
 uploads/
+
+# Cache
+__pycache__
+*_cache/
+
+# Build
+*.egg-info
+
+# Testing
+.coverage
+
+# Local dev ignores
+.vscode

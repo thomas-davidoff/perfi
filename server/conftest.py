@@ -1,112 +1,54 @@
 import pytest
-import os
-from initializers import load_env, load_configuration, get_logger
-from tests.helpers import TransactionFactory, AccountFactory, UserFactory
-from extensions import db
-import psycopg
 import time
 import docker
 import uuid
-from database import Account, User
-from flask import Flask, testing
-
-environment = "testing"
-
-DB_CONFIG = {
-    "dbname": "testdb",
-    "user": "testuser",
-    "password": "mysecretpassword",
-    "host": "localhost",
-}
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from contextlib import asynccontextmanager
+from perfi.core.database import Base
+from perfi.core.dependencies.settings import get_settings, Settings
 
 
-def is_postgres_available(db_config):
-    db_config = db_config.copy()
-    connection_string = (
-        f"postgresql://{db_config['user']}:{db_config['password']}"
-        f"@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
-    )
-    try:
-        with psycopg.connect(connection_string) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-        return True
-    except psycopg.OperationalError as e:
-        # print(f"OperationalError: {e}")
-        return False
-
-
-def pytest_configure():
-    load_env(f".env")
-    load_env(f".env.{environment}", override=True)
+DB_IMAGE = "postgres:17"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def config(postgresql_container):
-    environment = "testing"
-
-    test_db_config = postgresql_container
-
-    connection_string = (
-        f"postgresql://{test_db_config['user']}:{test_db_config['password']}"
-        f"@{test_db_config['host']}:{test_db_config['port']}/{test_db_config['dbname']}"
-    )
-
-    os.environ["DATABASE_URI"] = connection_string
-    configuration = load_configuration(environment)
-    return configuration
+def settings() -> Settings:
+    return get_settings()
 
 
-@pytest.fixture(scope="session")
-def postgresql_container():
-    unique_container_name = f"test-postgres-{uuid.uuid4()}"
+# Utility to wait for PostgreSQL to be ready
+def wait_for_postgres(db_config, timeout=30):
+    start_time = time.time()
+    while True:
+        try:
+            from psycopg2 import connect
 
-    client = docker.from_env()
-    container = client.containers.run(
-        image="postgres:17",
-        name=unique_container_name,
-        ports={"5432/tcp": None},
-        environment={
-            "POSTGRES_USER": DB_CONFIG["user"],
-            "POSTGRES_PASSWORD": DB_CONFIG["password"],
-            "POSTGRES_DB": DB_CONFIG["dbname"],
-        },
-        detach=True,
-        tmpfs={"/var/lib/postgresql/data": "rw"},
-    )
-
-    host_port = wait_for_port_mapping(container)
-
-    test_db_config = DB_CONFIG.copy()
-    test_db_config["port"] = host_port
-
-    timeout = 30
-    start = time.time()
-    while not is_postgres_available(db_config=test_db_config):
-        time.sleep(0.1)
-        if time.time() - start > timeout:
-            logs = container.logs().decode("utf-8")
-            print(f"Container logs:\n{logs}")
-            raise TimeoutError("Postgres database did not start in time")
-
-    try:
-        yield test_db_config
-    finally:
-        container.stop()
-        container.remove()
+            connection_string = (
+                f"postgresql://{db_config['user']}:{db_config['password']}"
+                f"@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
+            )
+            with connect(connection_string) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1")
+            return True
+        except Exception:
+            if time.time() - start_time > timeout:
+                raise TimeoutError("Postgres did not start in time.")
+            time.sleep(0.1)
 
 
-def wait_for_port_mapping(container, timeout=30):
+def wait_for_port_mapping(container, container_port_protocol, timeout=30):
     start_time = time.time()
     while True:
         container.reload()
         port_info = container.attrs["NetworkSettings"]["Ports"]
         if (
             port_info
-            and port_info.get("5432/tcp")
-            and port_info["5432/tcp"][0].get("HostPort")
+            and port_info.get(container_port_protocol)
+            and port_info[container_port_protocol][0].get("HostPort")
         ):
-            return port_info["5432/tcp"][0]["HostPort"]
+            return port_info[container_port_protocol][0]["HostPort"]
         if time.time() - start_time > timeout:
             logs = container.logs().decode("utf-8")
             print(f"Container logs:\n{logs}")
@@ -114,103 +56,122 @@ def wait_for_port_mapping(container, timeout=30):
         time.sleep(0.1)
 
 
-@pytest.fixture
-def logger():
-    import logging
-    import sys
+@pytest.fixture(scope="session", autouse=True)
+def postgresql_container(db_config_from_settings):
+    """Spin up a Docker container for PostgreSQL."""
+    client = docker.from_env()
+    container_name = f"test-postgres-{uuid.uuid4()}"
 
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
+    container_port_protocol = f"{db_config_from_settings['port']}/tcp"
 
-    testing_logger = logging.getLogger("test_logger")
-
-    yield testing_logger
-
-    root.removeHandler(handler)
-
-
-@pytest.fixture
-def app(logger, config):
-
-    from app import create_app
-
-    app = create_app(config, logger)
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
-
-
-@pytest.fixture
-def db_session():
-    from extensions import db  # Import the db object from your app
-
-    session = db.session
-    yield session
-    session.rollback()  # Rollback any changes after the test
-
-
-@pytest.fixture()
-def client(app) -> testing.FlaskClient:
-    return app.test_client()
-
-
-@pytest.fixture()
-def transaction_factory(valid_account, db_session):
-    return TransactionFactory(
-        db_session, account_id=valid_account.id, user_id=valid_account.user.id
-    )
-
-
-@pytest.fixture
-def user_factory(db_session):
-    return UserFactory(db_session)
-
-
-@pytest.fixture
-def account_factory(app: Flask, valid_user: User, db_session):
-    return AccountFactory(db_session, user=valid_user)
-
-
-@pytest.fixture
-def valid_user(user_factory) -> User:
-    return user_factory.create("valid")
-
-
-@pytest.fixture
-def valid_account(account_factory) -> Account:
-    return account_factory.create("valid")
-
-
-@pytest.fixture
-def valid_transaction(transaction_factory: TransactionFactory):
-    t = transaction_factory.create("valid")
-    from sqlalchemy.orm import object_session
-
-    assert object_session(t) is not None, "Transaction is not bound to a session"
-    print(f"valid transaction sesh: {object_session(t)}")
-    return t
-
-
-@pytest.fixture
-def auth_headers(valid_user, client):
-    # log the user in to get an auth token
-    headers = {"Content-type": "application/json", "Accept": "application/json"}
-    r = client.post(
-        "/api/auth/login",
-        json={
-            "username": valid_user.username,
-            "password": os.environ["DB_SEEDS_PASSWORD"],
+    container = client.containers.run(
+        image=DB_IMAGE,
+        name=container_name,
+        ports={container_port_protocol: None},
+        environment={
+            "POSTGRES_USER": db_config_from_settings["user"],
+            "POSTGRES_PASSWORD": db_config_from_settings["password"],
+            "POSTGRES_DB": db_config_from_settings["dbname"],
         },
-        headers=headers,
+        detach=True,
+        tmpfs={"/var/lib/postgresql/data": "rw"},
+        command=f"-p {db_config_from_settings['port']}",
     )
-    headers["Authorization"] = f"Bearer {r.json['access_token']}"
-    return headers
+
+    # Get mapped host port
+    container.reload()
+
+    host_port = wait_for_port_mapping(
+        container, container_port_protocol=container_port_protocol
+    )
+
+    db_config_from_settings["port"] = host_port
+    wait_for_postgres(db_config_from_settings)
+
+    yield db_config_from_settings
+
+    container.stop()
+    container.remove()
+
+
+# === Test Database Session Management ===
+
+
+@asynccontextmanager
+async def get_test_db(database_url):
+    """
+    Provide a test database session. Rolls back after each use.
+    """
+    engine = create_async_engine(database_url, echo=False)
+    TestSessionLocal = sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with TestSessionLocal() as session:
+        yield session
+        await session.rollback()
+
+
+@pytest.fixture(scope="session")
+def db_config_from_settings(settings):
+    return {
+        "dbname": settings.DB_NAME,
+        "user": settings.DB_USER,
+        "password": settings.DB_PASS,
+        "host": settings.DB_HOST,
+        "port": settings.DB_PORT,
+    }
+
+
+@pytest.fixture(scope="session")
+def test_database_url(postgresql_container, db_config_from_settings):
+    """Generate the test database URL from the container config."""
+    return (
+        f"postgresql+asyncpg://{postgresql_container['user']}:{postgresql_container['password']}"
+        f"@{postgresql_container['host']}:{postgresql_container['port']}/{postgresql_container['dbname']}"
+    )
+
+
+async def get_test_db(database_url):
+    """
+    Provide an async test database session. Rolls back after each use.
+    """
+    engine = create_async_engine(
+        database_url,
+        echo=False,
+        future=True,
+    )
+    TestSessionLocal = sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with TestSessionLocal() as session:
+        yield session
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+    await engine.dispose()
+
+
+@pytest.fixture(scope="session")
+async def test_db(test_database_url):
+    """
+    Initialize the test database by creating tables.
+    """
+    async with get_test_db(test_database_url) as session:
+        yield session
+
+
+@pytest.fixture
+async def db_session(test_database_url):
+    """
+    Provide a transactional database session for each test.
+    """
+    async for session in get_test_db(test_database_url):
+        yield session
