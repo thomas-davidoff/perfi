@@ -1,5 +1,5 @@
 services:
-  app:
+  backend:
     build:
       context: ./server
     ports:
@@ -11,3 +11,18 @@ services:
     env_file:
       - ./server/.env.development
     entrypoint: /bin/bash -c "poetry run uvicorn perfi:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "http://backend:8000"
+      NEXT_PUBLIC_BASE_URL: "http://localhost:3000"
+      NEXTAUTH_URL: "http://localhost:3000"
+    env_file:
+      - ./client/.env.local
+    entrypoint: /bin/bash -c "yarn run dev"
