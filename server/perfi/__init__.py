@@ -6,8 +6,11 @@ from pathlib import Path
 import yaml
 
 # requires relative logging config file
-logging_config = Path("config/logging/logging.yml")
-with open(logging_config, "r") as f:
+logging_config_rel_path = "config/logging/logging.yml"
+server_directory = Path(__file__).parents[1].resolve()
+logging_config_fp = server_directory.joinpath(logging_config_rel_path).resolve()
+
+with open(logging_config_fp, "r") as f:
     dict_config = yaml.safe_load(f)
 
 logging.config.dictConfig(dict_config)
