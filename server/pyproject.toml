@@ -4,7 +4,6 @@ version = "0.0.1"
 description = "Personal finances manager API"
 authors = ["Thomas Davidoff <thomas.davidoff@gmail.com>"]
 license = "MIT"
-readme = "README.md"
 packages = [ { include = "perfi" } ]
 include = ["config/logging/logging.yml"]
 

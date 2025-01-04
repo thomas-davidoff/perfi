@@ -14,8 +14,6 @@ def fetch_external_secrets():
 class Settings(BaseSettings):
     """
     Dynamic settings class
-
-    Requires `ENVIRONMENT` to have already been loaded
     """
 
     # DB config
@@ -26,7 +24,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "pfd"
 
     # App config
-    APP_HOST: str
+    APP_HOST: str = "api.perfi.local"
     APP_PORT: str
     UPLOAD_FOLDER: str
     APP_NAME: str = "perfi-api"

@@ -1,7 +1,6 @@
 # logging needs to be configured first
 import logging
-import logging.config
-import logging.handlers
+from logging.config import dictConfig
 from pathlib import Path
 import yaml
 
@@ -13,7 +12,7 @@ logging_config_fp = server_directory.joinpath(logging_config_rel_path).resolve()
 with open(logging_config_fp, "r") as f:
     dict_config = yaml.safe_load(f)
 
-logging.config.dictConfig(dict_config)
+dictConfig(dict_config)
 
 
 logger = logging.getLogger(__name__)
