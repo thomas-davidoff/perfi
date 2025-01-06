@@ -2,15 +2,25 @@ services:
   backend:
     build:
       context: ./server
+      target: development
+      args:
+        - ENVIRONMENT=development
+        - APP_PORT=8000
     ports:
       - "8000:8000"
     volumes:
       - ./server:/app
-    environment:
-      APP_PORT: 8000
     env_file:
       - ./server/.env.development
-    entrypoint: /bin/bash -c "poetry run uvicorn perfi:app --host 0.0.0.0 --port 8000"
+    environment:
+      APP_PORT: 8000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: perfi_dev
+      DB_NAME: perfi
+      CONTAINERIZED: true
+    entrypoint: perfi run
+
 
   frontend:
     build:
@@ -19,10 +29,36 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/app
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: "http://backend:8000"
-      NEXT_PUBLIC_BASE_URL: "http://localhost:3000"
-      NEXTAUTH_URL: "http://localhost:3000"
     env_file:
       - ./client/.env.local
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3000
     entrypoint: /bin/bash -c "yarn run dev"
+
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: perfi_dev
+      POSTGRES_DB: perfi
+    env_file:
+      - .env.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  test_db:
+    image: postgres:17
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: perfi_test
+      POSTGRES_DB: perfi_test
+      POSTGRES_PASSWORD: perfi_test_pass
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  postgres_data:

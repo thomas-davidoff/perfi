@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "pfd"
 
     # App config
-    APP_HOST: str = "api.perfi.local"
+    APP_HOST: str = "0.0.0.0"
     APP_PORT: str
     UPLOAD_FOLDER: str
     APP_NAME: str = "perfi-api"
