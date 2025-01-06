@@ -43,7 +43,6 @@ async def db_session(engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    import uuid
 
     async with TestSessionLocal() as session:
         async with session.begin():
@@ -51,4 +50,3 @@ async def db_session(engine):
                 yield session
             finally:
                 await session.rollback()
-                print(f"Rolled back: {uuid.uuid4()}")

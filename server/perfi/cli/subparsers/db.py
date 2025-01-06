@@ -7,7 +7,7 @@ from sqlalchemy import engine_from_config, pool, Engine
 from sqlalchemy.sql import text
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
-
+from alembic import command
 from config.database import configure_alembic, get_database_urls
 from perfi.core.database import Base, engine
 
@@ -32,35 +32,12 @@ def ping():
     asyncio.run(_check())
 
 
-@db_cli.command("create")
-def create_all():
-    """Create all database tables."""
-
-    async def _create():
-        async with engine.begin() as connection:
-            await connection.run_sync(Base.metadata.create_all)
-        typer.echo("Database tables created.")
-
-    asyncio.run(_create())
-
-
-@db_cli.command("drop")
-def drop_all():
-    """Drop all database tables."""
-
-    async def _drop():
-        async with engine.begin() as connection:
-            await connection.run_sync(Base.metadata.drop_all)
-        typer.echo("Database tables dropped.")
-
-    asyncio.run(_drop())
-
-
 @db_cli.command("sh")
 def db_shell():
     """Open a database shell."""
 
     url = make_url(DATABASE_URL_ASYNC)
+
     command = [
         "psql",
         f"-h{url.host}",
@@ -100,23 +77,59 @@ def get_sync_engine() -> Engine:
 
 
 @db_cli.command("check")
-def check_for_pending_migrations():
+def check_for_pending_migrations(silent: bool = False):
     """
     Check if there are pending migrations.
     """
 
-    _, script, engine = configure_alembic()
+    _, script, sync_engine = configure_alembic()
 
-    with engine.connect() as connection:
+    with sync_engine.connect() as connection:
         context = MigrationContext.configure(connection)
         current_rev = context.get_current_revision()
         latest_rev = script.get_current_head()
 
     if current_rev == latest_rev:
-        print("Database is up-to-date.")
+        if not silent:
+            print("Database is up-to-date.")
         return False
     else:
-        print(
-            f"Pending migrations detected. Current: {current_rev}, Latest: {latest_rev}"
-        )
+        if not silent:
+            print(
+                f"Pending migrations detected. Current: {current_rev}, Latest: {latest_rev}"
+            )
         return True
+
+
+@db_cli.command("upgrade")
+def upgrade_to_latest(revision: str = "head"):
+    """
+    Perform the equivalent of 'alembic upgrade head' in Python.
+    """
+
+    has_revisions = check_for_pending_migrations(silent=True)
+
+    alembic_config, _, sync_engine = configure_alembic()
+
+    with sync_engine.connect() as connection:
+        context = MigrationContext.configure(connection)
+        current_rev = context.get_current_revision()
+
+    if not has_revisions:
+        print(f"Database is already up-to-date. Current DB revision is: {current_rev}")
+        return
+
+    command.upgrade(alembic_config, revision=revision)
+
+    print("Database has been upgraded to the latest migration.")
+
+
+@db_cli.command("drop")
+def downgrade_to_base():
+    """
+    Downgrade the database back to before the first migration.
+    """
+    alembic_config, _, _ = configure_alembic()
+
+    command.downgrade(alembic_config, "base")
+    print("Database has been downgraded to the base (no migrations).")
