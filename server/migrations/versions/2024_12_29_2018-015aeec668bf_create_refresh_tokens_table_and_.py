@@ -1,7 +1,7 @@
 """Create refresh tokens table and associate with user.
 
 Revision ID: 015aeec668bf
-Revises: 7176f4046dec
+Revises: ba8d58bf1d5e
 Create Date: 2024-12-29 20:18:23.145097
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "015aeec668bf"
-down_revision: Union[str, None] = "7176f4046dec"
+down_revision: Union[str, None] = "ba8d58bf1d5e"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
