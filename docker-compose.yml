@@ -19,8 +19,8 @@ services:
       DB_USER: perfi_dev
       DB_NAME: perfi
       CONTAINERIZED: true
+      PYTHONUNBUFFERED: 1
     entrypoint: perfi run
-
 
   frontend:
     build:
