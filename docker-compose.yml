@@ -18,35 +18,19 @@ services:
       - ./server/.env.development
     environment:
       APP_PORT: 8000
+      APP_HOST: 0.0.0.0
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: perfi_dev
       DB_NAME: perfi
-      CONTAINERIZED: true
+      DEBUG: true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 10s
       timeout: 5s
       retries: 1
     container_name: backend
 
-  backend_test:
-    extends:
-      service: backend
-    command: ["test"]
-    environment:
-      ENVIRONMENT: test
-      DB_HOST: test_db
-      DB_USER: perfi_test
-      DB_NAME: perfi_test
-    env_file:
-      - ./server/.env.test
-    volumes:
-      # mount tests and conftest.py
-      - ./server/tests:/opt/perfi/tests
-      - ./server/conftest.py:/opt/perfi/conftest.py
-      # to handle changes in pytest configuration
-      - ./server/pyproject.toml:/opt/perfi/pyproject.toml
   frontend:
     build:
       context: ./client
@@ -64,7 +48,7 @@ services:
     entrypoint: /bin/bash -c "yarn run dev"
     healthcheck:
       # TODO: replace healthcheck with dedicated /health once implemented
-      test: ["CMD", "curl", "-f", "http://localhost:3000/login"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/login" ]
       interval: 10s
       timeout: 5s
       retries: 1
