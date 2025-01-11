@@ -10,6 +10,7 @@ ARG APP_PORT=8000
 RUN if [ "$ENVIRONMENT" = "development" ]; then \
         apt-get install -y libpq-dev gcc postgresql-client; \
     fi \
+    && apt-get install -y curl \
     && apt-get clean
 
 

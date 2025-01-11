@@ -6,6 +6,7 @@ services:
       args:
         - ENVIRONMENT=development
         - APP_PORT=8000
+    image: perfi-api
     ports:
       - "8000:8000"
     volumes:
@@ -21,10 +22,17 @@ services:
       CONTAINERIZED: true
       PYTHONUNBUFFERED: 1
     entrypoint: perfi run
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+    container_name: backend
 
   frontend:
     build:
       context: ./client
+    image: perfi-client
     ports:
       - "3000:3000"
     volumes:
@@ -36,6 +44,13 @@ services:
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
       NEXTAUTH_URL: http://localhost:3000
     entrypoint: /bin/bash -c "yarn run dev"
+    healthcheck:
+      # TODO: replace healthcheck with dedicated /health once implemented
+      test: ["CMD", "curl", "-f", "http://localhost:3000/login"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+    container_name: frontend
 
   db:
     image: postgres:17
@@ -48,6 +63,7 @@ services:
       - .env.db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    container_name: db
 
   test_db:
     image: postgres:17
@@ -59,6 +75,7 @@ services:
       POSTGRES_PASSWORD: perfi_test_pass
     tmpfs:
       - /var/lib/postgresql/data
+    container_name: test_db
 
 volumes:
   postgres_data:
