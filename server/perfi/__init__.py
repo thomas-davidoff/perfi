@@ -1,3 +1,8 @@
+# load settings first
+from config import get_settings
+
+settings = get_settings()
+
 # logging needs to be configured first
 import logging
 from logging.config import dictConfig

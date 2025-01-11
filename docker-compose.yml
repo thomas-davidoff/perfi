@@ -30,6 +30,23 @@ services:
       retries: 1
     container_name: backend
 
+  backend_test:
+    extends:
+      service: backend
+    command: ["test"]
+    environment:
+      ENVIRONMENT: test
+      DB_HOST: test_db
+      DB_USER: perfi_test
+      DB_NAME: perfi_test
+    env_file:
+      - ./server/.env.test
+    volumes:
+      # mount tests and conftest.py
+      - ./server/tests:/opt/perfi/tests
+      - ./server/conftest.py:/opt/perfi/conftest.py
+      # to handle changes in pytest configuration
+      - ./server/pyproject.toml:/opt/perfi/pyproject.toml
   frontend:
     build:
       context: ./client

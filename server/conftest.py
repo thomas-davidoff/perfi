@@ -1,23 +1,23 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from perfi.core.database import Base
+import pytest
 import pytest_asyncio
+from config import get_settings, Settings
+
+
+@pytest.fixture
+def settings() -> Settings:
+    # hardcode test env here to prevent accidentally using dev db
+    return get_settings(environment="test")
 
 
 @pytest_asyncio.fixture
-async def engine():
-    """Set up the database schema for the test session."""
-    db_settings = {
-        "user": "perfi_test",
-        "password": "perfi_test_pass",
-        "host": "test_db",
-        "port": 5432,
-        "dbname": "perfi_test",
-    }
+async def engine(settings: Settings):
 
     url = (
-        f"postgresql+asyncpg://{db_settings['user']}:{db_settings['password']}"
-        f"@{db_settings['host']}:{db_settings['port']}/{db_settings['dbname']}"
+        f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASS}"
+        f"@{settings.DB_HOST}:{int(settings.DB_PORT)}/{settings.DB_NAME}"
     )
 
     engine = create_async_engine(
