@@ -1,9 +1,10 @@
 from sqlalchemy.engine.url import URL
-from perfi.core.dependencies.settings import get_settings
 from alembic.script import ScriptDirectory
 from alembic.config import Config
 from sqlalchemy import engine_from_config, pool, Engine
 from functools import lru_cache
+
+from config import get_settings
 
 
 settings = get_settings()

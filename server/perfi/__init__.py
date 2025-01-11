@@ -22,8 +22,8 @@ from fastapi import FastAPI
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from .cli import cli  # Note: serves as entrypoint
-from .core.database.models import *  # Note: registers models with base.metadata
+
+# from .core.database.models import *  # Note: registers models with base.metadata
 from .routes import routers
 from .core.middleware import (
     log_request,

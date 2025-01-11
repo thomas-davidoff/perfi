@@ -15,8 +15,7 @@ from perfi.core.repositories import (
     TransactionsFileRepository,
     RefreshTokenRepository,
 )
-from config import Settings
-from .settings import get_settings
+from config import Settings, get_settings
 from .repo_factories import (
     get_account_repo,
     get_user_repo,

@@ -1,15 +1,26 @@
+import typer
+from typing import Annotated, Optional
 import subprocess
 import os
 import asyncio
-import typer
+import pytest
 from sqlalchemy.engine.url import make_url
 from sqlalchemy import engine_from_config, pool, Engine
 from sqlalchemy.sql import text
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic import command
+
 from config.database import configure_alembic, get_database_urls
 from perfi.core.database import Base, engine
+from perfi.entry import run as start_server
+
+cli = typer.Typer(help="Perfi CLI Tool")
+
+
+@cli.command("run")
+def run():
+    start_server()
 
 
 DATABASE_URL_ASYNC, DATABASE_URL_SYNC = get_database_urls()
@@ -133,3 +144,21 @@ def downgrade_to_base():
 
     command.downgrade(alembic_config, "base")
     print("Database has been downgraded to the base (no migrations).")
+
+
+@cli.command("test")
+def run_tests(
+    file_function: Annotated[Optional[str], typer.Argument()] = None,
+    verbose: bool = True,
+    stop_on_fail: bool = False,
+):
+    """
+    Run pytest with custom options.
+    """
+    pytest_args = []
+    if file_function:
+        pytest_args.append(file_function)
+    pytest.main(pytest_args)
+
+
+cli.add_typer(db_cli, name="db")

@@ -1,4 +1,4 @@
-from perfi.core.dependencies.settings import get_settings, Settings
+from config import Settings, get_settings
 import uvicorn
 import os
 

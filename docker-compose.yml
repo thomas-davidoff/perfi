@@ -4,13 +4,16 @@ services:
       context: ./server
       target: development
       args:
-        - ENVIRONMENT=development
-        - APP_PORT=8000
+        - POETRY_VERSION=1.4.2
+        - PYTHON_VERSION=3.13.1
+        - APP_USER=perfi
     image: perfi-api
     ports:
       - "8000:8000"
     volumes:
-      - ./server:/app
+      - ./server/perfi:/opt/perfi/perfi
+      - ./server/cli:/opt/perfi/cli
+      - ./server/config:/opt/perfi/config
     env_file:
       - ./server/.env.development
     environment:
@@ -20,8 +23,6 @@ services:
       DB_USER: perfi_dev
       DB_NAME: perfi
       CONTAINERIZED: true
-      PYTHONUNBUFFERED: 1
-    entrypoint: perfi run
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
