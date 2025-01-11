@@ -3,15 +3,6 @@ import uvicorn
 import os
 
 
-def get_host_and_port(settings: Settings):
-    if os.getenv("CONTAINERIZED", "false").lower() == "true":
-        # in container, bind to 0.0.0.0
-        return "0.0.0.0", int(settings.APP_PORT)
-    else:
-        # default to 127.0.0.1 for local
-        return "127.0.0.1", int(settings.APP_PORT)
-
-
 def run():
     """
     Entry point for starting the FastAPI server.
@@ -36,13 +27,11 @@ def run():
             )
             raise e
 
-    host, port = get_host_and_port(api_settings)
-
     uvicorn.run(
         "perfi:app",
-        host=host,
-        port=port,
-        reload=True,  # TODO: should only reload in dev
+        host=api_settings.APP_HOST,
+        port=int(api_settings.APP_PORT),
+        reload=api_settings.DEBUG,  # TODO: should only reload in dev
     )
 
 

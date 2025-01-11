@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     APP_PORT: str
     UPLOAD_FOLDER: str
     APP_NAME: str = "perfi-api"
+    DEBUG: bool = False
 
     # JWT config
     SECRET_KEY: str
