@@ -1,0 +1,34 @@
+# misc
+.DS_Store
+**/.vscode
+
+# env files
+**/.env
+**/.env.*
+
+# data
+server/uploads/
+
+# server stuff
+server/.coverage
+**/__pycache__
+**/*_cache/
+**/*.egg-info
+
+# client
+node_modules
+.yarn/*
+coverage
+.next
+out
+
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

@@ -1,4 +1,4 @@
-from perfi.core.dependencies.settings import get_settings
+from config import Settings, get_settings
 import uvicorn
 import os
 
@@ -31,7 +31,7 @@ def run():
         "perfi:app",
         host=api_settings.APP_HOST,
         port=int(api_settings.APP_PORT),
-        reload=True,
+        reload=api_settings.DEBUG,  # TODO: should only reload in dev
     )
 
 

@@ -1,10 +1,16 @@
 from sqlalchemy.engine.url import URL
-from perfi.core.dependencies.settings import get_settings
+from alembic.script import ScriptDirectory
+from alembic.config import Config
+from sqlalchemy import engine_from_config, pool, Engine
+from functools import lru_cache
+
+from config import get_settings
 
 
 settings = get_settings()
 
 
+@lru_cache(maxsize=None)
 def get_database_urls():
     COMMON_DB_KWARGS = {
         "username": settings.DB_USER,
@@ -22,18 +28,13 @@ def get_database_urls():
     return DATABASE_URL_ASYNC, DATABASE_URL_SYNC
 
 
-from alembic.script import ScriptDirectory
-from alembic.config import Config
-from sqlalchemy import engine_from_config, pool, Engine
-
-
 def configure_alembic():
     """
     Configure Alembic with the database connection and script location.
     Returns:
         alembic_cfg: The Alembic Config object
         script: The Alembic ScriptDirectory
-        engine: The SQLAlchemy engine
+        engine: The **synchronous** SQLAlchemy engine
     """
 
     _, DATABASE_URL_SYNC = get_database_urls()
@@ -42,11 +43,11 @@ def configure_alembic():
     alembic_cfg.set_main_option("sqlalchemy.url", str(DATABASE_URL_SYNC))
 
     script = ScriptDirectory.from_config(alembic_cfg)
-
     engine: Engine = engine_from_config(
-        {"sqlalchemy.url": str(DATABASE_URL_SYNC)},
+        {
+            "sqlalchemy.url": DATABASE_URL_SYNC.render_as_string(hide_password=False),
+        },
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
     return alembic_cfg, script, engine

@@ -1,16 +1,23 @@
+# load settings first
+from config import get_settings
+
+settings = get_settings()
+
 # logging needs to be configured first
 import logging
-import logging.config
-import logging.handlers
+from logging.config import dictConfig
 from pathlib import Path
 import yaml
 
 # requires relative logging config file
-logging_config = Path("config/logging/logging.yml")
-with open(logging_config, "r") as f:
+logging_config_rel_path = "config/logging/logging.yml"
+server_directory = Path(__file__).parents[1].resolve()
+logging_config_fp = server_directory.joinpath(logging_config_rel_path).resolve()
+
+with open(logging_config_fp, "r") as f:
     dict_config = yaml.safe_load(f)
 
-logging.config.dictConfig(dict_config)
+dictConfig(dict_config)
 
 
 logger = logging.getLogger(__name__)
@@ -20,8 +27,8 @@ from fastapi import FastAPI
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from .cli import cli  # Note: serves as entrypoint
-from .core.database.models import *  # Note: registers models with base.metadata
+
+# from .core.database.models import *  # Note: registers models with base.metadata
 from .routes import routers
 from .core.middleware import (
     log_request,

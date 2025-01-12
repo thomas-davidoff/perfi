@@ -94,6 +94,7 @@ async def create_transaction(
 async def delete_transaction(
     transaction_id: UUID,
     transactions_service: TransactionsService = Depends(get_transactions_service),
+    current_user: User = Depends(get_current_user),
 ) -> dict:
     """
     Delete a transaction by its ID.

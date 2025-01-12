@@ -1,0 +1,85 @@
+name: pf
+
+services:
+  backend:
+    build:
+      context: ./server
+      target: development
+      args:
+        - POETRY_VERSION=2.0.1
+        - PYTHON_VERSION=3.13.1
+        - APP_USER=perfi
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server/perfi:/opt/perfi/perfi
+      - ./server/cli:/opt/perfi/cli
+      - ./server/config:/opt/perfi/config
+      - ./server/migrations:/opt/perfi/migrations
+      - ./server/alembic.ini:/opt/perfi/alembic.ini
+    env_file:
+      - ./server/.env.development
+    environment:
+      APP_PORT: 8000
+      APP_HOST: 0.0.0.0
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: perfi_dev
+      DB_NAME: perfi
+      DEBUG: true
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+    container_name: backend
+
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+    env_file:
+      - ./client/.env.local
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3000
+    entrypoint: /bin/bash -c "yarn run dev"
+    healthcheck:
+      # TODO: replace healthcheck with dedicated /health once implemented
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/login" ]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+    container_name: frontend
+
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: perfi_dev
+      POSTGRES_DB: perfi
+    env_file:
+      - .env.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    container_name: db
+
+  test_db:
+    image: postgres:17
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: perfi_test
+      POSTGRES_DB: perfi_test
+      POSTGRES_PASSWORD: perfi_test_pass
+    tmpfs:
+      - /var/lib/postgresql/data
+    container_name: test_db
+
+volumes:
+  postgres_data:
