@@ -1,13 +1,14 @@
+name: pf
+
 services:
   backend:
     build:
       context: ./server
       target: development
       args:
-        - POETRY_VERSION=1.4.2
+        - POETRY_VERSION=2.0.1
         - PYTHON_VERSION=3.13.1
         - APP_USER=perfi
-    image: perfi-api
     ports:
       - "8000:8000"
     volumes:
@@ -34,7 +35,6 @@ services:
   frontend:
     build:
       context: ./client
-    image: perfi-client
     ports:
       - "3000:3000"
     volumes:

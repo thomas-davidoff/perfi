@@ -1,5 +1,5 @@
-ARG POETRY_VERSION=1.4.2
-ARG PYTHON_VERSION=3.13.1
+ARG POETRY_VERSION
+ARG PYTHON_VERSION
 ARG APP_USER=perfi
 ARG APP_HOME=/opt/perfi
 
@@ -32,15 +32,14 @@ COPY --chown=${APP_USER}:${APP_USER} cli ${APP_HOME}/cli
 
 RUN pip install --user poetry==${POETRY_VERSION} \
     && poetry config virtualenvs.in-project true \
-    && poetry config installer.max-workers 10 \
-    && poetry install --with=dev,test --no-cache --no-interaction --no-ansi
+    && poetry config installer.max-workers 10
 
-USER ${APP_USER}
+RUN poetry sync --without dev,test --no-ansi --no-interaction --no-cache
+
 
 FROM base AS development
 
+RUN poetry install --with dev,test --no-ansi --no-interaction --no-cache
+
 ENTRYPOINT [ "perfi" ]
-
 CMD [ "run" ]
-
-FROM base AS test

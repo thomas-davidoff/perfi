@@ -6,7 +6,6 @@ services:
     extends:
       file: docker-compose.yml
       service: backend
-    command: [ "test" ]
     environment:
       ENVIRONMENT: test
       DB_HOST: test_db
