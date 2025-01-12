@@ -24,10 +24,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 USER ${APP_USER}
 ENV PATH=/home/${APP_USER}/.local/bin:${APP_HOME}/.venv/bin:$PATH
 
-COPY --chown=${APP_USER}:${APP_USER} pyproject.toml poetry.lock conftest.py ${APP_HOME}/
+COPY --chown=${APP_USER}:${APP_USER} pyproject.toml poetry.lock ${APP_HOME}/
 COPY --chown=${APP_USER}:${APP_USER} perfi ${APP_HOME}/perfi
 COPY --chown=${APP_USER}:${APP_USER} config ${APP_HOME}/config
-COPY --chown=${APP_USER}:${APP_USER} tests ${APP_HOME}/tests
 COPY --chown=${APP_USER}:${APP_USER} cli ${APP_HOME}/cli
 
 RUN pip install --user poetry==${POETRY_VERSION} \

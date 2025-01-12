@@ -21,3 +21,4 @@ services:
       - ./server/pyproject.toml:/opt/perfi/pyproject.toml
     depends_on:
       - test_db
+    command: test

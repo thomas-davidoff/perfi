@@ -50,7 +50,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "--capture=tee-sys -ra -x"
+addopts = "--capture=tee-sys -ra"
 filterwarnings = [
     "ignore::pytest.PytestAssertRewriteWarning"
 ]
