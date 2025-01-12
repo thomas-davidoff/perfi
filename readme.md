@@ -93,6 +93,13 @@ Generate a 256-bit key and add it to your env file you just created:
 echo 'import secrets; print(f"SECRET_KEY={secrets.token_bytes(32).hex()}")' | python >> server/.env.development
 ```
 
+Lastly, create a file named `.env.db` at the root of the project, and add the password for the db you set in your `.env.development` file there too. It's just there to reconcile the passwords.
+
+`.env.db`:
+```
+POSTGRES_PASSWORD="the same password"
+```
+
 ## Running the application
 
 ### Docker Compose
