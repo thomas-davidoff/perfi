@@ -40,14 +40,24 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./client:/app
+      - ./client/src:/opt/perfi/src
+      - ./client/public:/opt/perfi/public
+      - ./client/next.config.ts:/opt/perfi/next.config.ts
+      - ./client/tailwind.config.ts:/opt/perfi/tailwind.config.ts
+      - ./client/postcss.config.mjs:/opt/perfi/postcss.config.mjs
+      - ./client/next-env.d.ts:/opt/perfi/next-env.d.ts
+      - ./client/tsconfig.json:/opt/perfi/tsconfig.json
+      - ./client/components.json:/opt/perfi/components.json
     env_file:
       - ./client/.env.local
     environment:
       NEXT_PUBLIC_API_BASE_URL: http://backend:8000
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
       NEXTAUTH_URL: http://localhost:3000
-    entrypoint: /bin/bash -c "yarn run dev"
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_ENV: development
+    entrypoint: yarn run dev
     healthcheck:
       # TODO: replace healthcheck with dedicated /health once implemented
       test: [ "CMD", "curl", "-f", "http://localhost:3000/login" ]

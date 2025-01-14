@@ -1,20 +1,32 @@
-FROM node:23.5.0-alpine
+ARG APP_USER=perfi
+ARG APP_HOME=/opt/perfi
 
-# Install libc6-compat and bash
+FROM arm64v8/node:23.6.0-alpine
+ARG APP_USER
+ARG APP_HOME
+
+WORKDIR ${APP_HOME}
+
 RUN apk add --no-cache libc6-compat bash curl
 
-WORKDIR /app
+RUN adduser -D -u 1001 ${APP_USER} \
+    && chown ${APP_USER}:${APP_USER} ${APP_HOME}
 
-COPY package.json yarn.lock ./
-RUN yarn install
+USER ${APP_USER}
 
-EXPOSE 3000
+COPY --chown=${APP_USER}:${APP_USER} package.json yarn.lock ./
+COPY --chown=${APP_USER}:${APP_USER} ./src/ /app/src/
+COPY --chown=${APP_USER}:${APP_USER} ./public/ /app/public
+COPY --chown=${APP_USER}:${APP_USER} ./postcss.config.mjs /app/postcss.config.mjs
+COPY --chown=${APP_USER}:${APP_USER} ./tailwind.config.ts /app/tailwind.config.ts
+COPY --chown=${APP_USER}:${APP_USER} ./tsconfig.json /app/tsconfig.json
+COPY --chown=${APP_USER}:${APP_USER} ./components.json /app/components.json
 
-ENV HOST=0.0.0.0 PORT=3000 NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED 1
 
-COPY ./src/ /app/src/
-COPY ./public/ /app/public
-COPY ./postcss.config.mjs /app/postcss.config.mjs
-COPY ./tailwind.config.ts /app/tailwind.config.ts
-COPY ./tsconfig.json /app/tsconfig.json
-COPY ./components.json /app/components.json
+RUN yarn install --frozen-lockfile --no-scripts \
+    && rm -rf /usr/local/share/.cache/yarn \
+    && yarn cache clean
+
+ENTRYPOINT [ "yarn" ]
+CMD [ "run", "dev" ]
