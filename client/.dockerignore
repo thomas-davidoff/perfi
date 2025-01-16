@@ -1,0 +1,53 @@
+# Deny everything by default
+*
+
+# Allow specific Next.js project files
+!package.json
+!yarn.lock
+!tsconfig.json
+!next.config.ts
+!postcss.config.mjs
+!tailwind.config.ts
+!components.json
+
+# Allow source code and public assets
+!src/
+!public/
+!app/
+!pages/
+!styles/
+!components/
+!lib/
+!types/
+!hooks/
+!utils/
+!contexts/
+
+# Allow configuration files
+!.eslintrc.json
+!.prettierrc
+!.babelrc
+
+# Explicitly deny environment files and directories
+.env*
+.env.local
+.env.development
+.env.test
+.env.production
+node_modules
+.next
+build
+dist
+coverage
+.git
+.gitignore
+README.md
+*.log
+.DS_Store
+
+# Deny any potential sensitive files
+*.key
+*.pem
+*secret*
+*password*
+*credential*
