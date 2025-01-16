@@ -40,14 +40,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./client/src:/opt/perfi/src
-      - ./client/public:/opt/perfi/public
-      - ./client/next.config.ts:/opt/perfi/next.config.ts
-      - ./client/tailwind.config.ts:/opt/perfi/tailwind.config.ts
-      - ./client/postcss.config.mjs:/opt/perfi/postcss.config.mjs
-      - ./client/next-env.d.ts:/opt/perfi/next-env.d.ts
-      - ./client/tsconfig.json:/opt/perfi/tsconfig.json
-      - ./client/components.json:/opt/perfi/components.json
+      - ./client:/opt/perfi
+      - /opt/perfi/node_modules
     env_file:
       - ./client/.env.local
     environment:
