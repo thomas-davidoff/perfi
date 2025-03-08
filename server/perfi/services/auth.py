@@ -4,7 +4,7 @@ from typing import Optional
 import jwt
 import uuid
 from perfi.services.user import UserService
-from perfi.core.database import User
+from perfi.models import User
 from perfi.core.exc import ServiceError
 from perfi.core.repositories import RefreshTokenRepository
 from config import get_settings

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from perfi.core.repositories import UserRepository
-from perfi.core.database import User, Account
+from perfi.models import User, Account
 from perfi.core.exc import ServiceError
 import re
 

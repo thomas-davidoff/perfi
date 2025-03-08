@@ -3,7 +3,7 @@ from typing import TypeVar, Generic
 from uuid import UUID
 import logging
 from perfi.core.exc import ValidationError, UnauthorizedAccessError
-from perfi.core.database import Account, Transaction, User, TransactionsFile
+from perfi.models import Account, Transaction, User, TransactionsFile
 from perfi.services import AccountsService, TransactionsService, FileImportService
 from .current_user import get_current_user
 from .service_factories import (

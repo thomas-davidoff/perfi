@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from perfi.core.database import (
+from perfi.models import (
     TransactionCategory,
     User,
     Transaction as TransactionDBModel,

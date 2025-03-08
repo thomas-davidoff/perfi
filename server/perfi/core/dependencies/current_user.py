@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from perfi.services.auth import AuthService
 from perfi.services.user import UserService
-from perfi.core.database import User
+from perfi.models import User
 from typing import Annotated
 from .service_factories import get_auth_service, get_user_service
 

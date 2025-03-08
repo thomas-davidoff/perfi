@@ -13,7 +13,7 @@ from perfi.core.dependencies.resource_ownership import (
     get_validated_account,
     get_validated_transactions_file,
 )
-from perfi.core.database import Account as AccountDBModel
+from perfi.models import Account as AccountDBModel
 from uuid import UUID
 
 
@@ -30,6 +30,13 @@ async def upload_file(
     """
     Upload a file and preview its contents.
     """
+
+    import logging
+
+    logger = logging.getLogger("poop")
+    logger.setLevel(1)
+
+    # logger.debug()
     file_info = await file_import_service.save_and_preview(
         file=file, user=current_user, account=account
     )

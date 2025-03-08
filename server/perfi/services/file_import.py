@@ -5,7 +5,7 @@ from datetime import datetime
 import csv
 import json
 from sqlalchemy.ext.asyncio import AsyncSession
-from perfi.core.database import (
+from perfi.models import (
     TransactionsFileImportStatus,
     User,
     Account,

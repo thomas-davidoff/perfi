@@ -1,5 +1,5 @@
 from alembic import context
-from perfi.core.database import Base
+from perfi.models import Base
 import logging
 from config import get_database_urls
 from config.database import configure_alembic

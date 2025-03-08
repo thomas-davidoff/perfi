@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from perfi.core.repositories import AccountRepository
-from perfi.core.database import Account, AccountType
+from perfi.models import Account, AccountType
 from perfi.core.exc import ServiceError, ResourceNotFound
 import logging
 from .resource_service import ResourceService

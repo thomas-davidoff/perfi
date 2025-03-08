@@ -1,5 +1,5 @@
 from perfi.core.repositories.base import AsyncRepository
-from perfi.core.database.models import Transaction, Account
+from perfi.models import Transaction, Account
 from sqlalchemy.ext.asyncio import AsyncSession
 from perfi.core.exc import RepositoryError
 from sqlalchemy.future import select

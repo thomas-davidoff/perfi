@@ -7,7 +7,7 @@ from perfi.schemas import (
     GenericResponse,
     AccountUpdateRequest,
 )
-from perfi.core.database import User, Account as AccountDBModel
+from perfi.models import User, Account as AccountDBModel
 from perfi.core.dependencies.resource_ownership import get_validated_account
 from perfi.core.dependencies.current_user import get_current_user
 from perfi.core.dependencies.service_factories import get_accounts_service

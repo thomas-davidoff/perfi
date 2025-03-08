@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from perfi.core.database import Base
+from perfi.models import Base
 import pytest
 import pytest_asyncio
 from config import get_settings, Settings

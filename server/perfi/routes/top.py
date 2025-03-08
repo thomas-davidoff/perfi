@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Response
 from perfi.schemas.user import UserResponse
-from perfi.core.database import User
+from perfi.models import User
 from perfi.core.dependencies.current_user import get_current_user
 
 router = APIRouter(tags=["Main"])

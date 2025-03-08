@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
-from perfi.core.database import Transaction, TransactionCategory, User
+from perfi.models import Transaction, TransactionCategory, User
 from perfi.core.repositories import TransactionRepository
 from perfi.core.exc import ValidationError, UnauthorizedAccessError
 from perfi.core.utils import StandardDate

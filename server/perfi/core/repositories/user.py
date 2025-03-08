@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from perfi.core.repositories.base import AsyncRepository
-from perfi.core.database.models import User
+from perfi.models import User
 from sqlalchemy.exc import NoResultFound
 import logging
 

@@ -1,4 +1,4 @@
-from perfi.core.database import Account
+from perfi.models import Account
 from .user import UserFactory
 from .faker import faker
 

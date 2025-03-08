@@ -4,7 +4,7 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, UTC
 import uuid
 
-from perfi.core.database import RefreshToken
+from perfi.models import RefreshToken
 
 
 class RefreshTokenRepository:

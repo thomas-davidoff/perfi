@@ -1,4 +1,4 @@
-from perfi.core.database import Transaction
+from perfi.models import Transaction
 from .faker import faker
 
 

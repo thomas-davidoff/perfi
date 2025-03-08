@@ -1,5 +1,5 @@
 from perfi.core.repositories.base import AsyncRepository
-from perfi.core.database.models import Account
+from perfi.models import Account
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import UUID
