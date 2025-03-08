@@ -2,15 +2,15 @@ name: pf
 
 services:
   backend:
+    profiles:
+      - dev
     build:
       context: ./server
       target: development
-      args:
-        - POETRY_VERSION=2.0.1
-        - PYTHON_VERSION=3.13.1
-        - APP_USER=perfi
     ports:
       - "8000:8000"
+    entrypoint: ["perfi"]
+    command: ["run"]
     volumes:
       - ./server/perfi:/opt/perfi/perfi
       - ./server/cli:/opt/perfi/cli
@@ -34,7 +34,31 @@ services:
       retries: 1
     container_name: backend
 
+  test:
+    profiles:
+      - test
+    extends:
+      service: backend
+    environment:
+      ENVIRONMENT: test
+      DB_HOST: test_db
+      DB_USER: perfi_test
+      DB_NAME: perfi_test
+    env_file:
+      - ./server/.env.test
+    volumes:
+      # mount tests and conftest.py
+      - ./server/tests:/opt/perfi/tests
+      - ./server/conftest.py:/opt/perfi/conftest.py
+      # to handle changes in pytest configuration
+      - ./server/pyproject.toml:/opt/perfi/pyproject.toml
+    depends_on:
+      - test_db
+    command: test
+
   frontend:
+    profiles:
+      - dev
     build:
       context: ./client
     ports:
@@ -67,6 +91,8 @@ services:
     container_name: frontend
 
   db:
+    profiles:
+      - dev
     image: postgres:17
     ports:
       - "5432:5432"
@@ -80,6 +106,8 @@ services:
     container_name: db
 
   test_db:
+    profiles:
+      - test
     image: postgres:17
     ports:
       - "5433:5432"
