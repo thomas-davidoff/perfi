@@ -92,11 +92,12 @@ class TransactionRequest(BaseModel):
             try:
                 return datetime.strptime(date, format).strftime("%Y-%m-%d")
             except Exception as e:
-                raise CustomValidationError(
-                    "date must be a valid date in one of the supported formats: "
-                    f'{", ".join(StandardDate.SUPPORTED_FORMATS)}. '
-                    f"You passed {date}"
-                ) from e
+                continue
+        raise CustomValidationError(
+            "date must be a valid date in one of the supported formats: "
+            f'{", ".join(StandardDate.SUPPORTED_FORMATS)}. '
+            f"You passed {date}"
+        )
 
     @field_validator("category", mode="before")
     def coerce_invalid_category(cls, value):
