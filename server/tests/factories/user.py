@@ -1,5 +1,7 @@
 from perfi.models import User
 from .faker import faker
+from sqlalchemy.orm import selectinload
+from sqlalchemy import select
 
 
 class UserFactory:
@@ -12,4 +14,10 @@ class UserFactory:
         )
         session.add(user)
         await session.flush()
-        return user
+        stmt = (
+            select(User).where(User.id == user.id).options(selectinload(User.accounts))
+        )
+        result = await session.execute(stmt)
+        refreshed_user = result.scalars().first()
+
+        return refreshed_user

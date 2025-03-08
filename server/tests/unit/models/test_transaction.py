@@ -1,36 +1,17 @@
 import pytest
-import pytest_asyncio
 from uuid import UUID
 from datetime import datetime
 from perfi.schemas.transaction import TransactionCategory
-from perfi.models import Transaction, Account, User
-
-
-@pytest_asyncio.fixture
-async def test_user(db_session):
-    """Create a test user."""
-    user = User(
-        username="test_username", email="test@example.com", password="test_hash"
-    )
-    db_session.add(user)
-    await db_session.flush()
-    return user
-
-
-@pytest_asyncio.fixture
-async def test_account(db_session, test_user):
-    """Create a test account linked to the test user."""
-    account = Account(
-        name="Test Account", user_id=test_user.id, account_type="checking"
-    )
-    db_session.add(account)
-    await db_session.flush()
-    return account
+from perfi.models import Transaction
+from tests.factories import AccountFactory
 
 
 @pytest.mark.asyncio
-async def test_transaction_id_creation(db_session, test_account):
+async def test_transaction_id_creation(db_session):
     """Test that a transaction gets a UUID automatically after being added to the session."""
+
+    test_account = await AccountFactory.create(db_session)
+
     # Create a transaction
     transaction = Transaction(
         amount=100.0, merchant="Test Merchant", account_id=test_account.id
@@ -49,8 +30,10 @@ async def test_transaction_id_creation(db_session, test_account):
 
 
 @pytest.mark.asyncio
-async def test_transaction_timestamps(db_session, test_account):
+async def test_transaction_timestamps(db_session):
     """Test that created_at and updated_at are set automatically after being added to the session."""
+
+    test_account = await AccountFactory.create(db_session)
     # Create a transaction
     transaction = Transaction(
         amount=100.0, merchant="Test Merchant", account_id=test_account.id
@@ -75,8 +58,10 @@ async def test_transaction_timestamps(db_session, test_account):
 
 
 @pytest.mark.asyncio
-async def test_transaction_category_property(db_session, test_account):
+async def test_transaction_category_property(db_session):
     """Test that the category property works correctly."""
+
+    test_account = await AccountFactory.create(db_session)
     # Create a transaction with explicit category
     transaction = Transaction(
         amount=100.0,
@@ -116,8 +101,10 @@ async def test_transaction_category_property(db_session, test_account):
 
 
 @pytest.mark.asyncio
-async def test_transaction_user_id_property(db_session, test_user, test_account):
+async def test_transaction_user_id_property(db_session):
     """Test that user_id property correctly returns the account's user_id."""
+
+    test_account = await AccountFactory.create(db_session)
     # Create a transaction linked to the test account
     transaction = Transaction(
         amount=100.0, merchant="Test Merchant", account_id=test_account.id
@@ -127,4 +114,4 @@ async def test_transaction_user_id_property(db_session, test_user, test_account)
     await db_session.flush()
 
     # The user_id property should return the account's user_id
-    assert transaction.user_id == test_user.id
+    assert transaction.user_id == test_account.user_id
