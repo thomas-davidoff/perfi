@@ -7,16 +7,27 @@ from sqlalchemy import select
 
 class AccountFactory:
     @staticmethod
-    async def create(session, user=None, **kwargs):
+    async def create(
+        session, user=None, name=None, account_type=None, add_and_flush=True
+    ):
         """Create an Account with optional User, eagerly loading relationships."""
         if not user:
             user = await UserFactory.create(session=session)
 
+        if name is None:
+            name = faker.company()
+
+        if account_type is None:
+            account_type = AccountType.CHECKING
+
         account = Account(
             user_id=user.id,
-            name=kwargs.get("name", faker.company()),
-            account_type=AccountType.CHECKING,
+            name=name,
+            account_type=account_type,
         )
+        if not add_and_flush:
+            return account
+
         session.add(account)
         await session.flush()
 

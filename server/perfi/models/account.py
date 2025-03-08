@@ -11,8 +11,11 @@ class Account(Base, RecordMixin):
 
     name = Column(String(255), nullable=False)
     balance = Column(Float, nullable=False, default=0.0)
-    account_type = Column(Enum(AccountType, validate_strings=True), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    account_type = Column(
+        Enum(AccountType, validate_strings=True),
+        nullable=False,
+    )
 
     # relationships
     transactions = relationship(
