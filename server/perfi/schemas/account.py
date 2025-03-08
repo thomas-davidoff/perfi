@@ -1,9 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field, model_serializer
 from uuid import UUID
-from perfi.core.utils import CaseInsensitiveEnum
 from .generics import Record
 from typing import Optional, Dict, Any
-from datetime import datetime
+import enum
 
 
 class Account(Record):
@@ -29,7 +28,7 @@ class AccountCompact(Account):
         return {"name": self.name, "id": self.id}
 
 
-class AccountType(CaseInsensitiveEnum):
+class AccountType(enum.Enum):
     CHECKING = "checking"
     SAVINGS = "savings"
     CREDIT_CARD = "credit_card"

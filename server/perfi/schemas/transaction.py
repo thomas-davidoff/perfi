@@ -8,14 +8,14 @@ from pydantic import (
 from typing import List, Optional, Dict
 from uuid import UUID
 from datetime import datetime
-from perfi.core.utils import CaseInsensitiveEnum, StandardDate
+from perfi.core.utils import StandardDate
 from perfi.core.exc import ValidationError as CustomValidationError
 from .generics import Record
 from .account import AccountCompact
-from enum import Enum
+import enum
 
 
-class TransactionFields(str, Enum):
+class TransactionFields(str, enum.Enum):
     DATE = "date"
     CATEGORY = "category"
     DESCRIPTION = "description"
@@ -24,7 +24,7 @@ class TransactionFields(str, Enum):
     ACCOUNT_ID = "account_id"
 
 
-class TransactionCategory(CaseInsensitiveEnum):
+class TransactionCategory(enum.Enum):
     GROCERIES = "GROCERIES"
     UTILITIES = "UTILITIES"
     ENTERTAINMENT = "ENTERTAINMENT"

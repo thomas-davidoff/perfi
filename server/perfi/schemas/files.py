@@ -8,13 +8,13 @@ from pydantic import (
 )
 from typing import Optional, Dict, Any, List, Literal, Annotated, OrderedDict
 from uuid import UUID
-from perfi.core.utils import CaseInsensitiveEnum
 from .generics import Record, GenericResponse
 from .transaction import TransactionFields
 import json
+import enum
 
 
-class TransactionsFileImportStatus(CaseInsensitiveEnum):
+class TransactionsFileImportStatus(enum.Enum):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
     VALIDATED = "VALIDATED"
