@@ -1,52 +1,58 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from perfi.models import Base
-import pytest
 import pytest_asyncio
-from config import get_settings, Settings
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.pool import NullPool
+from config import get_settings
+import pytest
+from app.models import BaseModel
+
+# This is important!
+# Creates a module-scoped event loop to be grabbed by the fixtures here
+# https://github.com/pytest-dev/pytest-asyncio/discussions/587
+pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture
-def settings() -> Settings:
-    # hardcode test env here to prevent accidentally using dev db
-    return get_settings(environment="test")
-
-
-@pytest_asyncio.fixture
-async def engine(settings: Settings):
-
-    url = (
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def init_db():
+    settings = get_settings(environment="test")
+    db_url = (
         f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASS}"
         f"@{settings.DB_HOST}:{int(settings.DB_PORT)}/{settings.DB_NAME}"
     )
-
     engine = create_async_engine(
-        url,
+        db_url,
         echo=False,
         future=True,
+        poolclass=NullPool,
     )
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(BaseModel.metadata.create_all)
 
     yield engine
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(BaseModel.metadata.drop_all)
+
     await engine.dispose()
 
 
-@pytest_asyncio.fixture
-async def db_session(engine):
-    """Provide a transactional database session for each test."""
-    TestSessionLocal = sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
+@pytest_asyncio.fixture(scope="function")
+async def session(init_db):
+    """Create a new session for each test function with its own transaction"""
+    connection = await init_db.connect()
+
+    transaction = await connection.begin()
+
+    async_session = async_sessionmaker(
+        expire_on_commit=False, class_=AsyncSession, bind=connection, autoflush=False
     )
 
-    async with TestSessionLocal() as session:
-        async with session.begin():
-            try:
-                yield session
-            finally:
-                await session.rollback()
+    async with async_session() as session:
+        yield session
+        await session.close()
+
+    await transaction.rollback()
+    await connection.close()
