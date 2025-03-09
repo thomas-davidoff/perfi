@@ -56,3 +56,29 @@ async def session(init_db):
 
     await transaction.rollback()
     await connection.close()
+
+
+from tests.factories import UserFactory
+import tests.constants as C
+from app.models import RefreshToken
+
+
+@pytest.fixture
+async def db_user(session):
+    user = UserFactory.create(
+        username=C.TEST_USERNAME,
+        password=C.TEST_PASSWORD,
+        email=C.TEST_EMAIL,
+    )
+
+    session.add(user)
+    await session.flush()
+    return user
+
+
+@pytest.fixture
+async def db_token(session, db_user):
+    token = RefreshToken(user_id=db_user.id, token_value="someval")
+    session.add(token)
+    await session.flush()
+    return token

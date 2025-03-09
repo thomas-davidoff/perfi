@@ -1,76 +1,3 @@
-# from app.models import User
-# import pytest
-# import uuid
-# from datetime import datetime
-
-# from tests
-
-
-# TEST_PASSWORD = "some test password"
-# TEST_USERNAME = "testuser"
-# TEST_EMAIL = "test@example.com"
-
-
-# @pytest.fixture
-# def user():
-#     return User(username=TEST_USERNAME, email=TEST_EMAIL, password=TEST_PASSWORD)
-
-
-# # This tests basemodel implementation
-# async def test_user_id_creation(session, user):
-#     """Test that a user gets a UUID automatically after being added to the session."""
-#     assert user.id is None
-#     session.add(user)
-#     await session.flush()
-#     assert isinstance(user.id, uuid.UUID)
-
-
-# # This tests basemodel implementation
-# async def test_user_has_created_at_timestamp(session, user):
-#     """Test that a user gets a created_at timestamp automatically after being added to the session."""
-#     assert user.created_at is None
-#     session.add(user)
-#     await session.flush()
-#     assert isinstance(user.created_at, datetime)
-
-
-# # This tests basemodel implementation
-# async def test_user_has_updated_at_timestamp(session, user):
-#     """Test that a user gets an updated_at timestamp automatically after being added to the session."""
-#     assert user.updated_at is None
-#     session.add(user)
-#     await session.flush()
-#     assert user.updated_at is None
-#     user.email = "something else"
-#     session.add(user)
-#     await session.flush()
-#     await session.refresh(user)
-#     assert isinstance(user.updated_at, datetime)
-
-
-# # This tests basemodel implementation
-# def test_user_cannot_update_created_at():
-#     """Test that a user cannot update created_at"""
-#     user = User(username="testuser", email="test@example.com")
-
-#     with pytest.raises(AttributeError):
-#         user.created_at = "Something else"
-
-
-# # This tests basemodel implementation
-# def test_user_cannot_update_updated_at():
-#     """Test that a user cannot update updated_at"""
-#     user = User(username="testuser", email="test@example.com")
-
-#     with pytest.raises(AttributeError):
-#         user.updated_at = "Something else"
-
-
-# def test_user_verify_password(user):
-#     assert user.verify_password(TEST_PASSWORD) is True
-#     assert user.verify_password("incorrect pass") is False
-
-
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -78,64 +5,66 @@ from app.models.user import User
 from tests.factories.user import UserFactory
 import uuid
 from datetime import datetime
+import tests.constants as C
+from sqlalchemy.orm import selectinload
 
 
 class TestUser:
+    @pytest.fixture(scope="class")
+    def t_user(self):
+        return UserFactory.create(
+            username=C.TEST_USERNAME,
+            password=C.TEST_PASSWORD,
+            email=C.TEST_EMAIL,
+            bypass_hashing=False,
+        )
 
-    TEST_USERNAME = "test_user"
-    TEST_PASSWORD = "somesecurepassword"
-    TEST_EMAIL = "test@example.com"
-
-    TEST_USER = UserFactory.create(
-        username=TEST_USERNAME, password=TEST_PASSWORD, email=TEST_EMAIL
-    )
-
-    def test_password_write_only(self):
+    def test_password_write_only(self, t_user):
         with pytest.raises(AttributeError, match="Password is write-only."):
-            password = self.TEST_USER.password
+            password = t_user.password
 
-    def test_password_hashing(self):
-        assert self.TEST_USER._password_hash != self.TEST_PASSWORD.encode("utf-8")
+    def test_password_hashing(self, t_user):
+        assert t_user._password_hash != C.TEST_PASSWORD.encode("utf-8")
 
-        assert self.TEST_USER.verify_password(self.TEST_PASSWORD) is True
-        assert self.TEST_USER.verify_password("wrongpassword") is False
+        assert t_user.verify_password(C.TEST_PASSWORD) is True
+        assert t_user.verify_password("wrongpassword") is False
 
-    def test_timestamp_immutability(self):
+    def test_timestamp_immutability(self, t_user):
 
         with pytest.raises(AttributeError, match="created_at is read-only"):
-            self.TEST_USER.created_at = "something"
+            t_user.created_at = "something"
 
         with pytest.raises(AttributeError, match="updated_at is read-only"):
-            self.TEST_USER.updated_at = "something"
+            t_user.updated_at = "something"
 
-    def test_user_repr(self):
-        assert repr(self.TEST_USER) == f"<User {self.TEST_USERNAME}>"
+    def test_user_repr(self, t_user):
+        assert repr(t_user) == f"<User {C.TEST_USERNAME}>"
 
-    async def test_create_user(self, session):
-        session.add(self.TEST_USER)
+    async def test_create_user(self, session, t_user):
+        session.add(t_user)
         await session.flush()
 
         # should have a UUID id
-        assert isinstance(self.TEST_USER.id, uuid.UUID)
+        assert isinstance(t_user.id, uuid.UUID)
 
         # should have correct attributes
-        assert self.TEST_USER.username == self.TEST_USERNAME
-        assert self.TEST_USER.email == self.TEST_EMAIL
+        assert t_user.username == C.TEST_USERNAME
+        assert t_user.email == C.TEST_EMAIL
 
         # should have created_at timestamp
-        assert self.TEST_USER.created_at is not None
-        assert isinstance(self.TEST_USER.created_at, datetime)
+        assert t_user.created_at is not None
+        assert isinstance(t_user.created_at, datetime)
 
         # prior to updates, should be None
-        assert self.TEST_USER.updated_at is None
+        assert t_user.updated_at is None
 
-    async def test_unique_constraints(self, session):
-        session.add(self.TEST_USER)
+    async def test_unique_constraints(self, session, t_user):
+        session.add(t_user)
         await session.flush()
         async with session.begin_nested():
             with pytest.raises(IntegrityError):
                 user2 = User(
-                    username=self.TEST_USERNAME,
+                    username=C.TEST_USERNAME,
                     email="different_email",
                 )
                 session.add(user2)
@@ -145,7 +74,7 @@ class TestUser:
             with pytest.raises(IntegrityError):
                 user2 = User(
                     username="different username",
-                    email=self.TEST_EMAIL,
+                    email=C.TEST_EMAIL,
                 )
                 session.add(user2)
                 await session.flush()
@@ -159,7 +88,7 @@ class TestUser:
 
         assert user.updated_at is None
 
-        user.username = self.TEST_USERNAME
+        user.username = C.TEST_USERNAME
 
         session.add(user)
         await session.flush()
@@ -168,3 +97,20 @@ class TestUser:
         assert user.updated_at is not None
 
         assert user.created_at == initial_created_at
+
+
+class TestUserRelationships:
+    """Tests for User relationships"""
+
+    async def test_user_to_refresh_tokens(self, session, db_user, db_token):
+        """Test accessing tokens from user"""
+        query = (
+            select(User)
+            .options(selectinload(User.refresh_tokens))
+            .where(User.id == db_user.id)
+        )
+        result = await session.execute(query)
+        user = result.scalars().first()
+
+        assert len(user.refresh_tokens) == 1
+        assert user.refresh_tokens[0].id == db_token.id
