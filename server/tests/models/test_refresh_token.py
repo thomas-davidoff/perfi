@@ -39,6 +39,12 @@ class TestRefreshToken:
         assert token.revoked_at is None
         assert token.last_used_at is None
 
+    def test_repr(self):
+        token = RefreshToken(
+            user_id=123, token_value="someval", device_info="somedeviceinfo"
+        )
+        assert repr(token) == f"<RefreshToken user_id=123>"
+
 
 class TestRefreshTokenRelationships:
     """Tests for RefreshToken relationships"""
@@ -56,3 +62,18 @@ class TestRefreshTokenRelationships:
 
         assert isinstance(token.user, User)
         assert token.user.id == db_user.id
+
+    async def test_delete_user_deletes_refresh_token(self, session, db_user, db_token):
+        query = (
+            select(RefreshToken)
+            .options(selectinload(RefreshToken.user))
+            .where(RefreshToken.id == db_token.id)
+        )
+        before = await session.execute(query)
+        assert before.scalars().first() is db_token
+
+        await session.delete(db_user)
+        await session.commit()
+
+        after = await session.execute(query)
+        assert after.scalars().first() is None

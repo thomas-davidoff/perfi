@@ -60,7 +60,7 @@ async def session(init_db):
 
 from tests.factories import UserFactory
 import tests.constants as C
-from app.models import RefreshToken
+from app.models import RefreshToken, Account, AccountType
 
 
 @pytest.fixture
@@ -82,3 +82,16 @@ async def db_token(session, db_user):
     session.add(token)
     await session.flush()
     return token
+
+
+@pytest.fixture
+async def db_account(session, db_user):
+    account = Account(
+        user_id=db_user.id,
+        name="Checking Account",
+        account_type=AccountType.CHECKING,
+        institution="Test Bank",
+    )
+    session.add(account)
+    await session.flush()
+    return account

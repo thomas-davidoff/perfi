@@ -30,4 +30,4 @@ class RefreshToken(BaseModel):
     user = relationship("User", back_populates="refresh_tokens")
 
     def __repr__(self):
-        return f"<RefreshToken user_id={self.user_id} expires_at={self.expires_at}>"
+        return f"<RefreshToken user_id={self.user_id}>"
