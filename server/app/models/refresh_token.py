@@ -1,6 +1,6 @@
-from sqlalchemy import String, ForeignKey, DateTime, Boolean, func
+from sqlalchemy import String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 from .base_model import BaseModel
 from typing import Optional
@@ -16,7 +16,7 @@ class RefreshToken(BaseModel):
         String(64), unique=True, nullable=False, index=True
     )
     expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=func.now() + timedelta(days=7)
+        DateTime(timezone=True), nullable=False
     )
     last_used_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True

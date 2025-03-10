@@ -4,13 +4,19 @@ from sqlalchemy.orm import selectinload
 from uuid import UUID
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
+from tests.factories import RefreshTokenFactory, UserFactory
 
 
 class TestRefreshToken:
-    async def test_create_refresh_token(self, session, db_user):
+    async def test_create_refresh_token(self, session):
         """Test that a refresh token can be created successfully and has the correct attributes"""
-        token = RefreshToken(
-            user_id=db_user.id, token_value="someval", device_info="somedeviceinfo"
+        user = await UserFactory.create(session)
+        token = await RefreshTokenFactory.create(
+            session,
+            user=user,
+            token_value="someval",
+            device_info="somedeviceinfo",
+            expires_at=datetime.now() + timedelta(days=7),
         )
         session.add(token)
         await session.flush()
@@ -28,7 +34,7 @@ class TestRefreshToken:
 
         # should have correct attributes
         assert token.token_value == "someval"
-        assert token.user_id == db_user.id
+        assert token.user_id == user.id
         assert token.device_info == "somedeviceinfo"
         assert isinstance(token.expires_at, datetime)
         assert token.expires_at.strftime("%Y-%m-%d") == (
@@ -49,30 +55,34 @@ class TestRefreshToken:
 class TestRefreshTokenRelationships:
     """Tests for RefreshToken relationships"""
 
-    async def test_token_user_relationship(self, session, db_user, db_token):
+    async def test_token_user_relationship(self, session):
         """Test accessing user from token"""
+
+        user = await UserFactory.create(session)
+        token = await RefreshTokenFactory.create(session, user=user)
 
         query = (
             select(RefreshToken)
             .options(selectinload(RefreshToken.user))
-            .where(RefreshToken.id == db_token.id)
+            .where(RefreshToken.id == token.id)
         )
         result = await session.execute(query)
         token = result.scalars().first()
 
         assert isinstance(token.user, User)
-        assert token.user.id == db_user.id
+        assert token.user.id == user.id
 
-    async def test_delete_user_deletes_refresh_token(self, session, db_user, db_token):
+    async def test_delete_user_deletes_refresh_token(self, session):
+        token = await RefreshTokenFactory.create(session)
         query = (
             select(RefreshToken)
             .options(selectinload(RefreshToken.user))
-            .where(RefreshToken.id == db_token.id)
+            .where(RefreshToken.id == token.id)
         )
         before = await session.execute(query)
-        assert before.scalars().first() is db_token
+        assert before.scalars().first() is token
 
-        await session.delete(db_user)
+        await session.delete(token.user)
         await session.commit()
 
         after = await session.execute(query)

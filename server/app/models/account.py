@@ -34,9 +34,9 @@ class Account(BaseModel):
 
     # Relationships
     user = relationship("User", back_populates="accounts")
-    # transactions = relationship(
-    #     "Transaction", back_populates="account", cascade="all, delete"
-    # )
+    transactions = relationship(
+        "Transaction", back_populates="account", cascade="all, delete"
+    )
 
     def __repr__(self):
         return (
