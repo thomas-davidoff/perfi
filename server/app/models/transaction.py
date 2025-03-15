@@ -14,10 +14,8 @@ class Transaction(BaseModel):
         ForeignKey("account.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
-    # The category_id doesn't have a default in the model
-    # Defaults are handled in the service layer
     category_id: Mapped[UUID] = mapped_column(
-        ForeignKey("category.id", ondelete="CASCADE"), nullable=False, index=True
+        ForeignKey("category.id", ondelete="CASCADE"), nullable=True, index=True
     )
 
     amount: Mapped[Decimal] = mapped_column(
