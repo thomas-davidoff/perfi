@@ -1,4 +1,3 @@
-from alembic import command
 import contextlib
 import uuid
 from typing import AsyncIterator
@@ -6,6 +5,10 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.engine.url import URL as SQLAlchemyURL
 from config.settings import settings
+from faker import Faker
+
+
+faker = Faker()
 
 
 async def create_postgres_db(
