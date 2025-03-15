@@ -7,7 +7,6 @@ from tests.factories import AccountFactory, UserFactory
 
 
 class TestAccount:
-    @pytest.mark.asyncio
     async def test_create_account(self, session):
         user = await UserFactory.create(session)
         account = await AccountFactory.create(
@@ -27,7 +26,6 @@ class TestAccount:
         assert account.institution == "test banque"
         assert account.user_id == user.id
 
-    @pytest.mark.asyncio
     async def test_account_type_validation(self, session):
         user = await UserFactory.create(session)
         for account_type in AccountType:

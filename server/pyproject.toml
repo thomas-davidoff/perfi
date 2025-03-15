@@ -38,7 +38,6 @@ psycopg2 = "^2.9.10"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
-pytest-asyncio = "^0.25.0"
 faker = "^33.1.0"
 pytest-mock = "^3.14.0"
 
@@ -49,7 +48,5 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
-addopts = "--capture=tee-sys -ra"
+addopts = "--capture=tee-sys -ra -x -rP"
 testpaths = ["tests"]
