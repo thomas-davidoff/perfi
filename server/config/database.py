@@ -2,16 +2,10 @@ from sqlalchemy.engine.url import URL
 from alembic.script import ScriptDirectory
 from alembic.config import Config
 from sqlalchemy import engine_from_config, pool, Engine
-from functools import lru_cache
-
-from config import get_settings
+from config.settings import get_settings
 
 
-settings = get_settings()
-
-
-@lru_cache(maxsize=None)
-def get_database_urls():
+def get_database_urls(settings):
     COMMON_DB_KWARGS = {
         "username": settings.DB_USER,
         "password": settings.DB_PASS,
@@ -37,7 +31,9 @@ def configure_alembic():
         engine: The **synchronous** SQLAlchemy engine
     """
 
-    _, DATABASE_URL_SYNC = get_database_urls()
+    settings = get_settings()
+
+    _, DATABASE_URL_SYNC = get_database_urls(settings)
 
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", str(DATABASE_URL_SYNC))

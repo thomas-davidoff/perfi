@@ -99,7 +99,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from app.models import BaseModel
-from db.utils import get_url
+
+# from db.utils import get_url
+from config.settings import settings
 
 
 # this is the Alembic Config object, which provides
@@ -109,7 +111,7 @@ config = context.config
 current_url = config.get_main_option("sqlalchemy.url", None)
 if not current_url:
     config.set_main_option(
-        "sqlalchemy.url", get_url().render_as_string(hide_password=False)
+        "sqlalchemy.url", settings.db.url.render_as_string(hide_password=False)
     )
 
 # Interpret the config file for Python logging.
@@ -157,7 +159,6 @@ def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
-        print("running migrations")
         context.run_migrations()
 
 

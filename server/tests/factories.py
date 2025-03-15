@@ -203,8 +203,6 @@ class CategoryFactory(Factory):
         session=None,
         name=None,
         category_type=None,
-        color=None,
-        icon=None,
         is_system=None,
         add_to_db=True,
     ):
@@ -218,8 +216,6 @@ class CategoryFactory(Factory):
         kwargs = dict(
             name=name,
             category_type=category_type,
-            color=color,
-            icon=icon,
             is_system=is_system,
         )
 

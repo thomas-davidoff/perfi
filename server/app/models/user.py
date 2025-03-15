@@ -15,6 +15,7 @@ class User(BaseModel):
         "RefreshToken", back_populates="user", cascade="all, delete"
     )
     accounts = relationship("Account", back_populates="user", cascade="all, delete")
+    categories = relationship("Category", back_populates="user", cascade="all, delete")
 
     @property
     def password(self):

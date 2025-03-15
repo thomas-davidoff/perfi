@@ -1,8 +1,8 @@
-from sqlalchemy import String, Enum, Boolean
+from sqlalchemy import String, Enum, Boolean, ForeignKey, UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from enum import Enum as PyEnum
-from .base_model import BaseModel
 from typing import Optional
+from app.models.base_model import BaseModel
 
 
 class CategoryType(PyEnum):
@@ -18,13 +18,14 @@ class Category(BaseModel):
     category_type: Mapped[CategoryType] = mapped_column(
         Enum(CategoryType, validate_strings=True), nullable=False
     )
-    color: Mapped[Optional[str]] = mapped_column(
-        String(7), nullable=False, default="#000000"
-    )  # Hex color code
-    icon: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     is_system: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    # Relationships
+
     transactions = relationship("Transaction", back_populates="category")
+
+    user_id: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
+    )
+    user = relationship("User", back_populates="categories")
 
     def __repr__(self):
         return f"<Category {self.name} ({self.category_type.value})>"
