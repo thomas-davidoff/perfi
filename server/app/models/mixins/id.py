@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID as UuidColumn
 from sqlalchemy.orm import Mapped, mapped_column
 from uuid import uuid4
 
-from db.base import PerfiModel, PerfiSchema
+from app.models import PerfiSchema
 
 
 class UuidMixin:

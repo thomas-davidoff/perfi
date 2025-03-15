@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import DateTime
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.expression import FunctionElement
 from sqlalchemy.orm import Mapped, mapped_column
-from db.base import PerfiSchema
+from app.models import PerfiSchema
 
 
 class utcnow(FunctionElement):
@@ -18,17 +18,17 @@ def pg_utcnow(element, compiler, **kw):
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         server_default=utcnow(),
         sort_order=9999,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=True,
+        default=None,
         index=True,
-        server_default=utcnow(),
-        server_onupdate=utcnow(),
+        onupdate=lambda: datetime.now(timezone.utc),
         sort_order=10000,
     )
 

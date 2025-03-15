@@ -1,8 +1,8 @@
 """Initial.
 
-Revision ID: 5d10ad89314d
+Revision ID: 5865eeb9f7e3
 Revises:
-Create Date: 2025-03-15 13:28:34.380230
+Create Date: 2025-03-15 15:03:37.141587
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "5d10ad89314d"
+revision: str = "5865eeb9f7e3"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,16 +31,11 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), server_default="TRUE", nullable=False),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
-            nullable=True,
-        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("uuid"),
         sa.UniqueConstraint("email"),
         sa.UniqueConstraint("username"),
@@ -69,16 +64,11 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
-            nullable=True,
-        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["user_id"], ["user.uuid"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("uuid"),
     )
@@ -98,16 +88,11 @@ def upgrade() -> None:
         sa.Column("user_id", sa.UUID(), nullable=True),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
-            nullable=True,
-        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["user_id"], ["user.uuid"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("uuid"),
     )
@@ -129,16 +114,11 @@ def upgrade() -> None:
         sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
-            nullable=True,
-        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["user_id"], ["user.uuid"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("uuid"),
     )
@@ -166,16 +146,11 @@ def upgrade() -> None:
         sa.Column("notes", sa.Text(), nullable=True),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(),
-            server_default=sa.text("TIMEZONE('utc', CURRENT_TIMESTAMP)"),
-            nullable=True,
-        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["account_id"], ["account.uuid"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["category_id"], ["category.uuid"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("uuid"),

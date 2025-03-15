@@ -4,7 +4,7 @@ from decimal import Decimal
 from uuid import UUID
 from enum import Enum as PyEnum
 from typing import Optional
-from db.base import PerfiModel, PerfiSchema
+from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,

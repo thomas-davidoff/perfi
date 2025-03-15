@@ -2,7 +2,7 @@ from sqlalchemy import String, Enum, Boolean, ForeignKey, UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from enum import Enum as PyEnum
 from typing import Optional
-from db.base import PerfiModel, PerfiSchema
+from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,

@@ -5,28 +5,17 @@ import os
 os.environ["PERFI_ENV"] = "test"
 
 import pytest
-from alembic.config import Config
-from alembic import command
 from db.session_manager import db_manager
 from tests.utils import tmp_postgres_db
 from config.migrations import (
     alembic_config_from_url,
     run_upgrade,
-    alembic_config as cfg,
 )
 
 
 @pytest.fixture(scope="session", autouse=True)
 def anyio_backend():
     return "asyncio", {"use_uvloop": True}
-
-
-# @pytest.fixture(scope="session")
-# def alembic_config():
-#     # alembic_config.se
-#     cfg.set_main_option(
-#         "sqlalchemy.url", url.render_as_string(hide_password=False)
-#     )
 
 
 @pytest.fixture(scope="session")
@@ -44,5 +33,3 @@ async def sessionmanager_for_tests():
 async def session(sessionmanager_for_tests):
     async with sessionmanager_for_tests.session() as session:
         yield session
-
-    await session.rollback()

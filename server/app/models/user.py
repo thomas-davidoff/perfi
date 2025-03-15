@@ -2,7 +2,7 @@ from sqlalchemy import String, LargeBinary
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 import bcrypt
 
-from db.base import PerfiModel, PerfiSchema
+from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,
@@ -25,31 +25,8 @@ class User(PerfiModel, UuidMixin, TimestampMixin):
     accounts = relationship("Account", back_populates="user", cascade="all, delete")
     categories = relationship("Category", back_populates="user", cascade="all, delete")
 
-    # @property
-    # def password(self):
-    #     raise AttributeError("Password is write-only.")
-
-    # @password.setter
-    # def password(self, password):
-    #     """
-    #     Hashes a plain password.
-    #     """
-    #     pwd_bytes = password.encode("utf-8")
-    #     salt = bcrypt.gensalt()
-    #     hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
-    #     self._password_hash = hashed_password
-
-    # def verify_password(self, password):
-    #     """
-    #     Verifies a password against its hashed version.
-    #     """
-    #     return bcrypt.checkpw(
-    #         password=password.encode("utf-8"),
-    #         hashed_password=self._password_hash,
-    #     )
-
     def __repr__(self):
-        return f"<User {self.username}>"
+        return f"<User username={self.username} email={self.email} active={self.is_active}>"
 
 
 class UserBaseSchema(PerfiSchema):
@@ -59,10 +36,10 @@ class UserBaseSchema(PerfiSchema):
 
 
 class UserSchema(UserBaseSchema, UuidMixinSchema, TimestampMixinSchema):
-    hashed_password: str
+    hashed_password: bytes
 
 
-class UserInSchema(UserBaseSchema):
+class UserCreateSchema(UserBaseSchema):
     password: str
 
 

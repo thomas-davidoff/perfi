@@ -3,7 +3,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from db.base import PerfiModel, PerfiSchema
+from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,
