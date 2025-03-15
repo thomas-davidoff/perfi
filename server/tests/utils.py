@@ -6,7 +6,6 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.engine.url import URL as SQLAlchemyURL
 from config.settings import settings
-from config.migrations import alembic_config_from_url
 
 
 async def create_postgres_db(
