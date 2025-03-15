@@ -2,7 +2,13 @@ from sqlalchemy import String, Enum, Boolean, ForeignKey, UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from enum import Enum as PyEnum
 from typing import Optional
-from app.models.base_model import BaseModel
+from db.base import PerfiModel, PerfiSchema
+from app.models.mixins import (
+    UuidMixin,
+    TimestampMixin,
+    UuidMixinSchema,
+    TimestampMixinSchema,
+)
 
 
 class CategoryType(PyEnum):
@@ -11,7 +17,7 @@ class CategoryType(PyEnum):
     TRANSFER = "transfer"
 
 
-class Category(BaseModel):
+class Category(PerfiModel, UuidMixin, TimestampMixin):
     __tablename__ = "category"
 
     name: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -23,7 +29,7 @@ class Category(BaseModel):
     transactions = relationship("Transaction", back_populates="category")
 
     user_id: Mapped[Optional[UUID]] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
+        UUID(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), nullable=True
     )
     user = relationship("User", back_populates="categories")
 

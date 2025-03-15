@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.models import BaseModel
+from app.models import PerfiModel
 
 from config.settings import settings
 
@@ -27,7 +27,7 @@ if not current_url:
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = BaseModel.metadata
+target_metadata = PerfiModel.metadata
 
 
 def run_migrations_offline() -> None:

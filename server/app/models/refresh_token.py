@@ -2,15 +2,21 @@ from sqlalchemy import String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import datetime
 from uuid import UUID
-from .base_model import BaseModel
 from typing import Optional
+from db.base import PerfiModel, PerfiSchema
+from app.models.mixins import (
+    UuidMixin,
+    TimestampMixin,
+    UuidMixinSchema,
+    TimestampMixinSchema,
+)
 
 
-class RefreshToken(BaseModel):
+class RefreshToken(PerfiModel, UuidMixin, TimestampMixin):
     __tablename__ = "refresh_token"
 
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("user.uuid", ondelete="CASCADE"), nullable=False
     )
     token_value: Mapped[str] = mapped_column(
         String(64), unique=True, nullable=False, index=True

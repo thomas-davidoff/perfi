@@ -4,18 +4,24 @@ from datetime import date as dt
 from decimal import Decimal
 from uuid import UUID
 from typing import Optional
-from .base_model import BaseModel
+from db.base import PerfiModel, PerfiSchema
+from app.models.mixins import (
+    UuidMixin,
+    TimestampMixin,
+    UuidMixinSchema,
+    TimestampMixinSchema,
+)
 
 
-class Transaction(BaseModel):
+class Transaction(PerfiModel, UuidMixin, TimestampMixin):
     __tablename__ = "transaction"
 
     account_id: Mapped[UUID] = mapped_column(
-        ForeignKey("account.id", ondelete="CASCADE"), nullable=False, index=True
+        ForeignKey("account.uuid", ondelete="CASCADE"), nullable=False, index=True
     )
 
     category_id: Mapped[UUID] = mapped_column(
-        ForeignKey("category.id", ondelete="CASCADE"), nullable=True, index=True
+        ForeignKey("category.uuid", ondelete="CASCADE"), nullable=True, index=True
     )
 
     amount: Mapped[Decimal] = mapped_column(

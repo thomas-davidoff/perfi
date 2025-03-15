@@ -3,8 +3,14 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from decimal import Decimal
 from uuid import UUID
 from enum import Enum as PyEnum
-from .base_model import BaseModel
 from typing import Optional
+from db.base import PerfiModel, PerfiSchema
+from app.models.mixins import (
+    UuidMixin,
+    TimestampMixin,
+    UuidMixinSchema,
+    TimestampMixinSchema,
+)
 
 
 class AccountType(PyEnum):
@@ -15,11 +21,11 @@ class AccountType(PyEnum):
     CASH = "cash"
 
 
-class Account(BaseModel):
+class Account(PerfiModel, UuidMixin, TimestampMixin):
     __tablename__ = "account"
 
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("user.uuid", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     account_type: Mapped[AccountType] = mapped_column(
