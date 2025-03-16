@@ -21,7 +21,11 @@ class TestUserCrud:
         monkeypatch.setattr("app.repositories.user.hash_password", mock_function)
 
     async def test_create_user(self, session):
-        test_user = user_factory()
+        test_user = UserCreateSchema(
+            username=faker.user_name(),
+            email=faker.email(),
+            password=faker.password(),
+        )
         user = await UserCrud.create(session, test_user)
         assert user.uuid is not None
         assert user.created_at is not None
@@ -32,7 +36,11 @@ class TestUserCrud:
         assert user.hashed_password == test_user.password[::-1].encode("utf-8")
 
     async def test_create_user_conflict_username(self, session):
-        test_user = user_factory()
+        test_user = UserCreateSchema(
+            username=faker.user_name(),
+            email=faker.email(),
+            password=faker.password(),
+        )
         await UserCrud.create(session, test_user)
 
         test_user.email = faker.email()
@@ -41,7 +49,11 @@ class TestUserCrud:
             await UserCrud.create(session, test_user)
 
     async def test_update_user(self, session):
-        test_user = user_factory()
+        test_user = UserCreateSchema(
+            username=faker.user_name(),
+            email=faker.email(),
+            password=faker.password(),
+        )
         user = await UserCrud.create(session, test_user)
 
         user_update = await UserCrud.update_by_id(
@@ -54,8 +66,16 @@ class TestUserCrud:
         assert user.hashed_password == b"drowssap_wen"
 
     async def test_update_user_conflict(self, session):
-        test_user = user_factory()
-        test_user2 = user_factory()
+        test_user = UserCreateSchema(
+            username=faker.user_name(),
+            email=faker.email(),
+            password=faker.password(),
+        )
+        test_user2 = UserCreateSchema(
+            username=faker.user_name(),
+            email=faker.email(),
+            password=faker.password(),
+        )
 
         await UserCrud.create(
             session,
