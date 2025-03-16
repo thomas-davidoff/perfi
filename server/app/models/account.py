@@ -48,3 +48,29 @@ class Account(PerfiModel, UuidMixin, TimestampMixin):
         return (
             f"<Account {self.name} ({self.account_type.value}) balance={self.balance}>"
         )
+
+
+class AccountBaseSchema(PerfiSchema):
+    name: str
+    account_type: AccountType
+    balance: Decimal = Decimal("0.00")
+    institution: Optional[str] = None
+    description: Optional[str] = None
+    is_active: bool = True
+
+
+class AccountSchema(AccountBaseSchema, UuidMixinSchema, TimestampMixinSchema):
+    user_id: UUID
+
+
+class AccountCreateSchema(AccountBaseSchema):
+    user_id: UUID
+
+
+class AccountUpdateSchema(PerfiSchema):
+    name: Optional[str] = None
+    account_type: Optional[AccountType] = None
+    balance: Optional[Decimal] = None
+    institution: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None

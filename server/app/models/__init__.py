@@ -8,7 +8,13 @@ PerfiModel: TypeAlias = Base
 
 # import concrete models
 from .refresh_token import RefreshToken
-from .user import User, UserCreateSchema, UserSchema, UserUpdateSchema
-from .account import Account, AccountType
+from .user import User, UserSchema, UserCreateSchema, UserUpdateSchema
+from .account import (
+    Account,
+    AccountType,
+    AccountSchema,
+    AccountCreateSchema,
+    AccountUpdateSchema,
+)
 from .transaction import Transaction
 from .category import Category, CategoryType

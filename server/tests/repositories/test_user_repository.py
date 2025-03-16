@@ -6,14 +6,6 @@ from unittest.mock import MagicMock
 from tests.utils import faker
 
 
-def user_factory(**kwargs):
-    return UserCreateSchema(
-        username=kwargs.get("username") or faker.user_name(),
-        email=kwargs.get("email") or faker.email(),
-        password=kwargs.get("password") or faker.password(),
-    )
-
-
 class TestUserCrud:
     @pytest.fixture(autouse=True)
     def setup_mocks(self, monkeypatch):

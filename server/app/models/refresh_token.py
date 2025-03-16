@@ -37,3 +37,27 @@ class RefreshToken(PerfiModel, UuidMixin, TimestampMixin):
 
     def __repr__(self):
         return f"<RefreshToken user_id={self.user_id}>"
+
+
+class RefreshTokenBaseSchema(PerfiSchema):
+    user_id: UUID
+    token_value: str
+    expires_at: datetime
+    last_used_at: Optional[datetime] = None
+    device_info: Optional[str] = None
+    revoked: bool = False
+    revoked_at: Optional[datetime] = None
+
+
+class RefreshTokenSchema(RefreshTokenBaseSchema, UuidMixinSchema, TimestampMixinSchema):
+    pass
+
+
+class RefreshTokenCreateSchema(RefreshTokenBaseSchema):
+    pass
+
+
+class RefreshTokenUpdateSchema(PerfiSchema):
+    last_used_at: Optional[datetime] = None
+    revoked: Optional[bool] = None
+    revoked_at: Optional[datetime] = None

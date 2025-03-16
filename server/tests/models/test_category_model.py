@@ -1,60 +1,133 @@
 import pytest
-from sqlalchemy import select
-from app.models.category import Category, CategoryType
-from sqlalchemy.exc import StatementError
+from sqlalchemy.exc import IntegrityError
+from app.models import Category, User
+from app.models.category import (
+    CategoryType,
+    CategoryCreateSchema,
+    CategoryUpdateSchema,
+)
+import uuid
+from datetime import datetime, timezone
 
 
 class TestCategory:
-    async def test_create_category(self, session):
-        category = Category(
+    @pytest.fixture
+    async def user(self, session):
+        user = User(
+            username="category_user",
+            email="cat_test@example.com",
+            hashed_password=b"not_real_hash",
+        )
+        session.add(user)
+        await session.flush()
+        return user
+
+    async def test_create_category_with_user_from_schema(self, session, user):
+        category_data = CategoryCreateSchema(
             name="Groceries",
             category_type=CategoryType.EXPENSE,
+            is_system=False,
+            user_id=user.uuid,
         )
+
+        category = Category(**category_data.model_dump())
         session.add(category)
         await session.flush()
 
-        assert category.id is not None
+        assert isinstance(category.uuid, uuid.UUID)
+        assert isinstance(category.created_at, datetime)
+        assert category.updated_at is None
         assert category.name == "Groceries"
         assert category.category_type == CategoryType.EXPENSE
         assert category.is_system is False
+        assert category.user_id == user.uuid
 
-    async def test_category_type_validation(self, session):
-        # Test valid category types
+    async def test_create_system_category_without_user(self, session):
+        category_data = CategoryCreateSchema(
+            name="Uncategorized",
+            category_type=CategoryType.EXPENSE,
+            is_system=True,
+        )
+
+        category = Category(**category_data.model_dump())
+        session.add(category)
+        await session.flush()
+
+        assert category.user_id is None
+        assert category.is_system is True
+
+    async def test_category_requires_name(self, session, user):
+        category_data = CategoryCreateSchema(
+            name="Uncategorized",
+            category_type=CategoryType.EXPENSE,
+            is_system=False,
+            user_id=user.uuid,
+        )
+
+        category = Category(**category_data.model_dump(exclude={"name"}))
+        session.add(category)
+        with pytest.raises(IntegrityError, match="violates not-null constraint"):
+            await session.flush()
+
+    async def test_category_requires_type(self, session, user):
+        category_data = CategoryCreateSchema(
+            name="Uncategorized",
+            category_type=CategoryType.EXPENSE,
+            is_system=False,
+            user_id=user.uuid,
+        )
+        category = Category(**category_data.model_dump(exclude={"category_type"}))
+        session.add(category)
+        with pytest.raises(IntegrityError, match="violates not-null constraint"):
+            await session.flush()
+
+    async def test_category_update_with_schema(self, session, user):
+        category_data = CategoryCreateSchema(
+            name="Entertainment",
+            category_type=CategoryType.EXPENSE,
+            is_system=False,
+            user_id=user.uuid,
+        )
+
+        category = Category(**category_data.model_dump())
+        session.add(category)
+        await session.flush()
+
+        initial_created_at = category.created_at
+        assert category.updated_at is None
+
+        update_data = CategoryUpdateSchema(name="Movies & Entertainment")
+
+        for field, value in update_data.model_dump(exclude_unset=True).items():
+            setattr(category, field, value)
+
+        session.add(category)
+        await session.flush()
+
+        assert category.name == "Movies & Entertainment"
+        assert isinstance(category.updated_at, datetime)
+        assert category.updated_at > initial_created_at
+        assert category.created_at == initial_created_at
+
+    async def test_all_category_types(self, session, user):
         for category_type in CategoryType:
-            category = Category(
-                name=f"Test {category_type.name}", category_type=category_type
+            category_data = CategoryCreateSchema(
+                name=f"Test {category_type.value}",
+                category_type=category_type,
+                is_system=False,
+                user_id=user.uuid,
             )
+
+            category = Category(**category_data.model_dump())
             session.add(category)
             await session.flush()
-            assert category.id is not None
+
             assert category.category_type == category_type
 
-        # Clear the session
-        session.expunge_all()
-
-        # Test invalid category type
-        with pytest.raises(ValueError):
-            category = Category(name="Invalid Category", category_type="INVALID_TYPE")
-
-    async def test_category_type_validation(self, session):
-        for category_type in CategoryType:
-            category = Category(
-                name=f"Test {category_type.name}", category_type=category_type
-            )
-            session.add(category)
-            await session.flush()
-            assert category.id is not None
-            assert category.category_type == category_type
-
-        session.expunge_all()
-
-        async with session.begin_nested():
-            with pytest.raises(
-                StatementError,
-                match="'INVALID_TYPE' is not among the defined enum values",
-            ):
-                category = Category(
-                    name=f"Test {category_type.name}", category_type="INVALID_TYPE"
-                )
-                session.add(category)
-                await session.flush()
+    def test_repr(self):
+        category = Category(
+            name="Groceries",
+            category_type=CategoryType.EXPENSE,
+            is_system=False,
+        )
+        assert repr(category) == "<Category name=Groceries type=expense>"

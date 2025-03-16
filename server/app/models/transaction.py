@@ -21,7 +21,7 @@ class Transaction(PerfiModel, UuidMixin, TimestampMixin):
     )
 
     category_id: Mapped[UUID] = mapped_column(
-        ForeignKey("category.uuid", ondelete="CASCADE"), nullable=True, index=True
+        ForeignKey("category.uuid", ondelete="CASCADE"), nullable=False, index=True
     )
 
     amount: Mapped[Decimal] = mapped_column(
@@ -32,6 +32,35 @@ class Transaction(PerfiModel, UuidMixin, TimestampMixin):
     is_pending: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Relationships
     account = relationship("Account", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
+
+    def __repr__(self):
+        return f"<Transaction {self.description} ${self.amount} on {self.date}>"
+
+
+class TransactionBaseSchema(PerfiSchema):
+    account_id: UUID
+    amount: Decimal
+    description: str
+    date: dt
+    is_pending: bool = False
+    notes: Optional[str] = None
+    category_id: UUID = None
+
+
+class TransactionSchema(TransactionBaseSchema, UuidMixinSchema, TimestampMixinSchema):
+    pass
+
+
+class TransactionCreateSchema(TransactionBaseSchema):
+    pass
+
+
+class TransactionUpdateSchema(PerfiSchema):
+    amount: Optional[Decimal] = None
+    description: Optional[str] = None
+    date: Optional[dt] = None
+    is_pending: Optional[bool] = None
+    notes: Optional[str] = None
+    category_id: Optional[UUID] = None

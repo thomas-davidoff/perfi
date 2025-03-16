@@ -1,64 +1,200 @@
 import pytest
+from sqlalchemy.exc import IntegrityError
+from app.models import Account, User
+from app.models.account import (
+    AccountType,
+    AccountSchema,
+    AccountCreateSchema,
+    AccountUpdateSchema,
+)
 from decimal import Decimal
-from sqlalchemy.exc import StatementError
-from app.models import AccountType, User
 import uuid
-from tests.factories import AccountFactory, UserFactory
+from datetime import datetime, timezone
 
 
 class TestAccount:
-    async def test_create_account(self, session):
-        user = await UserFactory.create(session)
-        account = await AccountFactory.create(
-            session,
-            name="Checking account",
-            account_type=AccountType.CHECKING,
-            balance=Decimal("1000.00"),
-            institution="test banque",
-            user=user,
+    async def test_create_account_from_schema(self, session):
+        user = User(
+            username="test_user",
+            email="test@example.com",
+            hashed_password=b"not_real_hash",
         )
-        # Verify account was created successfully
-        assert account.id is not None
-        assert isinstance(account.id, uuid.UUID)
-        assert account.name == "Checking account"
+        session.add(user)
+        await session.flush()
+
+        # Create account using schema
+        account_data = AccountCreateSchema(
+            user_id=user.uuid,
+            name="Main Checking",
+            account_type=AccountType.CHECKING,
+            balance=Decimal("1000.50"),
+            institution="Test Bank",
+            description="My primary checking account",
+            is_active=True,
+        )
+
+        account = Account(**account_data.model_dump())
+        session.add(account)
+        await session.flush()
+
+        assert isinstance(account.uuid, uuid.UUID)
+        assert isinstance(account.created_at, datetime)
+        assert account.updated_at is None
+        assert account.name == "Main Checking"
         assert account.account_type == AccountType.CHECKING
-        assert account.balance == Decimal("1000.00")
-        assert account.institution == "test banque"
-        assert account.user_id == user.id
+        assert account.balance == Decimal("1000.50")
+        assert account.institution == "Test Bank"
+        assert account.description == "My primary checking account"
+        assert account.is_active is True
+        assert account.user_id == user.uuid
 
-    async def test_account_type_validation(self, session):
-        user = await UserFactory.create(session)
-        for account_type in AccountType:
-            account = await AccountFactory.create(
-                session,
-                account_type=account_type,
-                user=user,
-            )
-            assert account.id is not None
-            assert account.account_type == account_type
+    async def test_account_requires_user(self, session):
+        account_data = AccountCreateSchema(
+            name="Main Checking",
+            account_type=AccountType.CHECKING,
+            balance=Decimal("1000.50"),
+            user_id=uuid.uuid4(),
+        )
 
-        session.expunge_all()
+        account = Account(**account_data.model_dump(exclude={"user_id"}))
+        session.add(account)
+        with pytest.raises(IntegrityError, match="violates not-null constraint"):
+            await session.flush()
 
-        async with session.begin_nested():
-            with pytest.raises(
-                StatementError,
-                match="'INVALID_TYPE' is not among the defined enum values",
-            ):
-                account = await AccountFactory.create(
-                    session,
-                    account_type="INVALID_TYPE",
-                    user=user,
-                )
+    async def test_account_requires_name(self, session):
+        user = User(
+            username="test_user2",
+            email="test2@example.com",
+            hashed_password=b"not_real_hash",
+        )
+        session.add(user)
+        await session.flush()
 
+        account_data = AccountCreateSchema(
+            name="Main Checking",
+            user_id=user.uuid,
+            account_type=AccountType.CHECKING,
+            balance=Decimal("1000.50"),
+        )
 
-class TestAccountRelationships:
-    """Tests for RefreshToken relationships"""
+        account = Account(**account_data.model_dump(exclude={"name"}))
+        session.add(account)
+        with pytest.raises(IntegrityError, match="violates not-null constraint"):
+            await session.flush()
 
-    async def test_account_user_relationship(self, session):
+    async def test_account_requires_account_type(self, session):
+        user = User(
+            username="test_user3",
+            email="test3@example.com",
+            hashed_password=b"not_real_hash",
+        )
+        session.add(user)
+        await session.flush()
 
-        user = await UserFactory.create(session)
-        account = await AccountFactory.create(session, user=user)
+        account_data = AccountCreateSchema(
+            user_id=user.uuid,
+            name="Test Account",
+            account_type=AccountType.CHECKING,
+            balance=Decimal("1000.50"),
+        )
 
-        # Test relationship from account to user
-        assert account.user is not None
-        assert isinstance(account.user, User)
+        account = Account(**account_data.model_dump(exclude={"account_type"}))
+        session.add(account)
+        with pytest.raises(IntegrityError, match="violates not-null constraint"):
+            await session.flush()
+
+    async def test_account_update_with_schema(self, session):
+        # First create a user
+        user = User(
+            username="test_user4",
+            email="test4@example.com",
+            hashed_password=b"not_real_hash",
+        )
+        session.add(user)
+        await session.flush()
+
+        # Create initial account
+        account_data = AccountCreateSchema(
+            user_id=user.uuid,
+            name="Main Checking",
+            account_type=AccountType.CHECKING,
+            balance=Decimal("1000.50"),
+        )
+        account = Account(**account_data.model_dump())
+        session.add(account)
+        await session.flush()
+
+        initial_created_at = account.created_at
+        assert account.updated_at is None
+
+        # Update account using UpdateSchema
+        update_data = AccountUpdateSchema(
+            balance=Decimal("2000.75"), name="Updated Checking"
+        )
+
+        # Apply updates from schema to model
+        for field, value in update_data.model_dump(exclude_unset=True).items():
+            setattr(account, field, value)
+
+        session.add(account)
+        await session.flush()
+
+        assert account.balance == Decimal("2000.75")
+        assert account.name == "Updated Checking"
+        assert isinstance(account.updated_at, datetime)
+        assert account.updated_at > initial_created_at
+        assert account.created_at == initial_created_at
+
+    async def test_account_default_values(self, session):
+        # Test that default values in the schema work as expected
+        user = User(
+            username="test_user5",
+            email="test5@example.com",
+            hashed_password=b"not_real_hash",
+        )
+        session.add(user)
+        await session.flush()
+
+        # Create with minimal required fields
+        account_data = AccountCreateSchema(
+            user_id=user.uuid,
+            name="Minimal Account",
+            account_type=AccountType.SAVINGS,
+        )
+
+        account = Account(**account_data.model_dump())
+        session.add(account)
+        await session.flush()
+
+        # Check default values
+        assert account.balance == Decimal("0.00")
+        assert account.institution is None
+        assert account.description is None
+        assert account.is_active is True
+
+    def test_schema_validation(self):
+        # Verify schema validation works
+        # This should validate without raising an exception
+        account_schema = AccountSchema(
+            uuid=uuid.uuid4(),
+            user_id=uuid.uuid4(),
+            name="Schema Test Account",
+            account_type=AccountType.INVESTMENT,
+            balance=Decimal("500.00"),
+            created_at=datetime.now(timezone.utc),
+        )
+
+        # Convert to and from dict should preserve values
+        account_dict = account_schema.model_dump()
+        account_schema2 = AccountSchema(**account_dict)
+        assert account_schema.name == account_schema2.name
+        assert account_schema.account_type == account_schema2.account_type
+        assert account_schema.balance == account_schema2.balance
+
+    def test_repr(self):
+        account = Account(
+            name="Savings Account",
+            account_type=AccountType.SAVINGS,
+            balance=Decimal("5000.00"),
+        )
+        assert repr(account) == "<Account Savings Account (savings) balance=5000.00>"
