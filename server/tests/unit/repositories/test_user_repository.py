@@ -1,6 +1,6 @@
 import pytest
 from app.exc import IntegrityConflictException
-from app.repositories.user import UserRepository
+from app.repositories import UserRepository
 from app.models import UserUpdateSchema, UserCreateSchema
 from unittest.mock import MagicMock
 from tests.utils import faker

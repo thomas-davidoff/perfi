@@ -1,16 +1,16 @@
+from datetime import timedelta
+from multiprocessing import Value
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import (
     PostgresDsn,
     BaseModel,
     computed_field,
+    BeforeValidator,
 )
 from sqlalchemy.engine.url import URL
-from typing import Annotated
+from typing import Annotated, Union
 from functools import cached_property
 import os
-
-
-# __all__ = ["settings"]
 
 
 class DatabaseSettings(BaseModel):
@@ -36,6 +36,14 @@ class DatabaseSettings(BaseModel):
         return url
 
 
+def minutes_to_timedelta(v: int) -> timedelta:
+    if not isinstance(v, int):
+        raise ValueError("Must be an integer.")
+    if not v > 0:
+        raise ValueError("Must be greater than 0")
+    return timedelta(minutes=v)
+
+
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter="_",
@@ -43,6 +51,10 @@ class AppSettings(BaseSettings):
         env_file_encoding="utf-8",
     )
     db: DatabaseSettings
+
+    refresh_token_expires_in_minutes: Annotated[
+        timedelta, BeforeValidator(minutes_to_timedelta)
+    ] = 10080  # 7 days
 
 
 settings = AppSettings()

@@ -11,17 +11,6 @@ from datetime import datetime, timedelta, timezone
 
 
 class TestRefreshToken:
-    @pytest.fixture
-    async def user(self, session):
-        user = User(
-            username="token_user",
-            email="token_test@example.com",
-            hashed_password=b"not_real_hash",
-        )
-        session.add(user)
-        await session.flush()
-        return user
-
     async def test_create_refresh_token_from_schema(self, session, user):
         expiry = datetime.now(timezone.utc) + timedelta(days=7)
         token_data = RefreshTokenCreateSchema(
@@ -83,7 +72,6 @@ class TestRefreshToken:
     async def test_token_unique_value(self, session, user):
         expiry = datetime.now(timezone.utc) + timedelta(days=7)
 
-        # Create first token
         token1_data = RefreshTokenCreateSchema(
             user_id=user.uuid,
             token_value="same_token_value",
@@ -94,7 +82,6 @@ class TestRefreshToken:
         session.add(token1)
         await session.flush()
 
-        # Try to create second token with same value
         token2_data = RefreshTokenCreateSchema(
             user_id=user.uuid,
             token_value="same_token_value",
@@ -123,11 +110,9 @@ class TestRefreshToken:
         assert token.last_used_at is None
         assert token.revoked is False
 
-        # Update token with schema - mark as used
         now = datetime.now(timezone.utc)
         update_data = RefreshTokenUpdateSchema(last_used_at=now)
 
-        # Apply updates from schema to model
         for field, value in update_data.model_dump(exclude_unset=True).items():
             setattr(token, field, value)
 
@@ -139,10 +124,8 @@ class TestRefreshToken:
         assert token.updated_at > initial_created_at
         assert token.created_at == initial_created_at
 
-        # Revoke token
         revoke_data = RefreshTokenUpdateSchema(revoked=True, revoked_at=now)
 
-        # Apply updates from schema to model
         for field, value in revoke_data.model_dump(exclude_unset=True).items():
             setattr(token, field, value)
 
@@ -154,7 +137,6 @@ class TestRefreshToken:
         assert token.updated_at > initial_created_at
 
     def test_schema_validation(self):
-        # Verify schema validation works
         user_id = uuid.uuid4()
         expiry = datetime.now(timezone.utc) + timedelta(days=7)
 
@@ -166,7 +148,6 @@ class TestRefreshToken:
             created_at=datetime.now(timezone.utc),
         )
 
-        # Convert to and from dict should preserve values
         token_dict = token_schema.model_dump()
         token_schema2 = RefreshTokenSchema(**token_dict)
         assert token_schema.user_id == token_schema2.user_id

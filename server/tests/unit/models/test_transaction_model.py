@@ -14,45 +14,12 @@ from datetime import datetime, date, timezone
 
 
 class TestTransaction:
-    @pytest.fixture
-    async def user(self, session):
-        user = User(
-            username="transaction_user",
-            email="trans_test@example.com",
-            hashed_password=b"not_real_hash",
-        )
-        session.add(user)
-        await session.flush()
-        return user
-
-    @pytest.fixture
-    async def account(self, session, user):
-        account = Account(
-            user_id=user.uuid,
-            name="Test Account",
-            account_type=AccountType.CHECKING,
-            balance=Decimal("1000.00"),
-        )
-        session.add(account)
-        await session.flush()
-        return account
-
-    @pytest.fixture
-    async def category(self, session, user):
-        category = Category(
-            name="Test Category",
-            category_type=CategoryType.EXPENSE,
-            user_id=user.uuid,
-            is_system=False,
-        )
-        session.add(category)
-        await session.flush()
-        return category
-
-    async def test_create_transaction_from_schema(self, session, account, category):
+    async def test_create_transaction_from_schema(
+        self, session, account, expense_category
+    ):
         transaction_data = TransactionCreateSchema(
             account_id=account.uuid,
-            category_id=category.uuid,
+            category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
             date=date(2023, 1, 15),
@@ -68,7 +35,7 @@ class TestTransaction:
         assert isinstance(transaction.created_at, datetime)
         assert transaction.updated_at is None
         assert transaction.account_id == account.uuid
-        assert transaction.category_id == category.uuid
+        assert transaction.category_id == expense_category.uuid
         assert transaction.amount == Decimal("-50.25")
         assert transaction.description == "Grocery shopping"
         assert transaction.date == date(2023, 1, 15)
@@ -99,9 +66,9 @@ class TestTransaction:
             with pytest.raises(IntegrityError, match="violates foreign key constraint"):
                 await session.flush()
 
-    async def test_transaction_requires_valid_account(self, session, category):
+    async def test_transaction_requires_valid_account(self, session, expense_category):
         transaction_data = TransactionCreateSchema(
-            category_id=category.uuid,
+            category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
             date=date(2023, 1, 15),
@@ -167,10 +134,12 @@ class TestTransaction:
         with pytest.raises(IntegrityError, match="violates not-null constraint"):
             await session.flush()
 
-    async def test_transaction_update_with_schema(self, session, account, category):
+    async def test_transaction_update_with_schema(
+        self, session, account, expense_category
+    ):
         transaction_data = TransactionCreateSchema(
             account_id=account.uuid,
-            category_id=category.uuid,
+            category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
             date=date(2023, 1, 15),
@@ -184,12 +153,10 @@ class TestTransaction:
         initial_created_at = transaction.created_at
         assert transaction.updated_at is None
 
-        # Create update data
         update_data = TransactionUpdateSchema(
             amount=Decimal("-75.50"), is_pending=False, notes="Updated notes"
         )
 
-        # Apply updates from schema to model
         for field, value in update_data.model_dump(exclude_unset=True).items():
             setattr(transaction, field, value)
 
@@ -204,7 +171,6 @@ class TestTransaction:
         assert transaction.created_at == initial_created_at
 
     async def test_schema_validation(self):
-        # Verify schema validation works
         transaction_schema = TransactionSchema(
             uuid=uuid.uuid4(),
             account_id=uuid.uuid4(),
@@ -215,7 +181,6 @@ class TestTransaction:
             category_id=uuid.uuid4(),
         )
 
-        # Convert to and from dict should preserve values
         transaction_dict = transaction_schema.model_dump()
         transaction_schema2 = TransactionSchema(**transaction_dict)
         assert transaction_schema.account_id == transaction_schema2.account_id
@@ -224,7 +189,6 @@ class TestTransaction:
         assert transaction_schema.date == transaction_schema2.date
 
     def test_repr(self):
-        # Added __repr__ method to transaction model
         transaction = Transaction(
             description="Test Transaction",
             amount=Decimal("-100.00"),

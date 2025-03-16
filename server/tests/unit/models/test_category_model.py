@@ -8,20 +8,10 @@ from app.models.category import (
 )
 import uuid
 from datetime import datetime, timezone
+from tests.utils import faker
 
 
 class TestCategory:
-    @pytest.fixture
-    async def user(self, session):
-        user = User(
-            username="category_user",
-            email="cat_test@example.com",
-            hashed_password=b"not_real_hash",
-        )
-        session.add(user)
-        await session.flush()
-        return user
-
     async def test_create_category_with_user_from_schema(self, session, user):
         category_data = CategoryCreateSchema(
             name="Groceries",
@@ -55,6 +45,18 @@ class TestCategory:
 
         assert category.user_id is None
         assert category.is_system is True
+
+    async def test_create_invalid_category(self, session):
+        # A category with no user_id and is_system=False should raise an error
+        with pytest.raises(
+            ValueError,
+            match="is_system must be explictly set to True if user_id is not passed",
+        ):
+            CategoryCreateSchema(
+                name=faker.word(),
+                category_type=CategoryType.INCOME,
+                is_system=False,
+            )
 
     async def test_category_requires_name(self, session, user):
         category_data = CategoryCreateSchema(

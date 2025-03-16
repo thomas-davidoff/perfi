@@ -14,6 +14,11 @@ import warnings
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 
+pytest_plugins = [
+    "tests.fixtures.models",
+]
+
+
 @pytest.fixture(scope="session", autouse=True)
 def anyio_backend():
     return "asyncio", {"use_uvloop": True}

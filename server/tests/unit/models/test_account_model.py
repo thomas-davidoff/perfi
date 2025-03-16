@@ -22,7 +22,6 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        # Create account using schema
         account_data = AccountCreateSchema(
             user_id=user.uuid,
             name="Main Checking",
@@ -104,7 +103,6 @@ class TestAccount:
             await session.flush()
 
     async def test_account_update_with_schema(self, session):
-        # First create a user
         user = User(
             username="test_user4",
             email="test4@example.com",
@@ -113,7 +111,6 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        # Create initial account
         account_data = AccountCreateSchema(
             user_id=user.uuid,
             name="Main Checking",
@@ -127,12 +124,10 @@ class TestAccount:
         initial_created_at = account.created_at
         assert account.updated_at is None
 
-        # Update account using UpdateSchema
         update_data = AccountUpdateSchema(
             balance=Decimal("2000.75"), name="Updated Checking"
         )
 
-        # Apply updates from schema to model
         for field, value in update_data.model_dump(exclude_unset=True).items():
             setattr(account, field, value)
 
@@ -146,7 +141,6 @@ class TestAccount:
         assert account.created_at == initial_created_at
 
     async def test_account_default_values(self, session):
-        # Test that default values in the schema work as expected
         user = User(
             username="test_user5",
             email="test5@example.com",
@@ -155,7 +149,6 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        # Create with minimal required fields
         account_data = AccountCreateSchema(
             user_id=user.uuid,
             name="Minimal Account",
@@ -166,15 +159,12 @@ class TestAccount:
         session.add(account)
         await session.flush()
 
-        # Check default values
         assert account.balance == Decimal("0.00")
         assert account.institution is None
         assert account.description is None
         assert account.is_active is True
 
     def test_schema_validation(self):
-        # Verify schema validation works
-        # This should validate without raising an exception
         account_schema = AccountSchema(
             uuid=uuid.uuid4(),
             user_id=uuid.uuid4(),
@@ -183,8 +173,6 @@ class TestAccount:
             balance=Decimal("500.00"),
             created_at=datetime.now(timezone.utc),
         )
-
-        # Convert to and from dict should preserve values
         account_dict = account_schema.model_dump()
         account_schema2 = AccountSchema(**account_dict)
         assert account_schema.name == account_schema2.name
