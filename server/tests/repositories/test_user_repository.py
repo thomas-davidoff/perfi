@@ -1,6 +1,6 @@
 import pytest
 from app.exc import IntegrityConflictException
-from app.repositories.user import UserCrud
+from app.repositories.user import UserRepository
 from app.models import UserUpdateSchema, UserCreateSchema
 from unittest.mock import MagicMock
 from tests.utils import faker
@@ -18,7 +18,7 @@ class TestUserCrud:
             email=faker.email(),
             password=faker.password(),
         )
-        user = await UserCrud.create(session, test_user)
+        user = await UserRepository.create(session, test_user)
         assert user.uuid is not None
         assert user.created_at is not None
         assert user.updated_at is None
@@ -33,12 +33,12 @@ class TestUserCrud:
             email=faker.email(),
             password=faker.password(),
         )
-        await UserCrud.create(session, test_user)
+        await UserRepository.create(session, test_user)
 
         test_user.email = faker.email()
 
         with pytest.raises(IntegrityConflictException):
-            await UserCrud.create(session, test_user)
+            await UserRepository.create(session, test_user)
 
     async def test_update_user(self, session):
         test_user = UserCreateSchema(
@@ -46,9 +46,9 @@ class TestUserCrud:
             email=faker.email(),
             password=faker.password(),
         )
-        user = await UserCrud.create(session, test_user)
+        user = await UserRepository.create(session, test_user)
 
-        user_update = await UserCrud.update_by_id(
+        user_update = await UserRepository.update_by_id(
             session,
             id_=user.uuid,
             data=UserUpdateSchema(password="new_password".encode("utf-8")),
@@ -69,15 +69,15 @@ class TestUserCrud:
             password=faker.password(),
         )
 
-        await UserCrud.create(
+        await UserRepository.create(
             session,
             test_user,
         )
 
-        await UserCrud.create(session, test_user2)
+        await UserRepository.create(session, test_user2)
 
         with pytest.raises(IntegrityConflictException):
-            _ = await UserCrud.update_by_id(
+            _ = await UserRepository.update_by_id(
                 session,
                 id_=test_user.username,
                 column="username",

@@ -8,11 +8,10 @@ from app.models import (
     PerfiModel,
     PerfiSchema,
 )
-
 from app.exc import NotFoundException, RepositoryException, IntegrityConflictException
 
 
-def CrudFactory(model: PerfiModel):
+def RepositoryFactory(model: PerfiModel):
     class AsyncCrud:
         @classmethod
         async def create(
@@ -20,20 +19,6 @@ def CrudFactory(model: PerfiModel):
             session: AsyncSession,
             data: PerfiSchema,
         ) -> PerfiModel:
-            """Accepts a Pydantic model, creates a new record in the database, catches
-            any integrity errors, and returns the record.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                data (PerfiSchema): Pydantic model
-
-            Raises:
-                IntegrityConflictException: if creation conflicts with existing data
-                RepositoryException: if an unknown error occurs
-
-            Returns:
-                PerfiModel: created SQLAlchemy model
-            """
             try:
                 db_model = model(**data.model_dump())
                 session.add(db_model)
@@ -54,21 +39,6 @@ def CrudFactory(model: PerfiModel):
             data: list[PerfiSchema],
             return_models: bool = False,
         ) -> list[PerfiModel] | bool:
-            """_summary_
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                data (list[PerfiSchema]): list of Pydantic models
-                return_models (bool, optional): Should the created models be returned
-                    or a boolean indicating they have been created. Defaults to False.
-
-            Raises:
-                IntegrityConflictException: if creation conflicts with existing data
-                RepositoryException: if an unknown error occurs
-
-            Returns:
-                list[PerfiModel] | bool: list of created SQLAlchemy models or boolean
-            """
             db_models = [model(**d.model_dump()) for d in data]
             try:
                 session.add_all(db_models)
@@ -96,25 +66,6 @@ def CrudFactory(model: PerfiModel):
             column: str = "uuid",
             with_for_update: bool = False,
         ) -> PerfiModel:
-            """Fetches one record from the database based on a column value and returns
-            it, or returns None if it does not exist. Raises an exception if the column
-            doesn't exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                id_ (str | UUID): value to search for in `column`.
-                column (str, optional): the column name in which to search.
-                    Defaults to "uuid".
-                with_for_update (bool, optional): Should the returned row be locked
-                    during the lifetime of the current open transactions.
-                    Defaults to False.
-
-            Raises:
-                RepositoryException: if the column does not exist on the model
-
-            Returns:
-                PerfiModel: SQLAlchemy model or None
-            """
             try:
                 q = select(model).where(getattr(model, column) == id_)
             except AttributeError:
@@ -136,25 +87,6 @@ def CrudFactory(model: PerfiModel):
             column: str = "uuid",
             with_for_update: bool = False,
         ) -> list[PerfiModel]:
-            """Fetches multiple records from the database based on a column value and
-            returns them. Raises an exception if the column doesn't exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                ids (list[str  |  UUID], optional): list of values to search for in
-                    `column`. Defaults to None.
-                column (str, optional): the column name in which to search
-                    Defaults to "uuid".
-                with_for_update (bool, optional): Should the returned rows be locked
-                    during the lifetime of the current open transactions.
-                    Defaults to False.
-
-            Raises:
-                RepositoryException: if the column does not exist on the model
-
-            Returns:
-                list[PerfiModel]: list of SQLAlchemy models
-            """
             q = select(model)
             if ids:
                 try:
@@ -178,23 +110,6 @@ def CrudFactory(model: PerfiModel):
             id_: str | UUID,
             column: str = "uuid",
         ) -> PerfiModel:
-            """Updates a record in the database based on a column value and returns the
-            updated record. Raises an exception if the record isn't found or if the
-            column doesn't exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                data (PerfiSchema): Pydantic schema for the updated data.
-                id_ (str | UUID): value to search for in `column`
-                column (str, optional): the column name in which to search
-                    Defaults to "uuid".
-            Raises:
-                NotFoundException: if the record isn't found
-                IntegrityConflictException: if the update conflicts with existing data
-
-            Returns:
-                PerfiModel: updated SQLAlchemy model
-            """
             db_model = await cls.get_one_by_id(
                 session, id_, column=column, with_for_update=True
             )
@@ -224,26 +139,6 @@ def CrudFactory(model: PerfiModel):
             column: str = "uuid",
             return_models: bool = False,
         ) -> list[PerfiModel] | bool:
-            """Updates multiple records in the database based on a column value and
-            returns the updated records. Raises an exception if the column doesn't
-            exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                updates (dict[str  |  UUID, PerfiSchema]): dictionary of id_ to
-                    Pydantic update schema
-                column (str, optional): the column name in which to search.
-                    Defaults to "uuid".
-                return_models (bool, optional): Should the created models be returned
-                    or a boolean indicating they have been created. Defaults to False.
-                    Defaults to False.
-
-            Raises:
-                IntegrityConflictException: if the update conflicts with existing data
-
-            Returns:
-                list[PerfiModel] | bool: list of updated SQLAlchemy models or boolean
-            """
             updates = {str(id): update for id, update in updates.items() if update}
             ids = list(updates.keys())
             db_models = await cls.get_many_by_ids(
@@ -280,22 +175,6 @@ def CrudFactory(model: PerfiModel):
             id_: str | UUID,
             column: str = "uuid",
         ) -> int:
-            """Removes a record from the database based on a column value. Raises an
-            exception if the column doesn't exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                id (str | UUID): value to search for in `column` and delete
-                column (str, optional): the column name in which to search.
-                    Defaults to "uuid".
-
-            Raises:
-                RepositoryException: if the column does not exist on the model
-
-            Returns:
-                int: number of rows removed, 1 if successful, 0 if not. Can be greater
-                    than 1 if id_ is not unique in the column.
-            """
             try:
                 query = delete(model).where(getattr(model, column) == id_)
             except AttributeError:
@@ -314,22 +193,6 @@ def CrudFactory(model: PerfiModel):
             ids: list[str | UUID],
             column: str = "uuid",
         ) -> int:
-            """Removes multiple records from the database based on a column value.
-            Raises an exception if the column doesn't exist.
-
-            Args:
-                session (AsyncSession): SQLAlchemy async session
-                ids (list[str  |  UUID]): list of values to search for in `column` and
-                column (str, optional): the column name in which to search.
-                    Defaults to "uuid".
-
-            Raises:
-                RepositoryException: if ids is empty to stop deleting an entire table
-                RepositoryException: if column does not exist on the model
-
-            Returns:
-                int: _description_
-            """
             if not ids:
                 raise RepositoryException("No ids provided.")
 
