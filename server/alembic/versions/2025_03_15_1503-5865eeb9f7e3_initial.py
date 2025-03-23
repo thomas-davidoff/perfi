@@ -26,7 +26,7 @@ def upgrade() -> None:
         "user",
         sa.Column("uuid", sa.UUID(), nullable=False),
         sa.Column("username", sa.String(length=20), nullable=False),
-        sa.Column("email", sa.String(length=30), nullable=False),
+        sa.Column("email", sa.String(length=254), nullable=False),
         sa.Column("hashed_password", sa.LargeBinary(), nullable=False),
         sa.Column("is_active", sa.Boolean(), server_default="TRUE", nullable=False),
         sa.Column(

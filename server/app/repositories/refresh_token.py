@@ -7,7 +7,6 @@ from sqlalchemy import select
 
 from app.models import (
     RefreshToken,
-    RefreshTokenSchema,
     RefreshTokenCreateSchema,
     RefreshTokenUpdateSchema,
 )
@@ -29,7 +28,7 @@ class RefreshTokenRepository(RepositoryFactory(RefreshToken)):
         """Generate a new refresh token for the specified user."""
         token_value = secrets.token_hex(32)  # 64 characters hex string
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         token_data = RefreshTokenCreateSchema(

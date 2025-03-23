@@ -9,8 +9,8 @@ services:
       target: development
     ports:
       - "8000:8000"
-    entrypoint: ["perfi"]
-    command: ["run"]
+    entrypoint: [ "perfi" ]
+    command: [ "run" ]
     volumes:
       - ./server/perfi:/opt/perfi/perfi
       - ./server/cli:/opt/perfi/cli
@@ -26,6 +26,7 @@ services:
       DB_PORT: 5432
       DB_USER: perfi_dev
       DB_NAME: perfi
+      DB_PASS: perfi_dev_pass
       DEBUG: true
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
@@ -99,6 +100,7 @@ services:
     environment:
       POSTGRES_USER: perfi_dev
       POSTGRES_DB: perfi
+      POSTGRES_PASSWORD: perfi_dev_pass
     env_file:
       - .env.db
     volumes:
@@ -108,6 +110,7 @@ services:
   test_db:
     profiles:
       - test
+      - dev
     image: postgres:17
     ports:
       - "5433:5432"

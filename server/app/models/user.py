@@ -1,6 +1,5 @@
 from sqlalchemy import String, LargeBinary
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-import bcrypt
 
 from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
@@ -15,7 +14,7 @@ class User(PerfiModel, UuidMixin, TimestampMixin):
     __tablename__ = "user"
 
     username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
     hashed_password: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, server_default="TRUE")
 

@@ -4,7 +4,6 @@ from app.exc import IntegrityConflictException, NotFoundException
 from app.repositories import RefreshTokenRepository
 from app.models import RefreshTokenCreateSchema, RefreshTokenUpdateSchema
 from tests.utils import faker
-from uuid import uuid4
 from config.settings import settings
 
 
@@ -12,7 +11,7 @@ class TestRefreshTokenCrud:
     async def test_create_refresh_token(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         test_token = RefreshTokenCreateSchema(
@@ -37,7 +36,7 @@ class TestRefreshTokenCrud:
     async def test_create_refresh_token_duplicate_value(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         token_data = RefreshTokenCreateSchema(
@@ -56,7 +55,7 @@ class TestRefreshTokenCrud:
     async def test_get_token_by_id(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         test_token = RefreshTokenCreateSchema(
@@ -75,7 +74,7 @@ class TestRefreshTokenCrud:
     async def test_get_by_token_value(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         test_token = RefreshTokenCreateSchema(
@@ -101,7 +100,7 @@ class TestRefreshTokenCrud:
     async def test_mark_as_used(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         test_token = RefreshTokenCreateSchema(
@@ -119,7 +118,7 @@ class TestRefreshTokenCrud:
     async def test_revoke_token(self, session, user):
         token_value = faker.uuid4()
         expires_at = (
-            datetime.now(timezone.utc) + settings.refresh_token_expires_in_minutes
+            datetime.now(timezone.utc) + settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES
         )
 
         test_token = RefreshTokenCreateSchema(

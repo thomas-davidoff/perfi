@@ -48,5 +48,5 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.pytest.ini_options]
-addopts = "--capture=tee-sys -ra -x -rP"
+addopts = "--capture=tee-sys"
 testpaths = ["tests"]

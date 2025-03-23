@@ -1,5 +1,5 @@
+from config.environment import ENVIRONMENT, Environment
 from datetime import timedelta
-from multiprocessing import Value
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import (
     PostgresDsn,
@@ -8,9 +8,17 @@ from pydantic import (
     BeforeValidator,
 )
 from sqlalchemy.engine.url import URL
-from typing import Annotated, Union
+from typing import Annotated
 from functools import cached_property
-import os
+
+
+def minutes_to_timedelta(v: int) -> timedelta:
+    print(f"receiving value: {v}")
+    if not isinstance(v, int):
+        raise ValueError("Must be an integer.")
+    if not v > 0:
+        raise ValueError("Must be greater than 0")
+    return timedelta(minutes=v)
 
 
 class DatabaseSettings(BaseModel):
@@ -36,29 +44,39 @@ class DatabaseSettings(BaseModel):
         return url
 
 
-def minutes_to_timedelta(v: int) -> timedelta:
-    if not isinstance(v, int):
-        raise ValueError("Must be an integer.")
-    if not v > 0:
-        raise ValueError("Must be greater than 0")
-    return timedelta(minutes=v)
+def coerce_to_timedelta(v: int) -> timedelta:
+    try:
+        minutes = int(v)
+    except ValueError as e:
+        raise ValueError("Expires in minutes must be a valid integer.") from e
+
+    if not minutes > 0:
+        raise ValueError("Expires in minutes must be gte 0.")
+
+    return timedelta(minutes=minutes)
+
+
+class JWTSettings(BaseModel):
+    REFRESH_TOKEN_EXPIRES_IN_MINUTES: Annotated[
+        timedelta, BeforeValidator(coerce_to_timedelta)
+    ]
 
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_nested_delimiter="_",
-        env_file=[".env", f'.env.{os.getenv("PERFI_ENV")}'],
+        env_nested_delimiter="__",
+        env_file=[".env", f".env.{ENVIRONMENT.value}"],
         env_file_encoding="utf-8",
+        populate_by_name=True,
     )
+    ENV: Environment = ENVIRONMENT
+    jwt: JWTSettings
     db: DatabaseSettings
-
-    refresh_token_expires_in_minutes: Annotated[
-        timedelta, BeforeValidator(minutes_to_timedelta)
-    ] = 10080  # 7 days
 
 
 settings = AppSettings()
 
-
 if __name__ == "__main__":
     print(settings)
+    print(settings.jwt)
+    print(settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES)

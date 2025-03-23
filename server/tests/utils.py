@@ -57,9 +57,11 @@ async def tmp_postgres_db(
         drivername=settings.db.DRIVER,
     )
 
+    print(f"Connecting to db at {settings.db.url}")
     engine = create_async_engine(settings.db.url, isolation_level="AUTOCOMMIT")
 
     try:
+        print(f"Creating new database {tmp_db_name}")
         await create_postgres_db(engine, tmp_db_name, encoding)
         yield tmp_db_url
     finally:
