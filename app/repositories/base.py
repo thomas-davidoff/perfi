@@ -12,7 +12,7 @@ from app.exc import NotFoundException, RepositoryException, IntegrityConflictExc
 
 
 def RepositoryFactory(model: PerfiModel):
-    class AsyncCrud:
+    class AsyncRepository:
         @classmethod
         async def create(
             cls,
@@ -207,5 +207,5 @@ def RepositoryFactory(model: PerfiModel):
             await session.commit()
             return rows.rowcount
 
-    AsyncCrud.model = model
-    return AsyncCrud
+    AsyncRepository.model = model
+    return AsyncRepository

@@ -7,7 +7,7 @@ from tests.utils import faker
 from config.settings import settings
 
 
-class TestRefreshTokenCrud:
+class TestRefreshTokenRepository:
     async def test_create_refresh_token(self, session, user):
         token_value = faker.uuid4()
         expires_at = (

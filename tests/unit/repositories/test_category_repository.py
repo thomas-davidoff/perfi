@@ -6,7 +6,7 @@ from tests.utils import faker
 from uuid import uuid4
 
 
-class TestCategoryCrud:
+class TestCategoryRepository:
     async def test_create_user_category(self, session, user):
         test_category = CategoryCreateSchema(
             user_id=user.uuid,

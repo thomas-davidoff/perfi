@@ -9,7 +9,7 @@ from tests.utils import faker
 from uuid import uuid4
 
 
-class TestTransactionCrud:
+class TestTransactionRepository:
     async def test_create_transaction(self, session, account, expense_category):
         test_transaction = TransactionCreateSchema(
             account_id=account.uuid,

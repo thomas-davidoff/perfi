@@ -7,7 +7,7 @@ from tests.utils import faker
 from uuid import uuid4
 
 
-class TestAccountCrud:
+class TestAccountRepository:
     async def test_create_account(self, session, user):
         test_account = AccountCreateSchema(
             user_id=user.uuid,

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from tests.utils import faker
 
 
-class TestUserCrud:
+class TestUserRepository:
     @pytest.fixture(autouse=True)
     def setup_mocks(self, monkeypatch):
         mock_function = MagicMock(side_effect=lambda x: x[::-1].encode("utf-8"))
