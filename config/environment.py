@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+import warnings
 
 
 class Environment(str, Enum):
@@ -11,10 +12,9 @@ class Environment(str, Enum):
 def get_environment() -> Environment:
     """Get the current environment based on PERFI_ENV variable."""
     env = os.environ.get("PERFI_ENV")
-    if not env:
-        raise UserWarning(
-            "PERFI_ENV is unset. Must be set to 'test', 'dev', or 'prod'."
-        )
+    if env is None:
+        env = "dev"
+        warnings.warn("PERFI_ENV is unset. Defaulting to 'dev' environment.")
     return Environment(env.lower())
 
 

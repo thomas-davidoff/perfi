@@ -1,6 +1,8 @@
+from alembic.config import Config
 import pytest
 from alembic.script import Script, ScriptDirectory
 from config.migrations import alembic_config, run_upgrade, run_downgrade
+from db.session_manager import DatabaseSessionManager
 
 
 def get_revisions():
@@ -12,7 +14,9 @@ def get_revisions():
 
 @pytest.mark.parametrize("revision", get_revisions())
 async def test_migrations_stairway(
-    revision: Script, sessionmanager_for_tests, test_alembic_cfg
+    revision: Script,
+    sessionmanager_for_tests: DatabaseSessionManager,
+    test_alembic_cfg: Config,
 ):
     async with sessionmanager_for_tests.connect() as conn:
         await conn.run_sync(run_upgrade, test_alembic_cfg, revision.revision)

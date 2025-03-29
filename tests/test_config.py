@@ -1,6 +1,7 @@
 import os
 import pytest
-from config.environment import Environment, get_environment, ENVIRONMENT
+from config.environment import Environment, get_environment
+from unittest.mock import MagicMock
 
 
 @pytest.fixture
@@ -15,9 +16,15 @@ def clean_env():
         del os.environ["PERFI_ENV"]
 
 
-def test_get_environment_raises_user_warning_without_env_set(clean_env):
-    with pytest.raises(UserWarning):
-        get_environment()
+def test_get_environment_raises_user_warning_without_env_set(
+    clean_env: None, monkeypatch: pytest.MonkeyPatch
+):
+    mock_warning = MagicMock()
+    monkeypatch.setattr("warnings.warn", mock_warning)
+
+    get_environment()
+
+    mock_warning.assert_called_once()
 
 
 @pytest.mark.parametrize(
