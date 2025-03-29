@@ -1,12 +1,14 @@
 import pytest
 from decimal import Decimal
+
+from sqlalchemy.ext.asyncio.session import AsyncSession
 from app.models import User, Account, AccountType, Category, CategoryType, Transaction
 from tests.utils import faker
 from datetime import date
 
 
 @pytest.fixture
-async def user(session):
+async def user(session: AsyncSession):
     user = User(
         username=faker.user_name(),
         email=faker.email(),
@@ -18,7 +20,7 @@ async def user(session):
 
 
 @pytest.fixture
-async def account(session, user):
+async def account(session: AsyncSession, user: User):
     account = Account(
         user_id=user.uuid,
         name="First Account Checking",
@@ -31,7 +33,7 @@ async def account(session, user):
 
 
 @pytest.fixture
-async def second_account(session, user):
+async def second_account(session: AsyncSession, user: User):
     account = Account(
         user_id=user.uuid,
         name="Savings Second Account",
@@ -44,7 +46,7 @@ async def second_account(session, user):
 
 
 @pytest.fixture
-async def expense_category(session, user):
+async def expense_category(session: AsyncSession, user: User):
     category = Category(
         name="Test Category",
         category_type=CategoryType.EXPENSE,
@@ -57,7 +59,7 @@ async def expense_category(session, user):
 
 
 @pytest.fixture
-async def income_category(session, user):
+async def income_category(session: AsyncSession, user: User):
     """Create and return an income test category for the user."""
     category = Category(
         name="Salary Category",
@@ -71,7 +73,7 @@ async def income_category(session, user):
 
 
 @pytest.fixture
-async def system_category(session):
+async def system_category(session: AsyncSession):
     """Create and return a system category with no user."""
     category = Category(
         name="System Category",
@@ -84,7 +86,9 @@ async def system_category(session):
 
 
 @pytest.fixture
-async def transaction(session, account, expense_category):
+async def transaction(
+    session: AsyncSession, account: Account, expense_category: Category
+):
     """Create and return a test transaction."""
     transaction = Transaction(
         account_id=account.uuid,

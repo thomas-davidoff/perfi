@@ -1,7 +1,7 @@
-from alembic.config import Config
 import pytest
+from alembic.config import Config
 from alembic.script import Script, ScriptDirectory
-from config.migrations import alembic_config, run_upgrade, run_downgrade
+from migrations.commands import alembic_config, run_upgrade, run_downgrade
 from db.session_manager import DatabaseSessionManager
 
 
