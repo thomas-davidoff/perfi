@@ -1,14 +1,9 @@
 [tool.poetry]
 name = "perfi"
 version = "0.0.1"
-description = "Personal finances manager API"
+description = "Personal finances API"
 authors = ["Thomas Davidoff <thomas.davidoff@gmail.com>"]
 license = "MIT"
-packages = [
-    { include = "perfi" },
-    { include = "cli" },
-]
-include = ["config/logging/logging.yml"]
 
 
 [tool.poetry.dependencies]
@@ -32,7 +27,6 @@ perfi = "cli:cli"
 black = "^24.10.0"
 alembic = "^1.14.0"
 pre-commit = "^4.0.1"
-debugpy = "^1.8.11"
 psycopg2 = "^2.9.10"
 
 
@@ -41,12 +35,6 @@ pytest = "^8.3.4"
 faker = "^33.1.0"
 pytest-mock = "^3.14.0"
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-
 [tool.pytest.ini_options]
-addopts = "--capture=tee-sys"
+addopts = "--capture=tee-sys -rP -v"
 testpaths = ["tests"]
