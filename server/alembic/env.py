@@ -10,6 +10,7 @@ from alembic import context
 from app.models import PerfiModel
 
 from config.settings import settings
+import logging
 
 
 # this is the Alembic Config object, which provides
@@ -22,9 +23,22 @@ if not current_url:
         "sqlalchemy.url", settings.db.url.render_as_string(hide_password=False)
     )
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-if config.config_file_name is not None:
+# Check if alembic already has configured handlers
+# if it does, then alembic was likely already handled by the app
+# alembic's default logging behavior is to disable existing loggers which
+# works well when running from the CLI.
+# However, since Alembic is sometimes invoked programmatically in tests and the like,
+# we don't always want that behavior.
+# Thus... fucking long comment... the below lines check if config references a file,
+# alembic handlers is 1 (NullHandler) and that the actual handler in the list is indeed
+# a NullHandler. It's ugly as hell and will absolutely fail if I actually choose to configure
+# Alembic with a NullHandler. Not sure why I'd do that.
+alembic_handlers = logging.getLogger("alembic").handlers
+if (
+    config.config_file_name is not None
+    and len(alembic_handlers) == 1
+    and isinstance(alembic_handlers[0], logging.NullHandler)
+):
     fileConfig(config.config_file_name)
 
 target_metadata = PerfiModel.metadata

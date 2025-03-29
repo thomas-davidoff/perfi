@@ -11,9 +11,13 @@ def get_revisions():
 
 
 @pytest.mark.parametrize("revision", get_revisions())
-async def test_migrations_stairway(revision: Script, sessionmanager_for_tests):
+async def test_migrations_stairway(
+    revision: Script, sessionmanager_for_tests, test_alembic_cfg
+):
     async with sessionmanager_for_tests.connect() as conn:
-        await conn.run_sync(run_upgrade, revision.revision)
+        await conn.run_sync(run_upgrade, test_alembic_cfg, revision.revision)
     async with sessionmanager_for_tests.connect() as conn:
-        await conn.run_sync(run_downgrade, revision.down_revision or "-1")
-        await conn.run_sync(run_upgrade, revision.revision)
+        await conn.run_sync(
+            run_downgrade, test_alembic_cfg, revision.down_revision or "-1"
+        )
+        await conn.run_sync(run_upgrade, test_alembic_cfg, revision.revision)

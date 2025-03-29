@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.engine.url import URL as SQLAlchemyURL
 from config.settings import settings
 from faker import Faker
+import logging
 
 
 faker = Faker()
+logger = logging.getLogger(__name__)
 
 
 async def create_postgres_db(
@@ -57,11 +59,11 @@ async def tmp_postgres_db(
         drivername=settings.db.DRIVER,
     )
 
-    print(f"Connecting to db at {settings.db.url}")
+    logger.debug(f"Connecting to db at {settings.db.url}")
     engine = create_async_engine(settings.db.url, isolation_level="AUTOCOMMIT")
 
     try:
-        print(f"Creating new database {tmp_db_name}")
+        logger.debug(f"Creating new database {tmp_db_name}")
         await create_postgres_db(engine, tmp_db_name, encoding)
         yield tmp_db_url
     finally:

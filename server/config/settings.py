@@ -2,6 +2,7 @@ from config.environment import ENVIRONMENT, Environment
 from datetime import timedelta
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import (
+    AfterValidator,
     PostgresDsn,
     BaseModel,
     computed_field,
@@ -10,6 +11,7 @@ from pydantic import (
 from sqlalchemy.engine.url import URL
 from typing import Annotated
 from functools import cached_property
+import logging
 
 
 def minutes_to_timedelta(v: int) -> timedelta:
@@ -62,6 +64,14 @@ class JWTSettings(BaseModel):
     ]
 
 
+def validate_log_level(v: str) -> str:
+    if v.upper() not in logging.getLevelNamesMapping():
+        raise ValueError(
+            f"Invalid log level '{v}'. Must be one of {', '.join(logging.getLevelNamesMapping().keys())}"
+        )
+    return v.upper()
+
+
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",
@@ -73,10 +83,11 @@ class AppSettings(BaseSettings):
     jwt: JWTSettings
     db: DatabaseSettings
 
+    LOG_LEVEL: Annotated[str, AfterValidator(validate_log_level)] = "WARNING"
+
 
 settings = AppSettings()
 
 if __name__ == "__main__":
     print(settings)
-    print(settings.jwt)
-    print(settings.jwt.REFRESH_TOKEN_EXPIRES_IN_MINUTES)
+    print(settings.LOG_LEVEL)
