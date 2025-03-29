@@ -1,5 +1,0 @@
-.env
-.env.*
-logs
-# Just in case
-.git
