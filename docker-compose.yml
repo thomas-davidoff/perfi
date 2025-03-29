@@ -11,8 +11,6 @@ services:
       POSTGRES_USER: perfi_dev
       POSTGRES_DB: perfi
       POSTGRES_PASSWORD: perfi_dev_pass
-    env_file:
-      - .env.db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     container_name: db
