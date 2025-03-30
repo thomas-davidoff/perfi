@@ -48,7 +48,7 @@ class TransactionsFile(Record):
     file_path: str = Field(exclude=True)  # exclude this one
 
     filename: str
-    headers: Optional[List] = Field(default=None)
+    headers: List | None = Field(default=None)
     user_id: UUID
     status: TransactionsFileImportStatus
     mapped_headers: mapped_headers_pre_validate = None
@@ -57,7 +57,7 @@ class TransactionsFile(Record):
     preview_data: preview_data_pre_validate = None
 
     @field_serializer("headers", when_used="always")
-    def get_preview_headers(self, headers: Optional[List]):
+    def get_preview_headers(self, headers: List | None):
         if self.preview_data:
             return list(self.preview_data[0].keys())
 

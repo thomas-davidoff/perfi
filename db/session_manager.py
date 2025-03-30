@@ -1,5 +1,5 @@
 import contextlib
-from typing import AsyncIterator, Optional, AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import (
 
 class DatabaseSessionManager:
     def __init__(self) -> None:
-        self._engine: Optional[AsyncEngine] = None
-        self._sessionmaker: Optional[async_sessionmaker[AsyncSession]] = None
+        self._engine: AsyncEngine | None = None
+        self._sessionmaker: async_sessionmaker[AsyncSession] | None = None
 
     def init(self, db_url: str) -> None:
         connect_args = {

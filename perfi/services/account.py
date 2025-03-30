@@ -49,14 +49,12 @@ class AccountsService(ResourceService[Account]):
         if account.user_id != user_id:
             raise ServiceError("You do not have access to this resource.")
 
-    async def get_account(
-        self, account: Optional[Account], account_id: UUID
-    ) -> Account:
+    async def get_account(self, account: Account | None, account_id: UUID) -> Account:
         """
         Get account details by account ID. If an account is already provided, reuse it.
 
         Args:
-            account (Optional[Account]): The already validated account object, if available.
+            account (Account | None): The already validated account object, if available.
             account_id (UUID): The account ID to fetch if the account is not provided.
 
         Returns:
@@ -131,14 +129,12 @@ class AccountsService(ResourceService[Account]):
         """
         return await self.repo.update(entity=account, data=data)
 
-    async def delete_account(
-        self, account: Optional[Account], account_id: UUID
-    ) -> None:
+    async def delete_account(self, account: Account | None, account_id: UUID) -> None:
         """
         Delete an account. If an account is already provided, reuse it.
 
         Args:
-            account (Optional[Account]): The already validated account object, if available.
+            account (Account | None): The already validated account object, if available.
             account_id (UUID): The ID of the account to delete if the account is not provided.
         """
         if not account:

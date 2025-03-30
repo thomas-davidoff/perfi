@@ -1,5 +1,5 @@
 import typer
-from typing import Annotated, Optional
+from typing import Annotated
 import subprocess
 import os
 import asyncio
@@ -148,7 +148,7 @@ def downgrade_to_base():
 
 @cli.command("test")
 def run_tests(
-    file_function: Annotated[Optional[str], typer.Argument()] = None,
+    file_function: Annotated[str | None, typer.Argument()] = None,
     verbose: bool = True,
     stop_on_fail: bool = False,
 ):

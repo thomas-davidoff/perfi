@@ -30,7 +30,7 @@ class UserService:
             raise ServiceError(f"User with ID {user_id} does not exist.")
         return user
 
-    async def get_by_username_or_email(self, username_or_email: str) -> Optional[User]:
+    async def get_by_username_or_email(self, username_or_email: str) -> User | None:
         return await self.user_repo.get_by_username_or_email(username_or_email)
 
     async def _validate_user_data(self, user_data: dict):

@@ -10,7 +10,6 @@ from datetime import date
 @pytest.fixture
 async def user(session: AsyncSession):
     user = User(
-        username=faker.user_name(),
         email=faker.email(),
         hashed_password=b"not_real_hash",
     )

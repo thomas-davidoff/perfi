@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 class TestAccount:
     async def test_create_account_from_schema(self, session):
         user = User(
-            username="test_user",
             email="test@example.com",
             hashed_password=b"not_real_hash",
         )
@@ -62,7 +61,6 @@ class TestAccount:
 
     async def test_account_requires_name(self, session):
         user = User(
-            username="test_user2",
             email="test2@example.com",
             hashed_password=b"not_real_hash",
         )
@@ -83,7 +81,6 @@ class TestAccount:
 
     async def test_account_requires_account_type(self, session):
         user = User(
-            username="test_user3",
             email="test3@example.com",
             hashed_password=b"not_real_hash",
         )
@@ -104,7 +101,6 @@ class TestAccount:
 
     async def test_account_update_with_schema(self, session):
         user = User(
-            username="test_user4",
             email="test4@example.com",
             hashed_password=b"not_real_hash",
         )
@@ -142,7 +138,6 @@ class TestAccount:
 
     async def test_account_default_values(self, session):
         user = User(
-            username="test_user5",
             email="test5@example.com",
             hashed_password=b"not_real_hash",
         )

@@ -3,7 +3,6 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import date as dt
 from decimal import Decimal
 from uuid import UUID
-from typing import Optional
 from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
@@ -30,7 +29,7 @@ class Transaction(PerfiModel, UuidMixin, TimestampMixin):
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     date: Mapped[dt] = mapped_column(Date, nullable=False, index=True)
     is_pending: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     account = relationship("Account", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
@@ -45,7 +44,7 @@ class TransactionBaseSchema(PerfiSchema):
     description: str
     date: dt
     is_pending: bool = False
-    notes: Optional[str] = None
+    notes: str | None = None
     category_id: UUID = None
 
 
@@ -58,9 +57,9 @@ class TransactionCreateSchema(TransactionBaseSchema):
 
 
 class TransactionUpdateSchema(PerfiSchema):
-    amount: Optional[Decimal] = None
-    description: Optional[str] = None
-    date: Optional[dt] = None
-    is_pending: Optional[bool] = None
-    notes: Optional[str] = None
-    category_id: Optional[UUID] = None
+    amount: Decimal | None = None
+    description: str | None = None
+    date: dt | None = None
+    is_pending: bool | None = None
+    notes: str | None = None
+    category_id: UUID | None = None

@@ -13,7 +13,7 @@ class UserRepository(AsyncRepository[User]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(entity_name="user", model=User, session=session)
 
-    async def get_by_id(self, id: int) -> Optional[User]:
+    async def get_by_id(self, id: int) -> User | None:
         """
         Gets a user by ID.
 
@@ -23,7 +23,7 @@ class UserRepository(AsyncRepository[User]):
         """
         return await super().get_by_id(id)
 
-    async def get_by_username_or_email(self, username_or_email: str) -> Optional[User]:
+    async def get_by_username_or_email(self, username_or_email: str) -> User | None:
         """
         Gets a user by their username or email.
 

@@ -3,7 +3,6 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from decimal import Decimal
 from uuid import UUID
 from enum import Enum as PyEnum
-from typing import Optional
 from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
     UuidMixin,
@@ -34,8 +33,8 @@ class Account(PerfiModel, UuidMixin, TimestampMixin):
     balance: Mapped[Decimal] = mapped_column(
         Numeric(precision=18, scale=2), nullable=False, default=Decimal("0.00")
     )
-    institution: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    institution: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     # Relationships
@@ -54,8 +53,8 @@ class AccountBaseSchema(PerfiSchema):
     name: str
     account_type: AccountType
     balance: Decimal = Decimal("0.00")
-    institution: Optional[str] = None
-    description: Optional[str] = None
+    institution: str | None = None
+    description: str | None = None
     is_active: bool = True
 
 
@@ -68,9 +67,9 @@ class AccountCreateSchema(AccountBaseSchema):
 
 
 class AccountUpdateSchema(PerfiSchema):
-    name: Optional[str] = None
-    account_type: Optional[AccountType] = None
-    balance: Optional[Decimal] = None
-    institution: Optional[str] = None
-    description: Optional[str] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    account_type: AccountType | None = None
+    balance: Decimal | None = None
+    institution: str | None = None
+    description: str | None = None
+    is_active: bool | None = None

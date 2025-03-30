@@ -49,6 +49,6 @@ class AccountCreateRequest(AccountRequest):
 
 
 class AccountUpdateRequest(AccountRequest):
-    name: Optional[str] = Field(default=None, max_length=255)
-    balance: Optional[float] = Field(default=None, ge=-10000000, le=10000000)
-    account_type: Optional[AccountType] = Field(default=None)
+    name: str | None = Field(default=None, max_length=255)
+    balance: float | None = Field(default=None, ge=-10000000, le=10000000)
+    account_type: AccountType | None = Field(default=None)

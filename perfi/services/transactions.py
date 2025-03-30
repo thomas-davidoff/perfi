@@ -31,9 +31,7 @@ class TransactionsService(ResourceService[Transaction]):
         except (ValueError, TypeError):
             raise ValidationError("ID must be a valid UUID.")
 
-    def validate_category(
-        self, category: Optional[str]
-    ) -> Optional[TransactionCategory]:
+    def validate_category(self, category: str | None) -> TransactionCategory | None:
         if category is None:
             return None
         category = category.upper()
@@ -45,14 +43,14 @@ class TransactionsService(ResourceService[Transaction]):
                 f"Invalid category '{category}'. Must be one of: {', '.join(valid_categories)}."
             )
 
-    def validate_merchant(self, merchant: Optional[str]) -> Optional[str]:
+    def validate_merchant(self, merchant: str | None) -> str | None:
         if merchant is None:
             return None
         if not isinstance(merchant, str):
             raise ValidationError("Merchant must be a string.")
         return merchant
 
-    def validate_date(self, date: Optional[str]) -> StandardDate:
+    def validate_date(self, date: str | None) -> StandardDate:
         try:
             return StandardDate(date)
         except Exception:

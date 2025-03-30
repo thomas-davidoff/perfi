@@ -1,7 +1,6 @@
 from sqlalchemy import String, Enum, Boolean, ForeignKey, UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from enum import Enum as PyEnum
-from typing import Optional
 from uuid import UUID as UuidType
 from app.models import PerfiModel, PerfiSchema
 from app.models.mixins import (
@@ -32,7 +31,7 @@ class Category(PerfiModel, UuidMixin, TimestampMixin):
 
     transactions = relationship("Transaction", back_populates="category")
 
-    user_id: Mapped[Optional[UuidType]] = mapped_column(
+    user_id: Mapped[UuidType | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), nullable=True
     )
     user = relationship("User", back_populates="categories")
@@ -45,7 +44,7 @@ class CategoryBaseSchema(PerfiSchema):
     name: str
     category_type: CategoryType
     is_system: bool = False
-    user_id: Optional[UuidType] = None
+    user_id: UuidType | None = None
 
     @model_validator(mode="after")
     def check_user_id_and_system(self) -> Self:
@@ -68,5 +67,5 @@ class CategoryCreateSchema(CategoryBaseSchema):
 
 
 class CategoryUpdateSchema(PerfiSchema):
-    name: Optional[str] = None
-    category_type: Optional[CategoryType] = None
+    name: str | None = None
+    category_type: CategoryType | None = None

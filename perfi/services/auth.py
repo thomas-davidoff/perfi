@@ -1,6 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone, UTC
-from typing import Optional
 import jwt
 import uuid
 from perfi.services.user import UserService
@@ -24,9 +22,7 @@ class AuthService:
         )
         self.REFRESH_TOKEN_EXPIRE_DAYS = application_settings.REFRESH_TOKEN_EXPIRE_DAYS
 
-    async def authenticate(
-        self, username_or_email: str, password: str
-    ) -> Optional[User]:
+    async def authenticate(self, username_or_email: str, password: str) -> User | None:
         """
         Authenticates a user by verifying their password and returning the user object.
         """

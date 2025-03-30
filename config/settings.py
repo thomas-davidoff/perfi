@@ -62,6 +62,12 @@ class JWTSettings(BaseModel):
     REFRESH_TOKEN_EXPIRES_IN_MINUTES: Annotated[
         timedelta, BeforeValidator(coerce_to_timedelta)
     ]
+    ACCESS_TOKEN_EXPIRES_IN_MINUTES: Annotated[
+        timedelta, BeforeValidator(coerce_to_timedelta)
+    ]
+
+    SECRET_KEY: str
+    ALGO: str = "HS256"
 
 
 def validate_log_level(v: str) -> str:

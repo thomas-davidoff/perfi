@@ -49,10 +49,10 @@ class Transaction(Record):
     """
 
     amount: float
-    description: Optional[str] = None
+    description: str | None = None
     merchant: str
     date: datetime
-    category: Optional[str] = Field(...)
+    category: str | None = Field(...)
     account: AccountCompact
 
     model_config = ConfigDict(from_attributes=True)
@@ -149,9 +149,9 @@ class TransactionUpdateRequest(TransactionRequest):
     Schema for updating an existing transaction.
     """
 
-    amount: Optional[float] = Field(default=None, ge=-10000)
-    description: Optional[str] = Field(default=None, max_length=255)
-    merchant: Optional[str] = Field(default=None, max_length=50)
-    date: Optional[str] = Field(default=None)
-    account_id: Optional[UUID] = Field(default=None)
-    category: Optional[TransactionCategory] = Field(default=None)
+    amount: float | None = Field(default=None, ge=-10000)
+    description: str | None = Field(default=None, max_length=255)
+    merchant: str | None = Field(default=None, max_length=50)
+    date: str | None = Field(default=None)
+    account_id: UUID | None = Field(default=None)
+    category: TransactionCategory | None = Field(default=None)

@@ -25,9 +25,9 @@ def RepositoryFactory(model: PerfiModel):
                 await session.commit()
                 await session.refresh(db_model)
                 return db_model
-            except IntegrityError:
+            except IntegrityError as e:
                 raise IntegrityConflictException(
-                    f"{model.__tablename__} conflicts with existing data.",
+                    f"{model.__tablename__} conflicts with existing data: {e}",
                 )
             except Exception as e:
                 raise RepositoryException(f"Unknown error occurred: {e}") from e

@@ -35,7 +35,7 @@ class AsyncRepository(ABC, Generic[T]):
             await self.session.rollback()
             raise RepositoryError(f"Unexpected error") from e
 
-    async def get_by_id(self, id: int) -> Optional[T]:
+    async def get_by_id(self, id: int) -> T | None:
         """Gets an entity by ID."""
         if isinstance(id, str):
             id = UUID(id)

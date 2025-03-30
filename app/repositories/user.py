@@ -31,6 +31,15 @@ class UserRepository(RepositoryFactory(User)):
         return await super(cls, cls).create(session, data=db_user)
 
     @classmethod
+    async def get_by_email(cls, session: AsyncSession, email: str) -> User | None:
+        """Get a user by email."""
+
+        db_model = await cls.get_one_by_id(
+            session, id_=email, column="email", with_for_update=False
+        )
+        return db_model
+
+    @classmethod
     async def update_by_id(
         cls,
         session: AsyncSession,
