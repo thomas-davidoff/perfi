@@ -1,10 +1,15 @@
-from fastapi import Depends, FastAPI
-from app.api.v1.auth import router
-
 from config.initializers import initialize_all
 
 initialize_all()
 
-app = FastAPI()
+from fastapi import FastAPI
+from app.api.v1 import router as V1Router
+from app.api.exception_handlers import register_exception_handlers
 
-app.include_router(router=router)
+
+app = FastAPI(title="Perfi")
+
+app.include_router(router=V1Router)
+
+
+register_exception_handlers(app)

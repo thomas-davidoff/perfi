@@ -1,20 +1,32 @@
 from datetime import datetime, timedelta, timezone
+from re import A
 from uuid import UUID
 
 from typing import Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 import jwt
-from pydantic import BaseModel
+from pydantic import BaseModel, model_serializer, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User
+from app.models import User, PerfiSchema, user, RefreshToken
 from app.repositories.user import UserRepository
 from app.repositories.refresh_token import RefreshTokenRepository
 from app.utils.password import verify_password
 from config.settings import settings
 
+from app.services import UserService
+
+
+from app.exc import (
+    InvalidTokenException,
+    ExpiredTokenException,
+    RepositoryException,
+    RevokedTokenException,
+    InvalidCredentialsException,
+)
+import json
 
 import logging
 
@@ -22,16 +34,23 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Token(BaseModel):
+class BearerAccessTokenRefreshTokenPair(BaseModel):
     access_token: str
     token_type: str
     refresh_token: str | None = None
     expires_at: datetime
 
 
-class TokenPayload(BaseModel):
-    sub: str
-    exp: datetime
+class TokenData(PerfiSchema):
+    sub: UUID
+    exp: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+        + settings.jwt.ACCESS_TOKEN_EXPIRES_IN_MINUTES
+    )
+
+    @model_serializer
+    def ser_model(self) -> dict[str, str | datetime]:
+        return {"sub": str(self.sub), "exp": self.exp}
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -39,74 +58,53 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 class AuthService:
     @staticmethod
-    def create_access_token(
-        data: dict[str, Any], expires_delta: timedelta | None = None
-    ) -> tuple[str, datetime]:
+    def create_access_token_for_user(user_id: UUID) -> tuple[str, datetime]:
         """
         Create a JWT access token.
         """
-        to_encode = data.copy()
-
-        # Set expiration
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-
-        to_encode.update({"exp": expire})
-
-        # Create the JWT
+        token_data = TokenData(sub=user_id)
         encoded_jwt = jwt.encode(
-            to_encode, settings.jwt.SECRET_KEY, algorithm=settings.jwt.ALGO
+            token_data.model_dump(),
+            settings.jwt.SECRET_KEY,
+            algorithm=settings.jwt.ALGO,
         )
 
-        return encoded_jwt, expire
+        return encoded_jwt, token_data.exp
 
     @classmethod
     async def authenticate_user(
         cls, session: AsyncSession, email: str, password: str
-    ) -> User | None:
+    ) -> User:
         """
         Authenticate a user with email and password.
         """
+        logger.debug(f"Attempting to authenticate user with email {email}")
 
-        logger.debug(
-            f"Attempting to authenticate user with username OR email {email} and password {password}"
-        )
-
-        # try email
-        user = await UserRepository.get_one_by_id(
-            session, id_=email, column="email", with_for_update=False
-        )
+        user = await UserService.get_user_by_email(session=session, email=email)
 
         if not user:
-            return None
+            raise InvalidCredentialsException("Invalid email or password")
 
         if not verify_password(password, user.hashed_password):
-            return None
+            raise InvalidCredentialsException("Invalid email or password")
 
         return user
 
     @classmethod
     async def create_tokens(
         cls, session: AsyncSession, user_id: UUID, device_info: str | None = None
-    ) -> Token:
+    ) -> BearerAccessTokenRefreshTokenPair:
         """
         Create both access and refresh tokens.
         """
-        # Create access token
-        token_data = {"sub": str(user_id)}
-        access_token, expires_at = cls.create_access_token(
-            data=token_data,
-            expires_delta=settings.jwt.ACCESS_TOKEN_EXPIRES_IN_MINUTES,
-        )
+        access_token, expires_at = cls.create_access_token_for_user(user_id=user_id)
 
         # Create refresh token
         refresh_token = await RefreshTokenRepository.generate_token(
-            session, user_id, device_info
+            session=session, user_id=user_id, device_info=device_info
         )
 
-        return Token(
+        return BearerAccessTokenRefreshTokenPair(
             access_token=access_token,
             token_type="bearer",
             refresh_token=refresh_token.token_value,
@@ -114,9 +112,9 @@ class AuthService:
         )
 
     @classmethod
-    async def refresh_tokens(
+    async def generate_new_access_token_from_refresh_token(
         cls, session: AsyncSession, refresh_token_value: str
-    ) -> Token:
+    ) -> BearerAccessTokenRefreshTokenPair:
         """
         Use a refresh token to create a new access token.
         """
@@ -128,12 +126,11 @@ class AuthService:
 
             # Verify token is valid
             now = datetime.now(timezone.utc)
-            if token.revoked or token.expires_at < now:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid refresh token",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
+            if token.revoked:
+                raise RevokedTokenException("Token has been revoked")
+
+            if token.expires_at < now:
+                raise ExpiredTokenException("Token has expired")
 
             # Update last used time
             await RefreshTokenRepository.mark_as_used(session, token.uuid)
@@ -141,10 +138,19 @@ class AuthService:
             # Create new access token
             return await cls.create_tokens(session, token.user_id)
 
-        except Exception:
-            # TODO: Don't catch every exception...
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        except (RevokedTokenException, ExpiredTokenException) as e:
+            # Re-raise specific exceptions
+            raise
+        except RepositoryException as e:
+            # Catch other exceptions and convert to a generic token error
+            raise InvalidTokenException(f"Invalid refresh token: {str(e)}")
+
+    @classmethod
+    async def logout(cls, session: AsyncSession, refresh_token_value: str) -> None:
+        refresh_token = await RefreshTokenRepository.get_by_token_value(
+            session, refresh_token_value
+        )
+
+        await RefreshTokenRepository.revoke_token(
+            session=session, token_id=refresh_token.uuid
+        )

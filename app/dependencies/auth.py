@@ -1,16 +1,17 @@
-# app/dependencies/auth.py
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session_manager import get_session
 from app.models import User
 from app.repositories.user import UserRepository
-from app.services.auth import oauth2_scheme, TokenPayload
+from app.services.auth import oauth2_scheme, TokenData
 from config.settings import settings
+
+from app.exc import InvalidTokenException, InactiveUserException
 
 
 async def get_current_user(
@@ -20,29 +21,27 @@ async def get_current_user(
     """
     Decode JWT token and return current user.
     """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    try:
+        # Decode the JWT
+        payload = jwt.decode(
+            token, settings.jwt.SECRET_KEY, algorithms=[settings.jwt.ALGO]
+        )
 
-    # try:
-    # Decode the JWT
-    payload = jwt.decode(token, settings.jwt.SECRET_KEY, algorithms=[settings.jwt.ALGO])
+        # Extract user ID
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise InvalidTokenException("Token missing subject claim")
 
-    # Extract user ID
-    user_id: str = payload.get("sub")
-    if user_id is None:
-        raise credentials_exception
-
-    token_data = TokenPayload(sub=user_id, exp=payload.get("exp"))
-    # except Exception:
-    #     raise credentials_exception
+        token_data = TokenData(sub=user_id, exp=payload.get("exp"))
+    except jwt.PyJWTError:
+        raise InvalidTokenException("Invalid token")
+    except Exception:
+        raise InvalidTokenException("Could not validate credentials")
 
     # Get the user
     user = await UserRepository.get_one_by_id(session, UUID(user_id))
     if user is None:
-        raise credentials_exception
+        raise InvalidTokenException("User not found")
 
     return user
 
@@ -54,7 +53,5 @@ async def get_current_active_user(
     Check if the current user is active.
     """
     if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-        )
+        raise InactiveUserException("Inactive user")
     return current_user
