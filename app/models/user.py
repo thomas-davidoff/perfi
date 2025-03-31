@@ -1,15 +1,11 @@
 from sqlalchemy import String, LargeBinary
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from app.models import PerfiModel, PerfiSchema
+from app.models import PerfiModel
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,
-    UuidMixinSchema,
-    TimestampMixinSchema,
 )
-
-from pydantic import EmailStr
 
 
 class User(PerfiModel, UuidMixin, TimestampMixin):
@@ -27,23 +23,3 @@ class User(PerfiModel, UuidMixin, TimestampMixin):
 
     def __repr__(self):
         return f"<User email={self.email} active={self.is_active}>"
-
-
-class UserBaseSchema(PerfiSchema):
-    email: EmailStr
-    is_active: bool = True
-
-
-class UserSchema(UserBaseSchema, UuidMixinSchema, TimestampMixinSchema):
-    hashed_password: bytes
-
-
-class UserCreateSchema(PerfiSchema):
-    email: EmailStr
-    password: str
-
-
-class UserUpdateSchema(PerfiSchema):
-    email: EmailStr | None = None
-    password: str | None = None
-    is_active: bool | None = None

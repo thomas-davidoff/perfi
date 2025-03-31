@@ -10,7 +10,8 @@ import jwt
 from pydantic import BaseModel, model_serializer, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User, PerfiSchema, user, RefreshToken
+from app.models import User, user, RefreshToken
+from app.schemas import PerfiSchema
 from app.repositories.user import UserRepository
 from app.repositories.refresh_token import RefreshTokenRepository
 from app.utils.password import verify_password

@@ -3,7 +3,6 @@ from sqlalchemy import DateTime
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.expression import FunctionElement
 from sqlalchemy.orm import Mapped, mapped_column
-from app.models import PerfiSchema
 
 
 class utcnow(FunctionElement):
@@ -31,8 +30,3 @@ class TimestampMixin:
         onupdate=lambda: datetime.now(timezone.utc),
         sort_order=10000,
     )
-
-
-class TimestampMixinSchema(PerfiSchema):
-    created_at: datetime | None = None
-    updated_at: datetime | None = None

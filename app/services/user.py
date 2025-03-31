@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user import UserRepository
-from app.models.user import UserCreateSchema
+from app.schemas import UserCreateSchema
 from app.exc import IntegrityConflictException, UserExistsException
 from pydantic import EmailStr, TypeAdapter
 

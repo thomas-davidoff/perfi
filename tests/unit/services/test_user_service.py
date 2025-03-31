@@ -1,6 +1,7 @@
 from unittest import mock
 from app.services import UserService
-from app.models import UserCreateSchema, User
+from app.models import User
+from app.schemas import UserCreateSchema
 from unittest.mock import MagicMock
 from app.repositories import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession

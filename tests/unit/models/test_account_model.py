@@ -1,12 +1,8 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import Account, User
-from app.models.account import (
-    AccountType,
-    AccountSchema,
-    AccountCreateSchema,
-    AccountUpdateSchema,
-)
+from app.models.account import AccountType
+from app.schemas import AccountSchema, AccountCreateSchema, AccountUpdateSchema
 from decimal import Decimal
 import uuid
 from datetime import datetime, timezone

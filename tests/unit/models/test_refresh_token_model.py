@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import RefreshToken, User
-from app.models.refresh_token import (
+from app.schemas import (
     RefreshTokenSchema,
     RefreshTokenCreateSchema,
     RefreshTokenUpdateSchema,

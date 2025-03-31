@@ -3,13 +3,8 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from decimal import Decimal
 from uuid import UUID
 from enum import Enum as PyEnum
-from app.models import PerfiModel, PerfiSchema
-from app.models.mixins import (
-    UuidMixin,
-    TimestampMixin,
-    UuidMixinSchema,
-    TimestampMixinSchema,
-)
+from app.models import PerfiModel
+from app.models.mixins import UuidMixin, TimestampMixin
 
 
 class AccountType(PyEnum):
@@ -47,29 +42,3 @@ class Account(PerfiModel, UuidMixin, TimestampMixin):
         return (
             f"<Account {self.name} ({self.account_type.value}) balance={self.balance}>"
         )
-
-
-class AccountBaseSchema(PerfiSchema):
-    name: str
-    account_type: AccountType
-    balance: Decimal = Decimal("0.00")
-    institution: str | None = None
-    description: str | None = None
-    is_active: bool = True
-
-
-class AccountSchema(AccountBaseSchema, UuidMixinSchema, TimestampMixinSchema):
-    user_id: UUID
-
-
-class AccountCreateSchema(AccountBaseSchema):
-    user_id: UUID
-
-
-class AccountUpdateSchema(PerfiSchema):
-    name: str | None = None
-    account_type: AccountType | None = None
-    balance: Decimal | None = None
-    institution: str | None = None
-    description: str | None = None
-    is_active: bool | None = None

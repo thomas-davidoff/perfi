@@ -1,9 +1,10 @@
 import pytest
 from app.exc import NotFoundException
 from app.repositories import CategoryRepository
-from app.models import CategoryCreateSchema, CategoryUpdateSchema, CategoryType
+from app.models import CategoryType
 from tests.utils import faker
 from uuid import uuid4
+from app.schemas import CategoryCreateSchema, CategoryUpdateSchema
 
 
 class TestCategoryRepository:

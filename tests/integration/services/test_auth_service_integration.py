@@ -4,7 +4,8 @@ from app.models.user import User
 from app.services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils import faker
-from app.models import User, UserCreateSchema
+from app.models import User
+from app.schemas import UserCreateSchema
 from app.services import UserService, AuthService
 
 

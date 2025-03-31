@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import Category, User
-from app.models.category import (
-    CategoryType,
+from app.models.category import CategoryType
+from app.schemas import (
     CategoryCreateSchema,
     CategoryUpdateSchema,
 )

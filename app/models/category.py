@@ -2,16 +2,11 @@ from sqlalchemy import String, Enum, Boolean, ForeignKey, UUID
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from enum import Enum as PyEnum
 from uuid import UUID as UuidType
-from app.models import PerfiModel, PerfiSchema
+from app.models import PerfiModel
 from app.models.mixins import (
     UuidMixin,
     TimestampMixin,
-    UuidMixinSchema,
-    TimestampMixinSchema,
 )
-from pydantic import model_validator
-from typing_extensions import Self
-import warnings
 
 
 class CategoryType(PyEnum):
@@ -38,34 +33,3 @@ class Category(PerfiModel, UuidMixin, TimestampMixin):
 
     def __repr__(self):
         return f"<Category name={self.name} type={self.category_type.value}>"
-
-
-class CategoryBaseSchema(PerfiSchema):
-    name: str
-    category_type: CategoryType
-    is_system: bool = False
-    user_id: UuidType | None = None
-
-    @model_validator(mode="after")
-    def check_user_id_and_system(self) -> Self:
-        if self.is_system is True and self.user_id is not None:
-            warnings.warn("User categories cannot be system categories.")
-            self.is_system = False
-        if self.user_id is None and self.is_system is False:
-            raise ValueError(
-                "is_system must be explictly set to True if user_id is not passed."
-            )
-        return self
-
-
-class CategorySchema(CategoryBaseSchema, UuidMixinSchema, TimestampMixinSchema):
-    pass
-
-
-class CategoryCreateSchema(CategoryBaseSchema):
-    pass
-
-
-class CategoryUpdateSchema(PerfiSchema):
-    name: str | None = None
-    category_type: CategoryType | None = None

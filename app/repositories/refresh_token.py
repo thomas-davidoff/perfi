@@ -7,6 +7,8 @@ from sqlalchemy import select
 
 from app.models import (
     RefreshToken,
+)
+from app.schemas import (
     RefreshTokenCreateSchema,
     RefreshTokenUpdateSchema,
 )

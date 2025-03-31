@@ -7,7 +7,8 @@ from pydantic import BaseModel
 
 from db.session_manager import get_session
 from app.dependencies.auth import get_current_active_user
-from app.models import User, UserCreateSchema, UserSchema
+from app.models import User
+from app.schemas import UserCreateSchema, UserSchema
 from app.repositories.user import UserRepository
 from app.services.auth import AuthService, BearerAccessTokenRefreshTokenPair
 
@@ -18,6 +19,7 @@ from app.exc import (
     RevokedTokenException,
     UserExistsException,
 )
+from app.api.v1.schema import ApiResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -26,24 +28,25 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
-@router.post("/register", response_model=BearerAccessTokenRefreshTokenPair)
+@router.post(
+    "/register",
+    response_model=ApiResponse[UserSchema],
+    status_code=status.HTTP_201_CREATED,
+)
 async def register_user(
     user_data: UserCreateSchema, session: AsyncSession = Depends(get_session)
 ):
     """
     Register a new user and return access token.
     """
-    try:
-        # Check if email already exists
-        existing_user = await UserRepository.get_by_email(session, user_data.email)
-        if existing_user:
-            raise UserExistsException("Email already registered")
+    # Check if email already exists
+    existing_user = await UserRepository.get_by_email(session, user_data.email)
+    if existing_user:
+        raise UserExistsException("Email already registered")
 
-        # Create user
-        user = await UserRepository.create(session, user_data)
-        return user
-    except UserExistsException as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    # Create user
+    user = await UserRepository.create(session, user_data)
+    return ApiResponse(data=user)
 
 
 @router.post("/token", response_model=BearerAccessTokenRefreshTokenPair)

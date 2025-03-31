@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import Transaction, Account, User, Category
-from app.models.transaction import (
+from app.schemas import (
     TransactionSchema,
     TransactionCreateSchema,
     TransactionUpdateSchema,

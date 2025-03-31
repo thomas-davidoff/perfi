@@ -2,13 +2,8 @@ from sqlalchemy import String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import datetime
 from uuid import UUID
-from app.models import PerfiModel, PerfiSchema
-from app.models.mixins import (
-    UuidMixin,
-    TimestampMixin,
-    UuidMixinSchema,
-    TimestampMixinSchema,
-)
+from app.models import PerfiModel
+from app.models.mixins import UuidMixin, TimestampMixin
 
 
 class RefreshToken(PerfiModel, UuidMixin, TimestampMixin):
@@ -36,27 +31,3 @@ class RefreshToken(PerfiModel, UuidMixin, TimestampMixin):
 
     def __repr__(self):
         return f"<RefreshToken user_id={self.user_id}>"
-
-
-class RefreshTokenBaseSchema(PerfiSchema):
-    user_id: UUID
-    token_value: str
-    expires_at: datetime
-    last_used_at: datetime | None = None
-    device_info: str | None = None
-    revoked: bool = False
-    revoked_at: datetime | None = None
-
-
-class RefreshTokenSchema(RefreshTokenBaseSchema, UuidMixinSchema, TimestampMixinSchema):
-    pass
-
-
-class RefreshTokenCreateSchema(RefreshTokenBaseSchema):
-    pass
-
-
-class RefreshTokenUpdateSchema(PerfiSchema):
-    last_used_at: datetime | None = None
-    revoked: bool | None = None
-    revoked_at: datetime | None = None

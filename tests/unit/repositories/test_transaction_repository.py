@@ -4,7 +4,7 @@ from decimal import Decimal
 from datetime import date, timedelta
 from app.exc import IntegrityConflictException, NotFoundException
 from app.repositories import TransactionRepository
-from app.models import TransactionCreateSchema, TransactionUpdateSchema
+from app.schemas import TransactionCreateSchema, TransactionUpdateSchema
 from tests.utils import faker
 from uuid import uuid4
 

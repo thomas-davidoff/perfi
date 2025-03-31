@@ -4,10 +4,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import (
-    PerfiModel,
-    PerfiSchema,
-)
+from app.models import PerfiModel
+from app.schemas import PerfiSchema
 from app.exc import NotFoundException, RepositoryException, IntegrityConflictException
 
 

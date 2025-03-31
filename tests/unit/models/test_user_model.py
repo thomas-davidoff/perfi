@@ -3,7 +3,8 @@ from sqlalchemy.exc import IntegrityError
 from app.models import User
 import uuid
 from datetime import datetime
-from app.models.user import UserSchema, User
+from app.schemas import UserSchema
+from app.models import User
 
 
 class TestUser:

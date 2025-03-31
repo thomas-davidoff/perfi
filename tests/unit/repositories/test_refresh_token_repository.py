@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from app.exc import IntegrityConflictException, NotFoundException
 from app.repositories import RefreshTokenRepository
-from app.models import RefreshTokenCreateSchema, RefreshTokenUpdateSchema
+from app.schemas import RefreshTokenCreateSchema, RefreshTokenUpdateSchema
 from tests.utils import faker
 from config.settings import settings
 

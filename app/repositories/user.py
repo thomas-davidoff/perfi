@@ -3,10 +3,11 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User, UserSchema, UserCreateSchema, UserUpdateSchema
+from app.models import User
 from app.exc import NotFoundException, IntegrityConflictException
 from app.repositories.base import RepositoryFactory
 from app.utils.password import hash_password
+from app.schemas import UserSchema, UserCreateSchema, UserUpdateSchema
 
 
 class UserRepository(RepositoryFactory(User)):

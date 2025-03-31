@@ -2,9 +2,10 @@ import pytest
 from decimal import Decimal
 from app.exc import NotFoundException
 from app.repositories import AccountRepository
-from app.models import AccountCreateSchema, AccountUpdateSchema, AccountType
+from app.models import AccountType
 from tests.utils import faker
 from uuid import uuid4
+from app.schemas import AccountCreateSchema, AccountUpdateSchema
 
 
 class TestAccountRepository:
