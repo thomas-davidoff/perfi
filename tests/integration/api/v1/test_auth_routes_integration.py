@@ -1,9 +1,10 @@
 from fastapi import status
 import pytest
-from app.schemas import UserCreateSchema
+from app.schemas import UserCreateSchema, UserSchema
 from tests.utils import faker
 from app.main import app
 from pytest_mock import MockerFixture
+import pydantic
 
 from app.api import exception_handlers
 
@@ -16,6 +17,22 @@ class TestAuthRoutes:
                 "/v1/auth/register", json=user_data.model_dump()
             )
             assert response.status_code == status.HTTP_201_CREATED
+
+        async def test_returned_user_doesnt_include_hashed_password(self, async_client):
+            user_data = UserCreateSchema(email=faker.email(), password=faker.password())
+            response = await async_client.post(
+                "/v1/auth/register", json=user_data.model_dump()
+            )
+
+            assert "hashed_password" not in response.json()["data"]
+
+            with pytest.raises(
+                pydantic.ValidationError,
+                match="1 validation error for UserSchema\nhashed_password",
+            ):
+                # creating user schema from response should not contain the hashed password, but it
+                # should contain everything else. Thus, 1 err should be raised with the match above.
+                UserSchema(**response.json()["data"])
 
         async def test_raises_exception_on_duplicate(
             self, async_client, mocker: MockerFixture
