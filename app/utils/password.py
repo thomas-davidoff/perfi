@@ -1,14 +1,5 @@
-# # password_utils.py
-# import bcrypt
-
-# def hash_password(plain_password):
-#     salt = bcrypt.gensalt()
-#     return bcrypt.hashpw(plain_password.encode(), salt)
-
-# def verify_password_hash(plain_password, hashed_password):
-#     return bcrypt.checkpw(plain_password.encode(), hashed_password)
-
 import bcrypt
+from config.settings import settings
 
 
 def hash_password(password: str) -> bytes:
@@ -22,7 +13,7 @@ def hash_password(password: str) -> bytes:
         bytes: The hashed password.
     """
     pwd_bytes = password.encode("utf-8")
-    salt = bcrypt.gensalt(rounds=12, prefix=b"2b")
+    salt = bcrypt.gensalt(rounds=settings.PWD_HASH_ROUNDS, prefix=b"2b")
     return bcrypt.hashpw(password=pwd_bytes, salt=salt)
 
 

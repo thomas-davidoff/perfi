@@ -91,6 +91,8 @@ class AppSettings(BaseSettings):
 
     LOG_LEVEL: Annotated[str, AfterValidator(validate_log_level)] = "WARNING"
 
+    PWD_HASH_ROUNDS: int = 12
+
 
 settings = AppSettings()
 
