@@ -12,6 +12,8 @@ from app.schemas import UserCreateSchema, UserSchema
 from app.repositories.user import UserRepository
 from app.services.auth import AuthService, BearerAccessTokenRefreshTokenPair
 
+from app.services import UserService
+
 from app.exc import (
     InvalidCredentialsException,
     InvalidTokenException,
@@ -39,13 +41,7 @@ async def register_user(
     """
     Register a new user and return access token.
     """
-    # Check if email already exists
-    existing_user = await UserRepository.get_by_email(session, user_data.email)
-    if existing_user:
-        raise UserExistsException("Email already registered")
-
-    # Create user
-    user = await UserRepository.create(session, user_data)
+    user = await UserService.create_user(session=session, user_data=user_data)
     return ApiResponse(data=user)
 
 

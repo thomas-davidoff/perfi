@@ -1,7 +1,11 @@
 from fastapi import status
+import pytest
 from app.schemas import UserCreateSchema
 from tests.utils import faker
 from app.main import app
+from pytest_mock import MockerFixture
+
+from app.api import exception_handlers
 
 
 class TestAuthRoutes:
@@ -11,10 +15,26 @@ class TestAuthRoutes:
             response = await async_client.post(
                 "/v1/auth/register", json=user_data.model_dump()
             )
-
-            print(response)
-            print(response.json())
             assert response.status_code == status.HTTP_201_CREATED
+
+        async def test_raises_exception_on_duplicate(
+            self, async_client, mocker: MockerFixture
+        ):
+            user_data = UserCreateSchema(email=faker.email(), password=faker.password())
+            response = await async_client.post(
+                "/v1/auth/register", json=user_data.model_dump()
+            )
+            assert response.status_code == status.HTTP_201_CREATED
+
+            # with pytest.raises(Exception):
+            response = await async_client.post(
+                "/v1/auth/register", json=user_data.model_dump()
+            )
+
+            assert response.status_code == status.HTTP_409_CONFLICT
+            assert {
+                "error": f"User with email {user_data.email} already exists"
+            } == response.json()
 
 
 # @pytest.mark.parametrize(

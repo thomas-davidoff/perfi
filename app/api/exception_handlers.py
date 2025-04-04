@@ -40,7 +40,7 @@ async def perfi_exception_handler(request: Request, exc: PerfiBaseException):
 
     return JSONResponse(
         status_code=status_code,
-        content={"detail": detail},
+        content={"error": detail},
     )
 
 
