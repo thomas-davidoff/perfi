@@ -1,4 +1,5 @@
 import bcrypt
+from sqlalchemy import LargeBinary
 from config.settings import settings
 
 
@@ -17,7 +18,7 @@ def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password=pwd_bytes, salt=salt)
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, hashed_password: LargeBinary) -> bool:
     """
     Verify a plain text password against a hashed password.
 
