@@ -88,7 +88,7 @@ async def refresh_token(
 
 
 @router.get("/whoami", response_model=UserSchema)
-async def read_users_me(
+async def whoami(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """

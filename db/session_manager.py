@@ -1,6 +1,7 @@
 import contextlib
 from collections.abc import AsyncGenerator, AsyncIterator
 
+from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -15,7 +16,7 @@ class DatabaseSessionManager:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: async_sessionmaker[AsyncSession] | None = None
 
-    def init(self, db_url: str) -> None:
+    def init(self, db_url: URL) -> None:
         connect_args = {
             "statement_cache_size": 0,
             "prepared_statement_cache_size": 0,
