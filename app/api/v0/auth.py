@@ -21,7 +21,7 @@ from app.exc import (
     RevokedTokenException,
     UserExistsException,
 )
-from app.api.v1.schema import ApiResponse
+from app.api.v0.schema import ApiResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

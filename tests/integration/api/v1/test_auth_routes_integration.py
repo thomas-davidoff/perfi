@@ -14,14 +14,14 @@ class TestAuthRoutes:
         async def test_success(self, async_client):
             user_data = UserCreateSchema(email=faker.email(), password=faker.password())
             response = await async_client.post(
-                "/v1/auth/register", json=user_data.model_dump()
+                "/v0/auth/register", json=user_data.model_dump()
             )
             assert response.status_code == status.HTTP_201_CREATED
 
         async def test_returned_user_doesnt_include_hashed_password(self, async_client):
             user_data = UserCreateSchema(email=faker.email(), password=faker.password())
             response = await async_client.post(
-                "/v1/auth/register", json=user_data.model_dump()
+                "/v0/auth/register", json=user_data.model_dump()
             )
 
             assert "hashed_password" not in response.json()["data"]
@@ -39,13 +39,13 @@ class TestAuthRoutes:
         ):
             user_data = UserCreateSchema(email=faker.email(), password=faker.password())
             response = await async_client.post(
-                "/v1/auth/register", json=user_data.model_dump()
+                "/v0/auth/register", json=user_data.model_dump()
             )
             assert response.status_code == status.HTTP_201_CREATED
 
             # with pytest.raises(Exception):
             response = await async_client.post(
-                "/v1/auth/register", json=user_data.model_dump()
+                "/v0/auth/register", json=user_data.model_dump()
             )
 
             assert response.status_code == status.HTTP_409_CONFLICT
@@ -56,7 +56,7 @@ class TestAuthRoutes:
 
 # @pytest.mark.parametrize(
 #     "path",
-#     ["/v1/auth/whoami"],
+#     ["/v0/auth/whoami"],
 # )
 # async def test_protected_routes(self, client: TestClient, path):
 #     """Checks that each of the routes returns 401 Unauthorized when a token is not provided"""
@@ -69,7 +69,7 @@ class TestAuthRoutes:
 # ):
 #     user_data = UserCreateSchema(email=faker.email(), password=faker.password())
 #     response = await client.post(
-#         "/v1/auth/register", content=user_data.model_dump_json()
+#         "/v0/auth/register", content=user_data.model_dump_json()
 #     )
 
 #     print(response)
