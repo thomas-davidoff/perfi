@@ -11,14 +11,14 @@ from app.models.mixins import (
 
 
 class Transaction(PerfiModel, UuidMixin, TimestampMixin):
-    __tablename__ = "transaction"
+    __tablename__ = "transactions"
 
     account_id: Mapped[UUID] = mapped_column(
-        ForeignKey("account.uuid", ondelete="CASCADE"), nullable=False, index=True
+        ForeignKey("accounts.uuid", ondelete="CASCADE"), nullable=False, index=True
     )
 
     category_id: Mapped[UUID] = mapped_column(
-        ForeignKey("category.uuid", ondelete="CASCADE"), nullable=False, index=True
+        ForeignKey("categories.uuid", ondelete="CASCADE"), nullable=False, index=True
     )
 
     amount: Mapped[Decimal] = mapped_column(

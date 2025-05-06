@@ -9,7 +9,7 @@ from app.models.mixins import (
 
 
 class User(PerfiModel, UuidMixin, TimestampMixin):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
     hashed_password: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)

@@ -16,10 +16,10 @@ class AccountType(PyEnum):
 
 
 class Account(PerfiModel, UuidMixin, TimestampMixin):
-    __tablename__ = "account"
+    __tablename__ = "accounts"
 
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.uuid", ondelete="CASCADE"), nullable=False
+        ForeignKey("users.uuid", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     account_type: Mapped[AccountType] = mapped_column(

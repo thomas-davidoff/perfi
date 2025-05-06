@@ -7,10 +7,10 @@ from app.models.mixins import UuidMixin, TimestampMixin
 
 
 class RefreshToken(PerfiModel, UuidMixin, TimestampMixin):
-    __tablename__ = "refresh_token"
+    __tablename__ = "refresh_tokens"
 
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.uuid", ondelete="CASCADE"), nullable=False
+        ForeignKey("users.uuid", ondelete="CASCADE"), nullable=False
     )
     token_value: Mapped[str] = mapped_column(
         String(64), unique=True, nullable=False, index=True

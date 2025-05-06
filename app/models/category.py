@@ -16,7 +16,7 @@ class CategoryType(PyEnum):
 
 
 class Category(PerfiModel, UuidMixin, TimestampMixin):
-    __tablename__ = "category"
+    __tablename__ = "categories"
 
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     category_type: Mapped[CategoryType] = mapped_column(
@@ -27,7 +27,7 @@ class Category(PerfiModel, UuidMixin, TimestampMixin):
     transactions = relationship("Transaction", back_populates="category")
 
     user_id: Mapped[UuidType | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("user.uuid", ondelete="CASCADE"), nullable=True
+        UUID(as_uuid=True), ForeignKey("users.uuid", ondelete="CASCADE"), nullable=True
     )
     user = relationship("User", back_populates="categories")
 

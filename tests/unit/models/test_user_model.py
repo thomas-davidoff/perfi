@@ -36,7 +36,7 @@ class TestUser:
         session.add(user2)
         with pytest.raises(
             IntegrityError,
-            match='duplicate key value violates unique constraint "user_email_key"',
+            match='duplicate key value violates unique constraint "users_email_key"',
         ):
             await session.flush()
 
