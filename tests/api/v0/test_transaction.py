@@ -2,7 +2,7 @@ import pytest
 from fastapi import status
 from decimal import Decimal
 from datetime import date
-from app.schemas import TransactionCreateSchema, TransactionSchema
+from app.schemas import TransactionCreateSchema
 from tests.utils import faker
 from app.services import AuthService
 from httpx import AsyncClient
@@ -12,7 +12,7 @@ from app.api.v0.schema import SingleTransactionResponse
 class TestTransactionRoutes:
 
     @pytest.fixture
-    async def authenticated_client(self, mocker, async_client, user) -> AsyncClient:
+    async def authenticated_client(self, async_client, user) -> AsyncClient:
         """Create authenticated client with valid JWT token"""
 
         # get an auth token
@@ -35,7 +35,7 @@ class TestTransactionRoutes:
             notes=faker.paragraph(),
         )
 
-    class TestCreate:
+    class TestCreateTransaction:
         async def test_success_returns_201_created_status_code(
             self,
             authenticated_client: AsyncClient,
@@ -73,3 +73,18 @@ class TestTransactionRoutes:
                 "/v0/transactions/", json=data_dict
             )
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    class TestListTransactions:
+        endpoint = "/v0/transactions/"
+
+        async def test_success_returns_200(self, authenticated_client: AsyncClient):
+            response = await authenticated_client.get(self.endpoint)
+
+            assert response.status_code == status.HTTP_200_OK
+
+        async def test_success_no_transactions_returns_empty_list(
+            self, authenticated_client: AsyncClient
+        ):
+            response = await authenticated_client.get(self.endpoint)
+
+            assert response.json() == {"data": []}

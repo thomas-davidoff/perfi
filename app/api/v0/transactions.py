@@ -3,11 +3,10 @@ from app.schemas.transaction import TransactionCreateSchema, TransactionSchema
 from fastapi import Depends, status, APIRouter
 from db.session_manager import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.v0.schema import SingleTransactionResponse
+from app.api.v0.schema import ListTransactionResponse, SingleTransactionResponse
 from app.services.transactions import TransactionService
 from app.models import User
 from app.dependencies.auth import get_current_active_user
-
 
 # routes can double inject this auth dep m8
 # don't forget it
@@ -24,7 +23,6 @@ router = APIRouter(
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=SingleTransactionResponse,
-    response_model_exclude_none=True,
 )
 async def create_transaction(
     transaction_data: TransactionCreateSchema,
@@ -36,3 +34,17 @@ async def create_transaction(
     )
 
     return {"data": transaction}
+
+
+@router.get("/", status_code=status.HTTP_200_OK, response_model=ListTransactionResponse)
+async def list_transactions(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: AsyncSession = Depends(get_session),
+):
+    """Get transactions"""
+
+    transactions = await TransactionService.list_transactions(
+        session=session, user_id=current_user.uuid
+    )
+
+    return {"data": transactions}
