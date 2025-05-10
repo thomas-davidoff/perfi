@@ -24,10 +24,9 @@ class DatabaseSessionManager:
     def init(self, db_url: URL, lock: bool = True) -> None:
 
         if self.locked:
-            logger.warning(
+            raise RuntimeError(
                 "DatabaseSessionManager cannot be initialized twice, unless init() is run with strict mode off."
             )
-            return
 
         connect_args = {
             "statement_cache_size": 0,
