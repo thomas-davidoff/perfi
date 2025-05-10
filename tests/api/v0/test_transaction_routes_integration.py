@@ -58,3 +58,6 @@ class TestTransactionRoutes:
             )
 
             assert response.status_code == status.HTTP_201_CREATED
+
+        async def something(self):
+            pass

@@ -18,6 +18,8 @@ from config.settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from pytest_mock import MockerFixture
 from tests.utils import faker
+from app.models.user import User
+from app.schemas import UserCreateSchema
 
 
 mock_session = MagicMock(spec=AsyncSession)
@@ -275,3 +277,18 @@ class TestAuthService:
 
         mock_get_by_token_value.assert_awaited_once()
         mock_revoke_token.assert_awaited_once()
+
+    async def test_authenticate_user_success(self, session):
+
+        TEST_USER_EMAIL = faker.email()
+        TEST_USER_PASSWORD = faker.password()
+
+        user = await UserService.create_user(
+            session,
+            UserCreateSchema(email=TEST_USER_EMAIL, password=TEST_USER_PASSWORD),
+        )
+
+        user = await AuthService.authenticate_user(
+            session=session, email=user.email, password=TEST_USER_PASSWORD
+        )
+        assert isinstance(user, User)

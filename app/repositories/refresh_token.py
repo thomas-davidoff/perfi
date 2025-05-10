@@ -25,7 +25,7 @@ class RefreshTokenRepository(RepositoryFactory(RefreshToken)):
         cls,
         session: AsyncSession,
         user_id: UUID,
-        device_info: str = None,
+        device_info: str | None = None,
     ) -> RefreshToken:
         """Generate a new refresh token for the specified user."""
         token_value = secrets.token_hex(32)  # 64 characters hex string
