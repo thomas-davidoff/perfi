@@ -2,10 +2,11 @@ import pytest
 from fastapi import status
 from decimal import Decimal
 from datetime import date
-from app.schemas import TransactionCreateSchema
+from app.schemas import TransactionCreateSchema, TransactionSchema
 from tests.utils import faker
 from app.services import AuthService
 from httpx import AsyncClient
+from app.api.v0.schema import SingleTransactionResponse
 
 
 class TestTransactionRoutes:
@@ -14,22 +15,11 @@ class TestTransactionRoutes:
     async def authenticated_client(self, mocker, async_client, user) -> AsyncClient:
         """Create authenticated client with valid JWT token"""
 
-        mock_auth = mocker.patch.object(
-            AuthService, "authenticate_user", return_value=user
-        )
-        response = await async_client.post(
-            "/v0/auth/token",
-            data={
-                "username": user.email,
-                "password": "password123",
-            },
-        )  # This should return a serialized BearerAccessTokenRefreshTokenPair
+        # get an auth token
+        token, _ = AuthService.create_access_token_for_user(user_id=user.uuid)
+        headers = {"Authorization": f"Bearer {token}"}
 
-        assert response.status_code == status.HTTP_200_OK
-
-        async_client.headers.update(
-            {"Authorization": f"Bearer {response.json()['access_token']}"}
-        )
+        async_client.headers.update(headers)
         return async_client
 
     @pytest.fixture
@@ -59,5 +49,27 @@ class TestTransactionRoutes:
 
             assert response.status_code == status.HTTP_201_CREATED
 
-        async def something(self):
-            pass
+        async def test_success_returns_valid_transaction(
+            self,
+            authenticated_client: AsyncClient,
+            transaction_data: TransactionCreateSchema,
+        ):
+            data_dict = transaction_data.model_dump(mode="json")
+            response = await authenticated_client.post(
+                "/v0/transactions/", json=data_dict
+            )
+
+            SingleTransactionResponse.model_validate(response.json())
+
+        async def test_missing_data_returns_422_status_code(
+            self,
+            authenticated_client: AsyncClient,
+            transaction_data: TransactionCreateSchema,
+        ):
+            data_dict = transaction_data.model_dump(mode="json")
+            data_dict.pop("account_id")
+
+            response = await authenticated_client.post(
+                "/v0/transactions/", json=data_dict
+            )
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

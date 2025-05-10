@@ -21,25 +21,32 @@ async def get_current_user(
     """
     Decode JWT token and return current user.
     """
+    # Decode and validate JWT token
     try:
-        # Decode the JWT
         payload = jwt.decode(
             token, settings.jwt.SECRET_KEY, algorithms=[settings.jwt.ALGO]
         )
-
-        # Extract user ID
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise InvalidTokenException("Token missing subject claim")
-
-        token_data = TokenData(sub=user_id, exp=payload.get("exp"))
     except jwt.PyJWTError:
-        raise InvalidTokenException("Invalid token")
-    except Exception:
-        raise InvalidTokenException("Could not validate credentials")
+        raise InvalidTokenException("Invalid token.")
 
-    # Get the user
-    user = await UserRepository.get_one_by_id(session, UUID(user_id))
+    # Extract user ID from token payload
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        raise InvalidTokenException("Token missing subject claim")
+
+    # Parse user ID to UUID
+    try:
+        user_id = UUID(user_id_str)
+    except ValueError:
+        raise InvalidTokenException("Invalid user ID format")
+
+    # Fetch user from database
+    try:
+        user = await UserRepository.get_one_by_id(session, user_id)
+    except Exception as e:
+        raise InvalidTokenException("Failed to fetch user") from e
+
+    # Verify user exists
     if user is None:
         raise InvalidTokenException("User not found")
 

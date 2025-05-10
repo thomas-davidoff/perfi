@@ -1,9 +1,13 @@
 from typing import TypeAlias
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
 
-PerfiSchema: TypeAlias = BaseModel
+# PerfiSchema: TypeAlias = BaseModel
+
+
+class PerfiSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UuidMixinSchema(PerfiSchema):
