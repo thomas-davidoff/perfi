@@ -10,13 +10,25 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class DatabaseSessionManager:
     def __init__(self) -> None:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: async_sessionmaker[AsyncSession] | None = None
+        self.locked = False
 
-    def init(self, db_url: URL) -> None:
+    def init(self, db_url: URL, lock: bool = True) -> None:
+
+        if self.locked:
+            logger.warning(
+                "DatabaseSessionManager cannot be initialized twice, unless init() is run with strict mode off."
+            )
+            return
+
         connect_args = {
             "statement_cache_size": 0,
             "prepared_statement_cache_size": 0,
@@ -30,6 +42,9 @@ class DatabaseSessionManager:
             bind=self._engine,
             expire_on_commit=False,
         )
+
+        if lock:
+            self.locked = True
 
     async def close(self) -> None:
         if self._engine is None:

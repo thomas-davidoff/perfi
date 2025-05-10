@@ -47,6 +47,9 @@ async def tmp_postgres_db(
     suffix: str = "",
     encoding: str = "utf8",
 ) -> AsyncIterator[SQLAlchemyURL]:
+    """
+    Create a temporary test database and yield the connection URL.
+    """
 
     tmp_db_name = f"{uuid.uuid4().hex}_test{f'_{suffix}' if suffix else ''}"
 
@@ -65,6 +68,7 @@ async def tmp_postgres_db(
     try:
         logger.debug(f"Creating new database {tmp_db_name}")
         await create_postgres_db(engine, tmp_db_name, encoding)
+
         yield tmp_db_url
     finally:
         await drop_postgres_db(engine, tmp_db_name)

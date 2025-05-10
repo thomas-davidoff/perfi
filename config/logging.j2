@@ -37,12 +37,17 @@ loggers:
 
   config:
     level: {{ LOG_LEVEL }}
-    handlers: [console,  file]
+    handlers: [console, file]
     propagate: no
 
   alembic:
     level: WARNING
-    handlers: [console,  file]
+    handlers: [console, file]
+    propagate: no
+
+  tests:
+    level: {{ LOG_LEVEL }}
+    handlers: [console, file]
     propagate: no
 
 root:
