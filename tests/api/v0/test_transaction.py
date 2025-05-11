@@ -12,17 +12,6 @@ from app.api.v0.schema import SingleTransactionResponse
 class TestTransactionRoutes:
 
     @pytest.fixture
-    async def authenticated_client(self, async_client, user) -> AsyncClient:
-        """Create authenticated client with valid JWT token"""
-
-        # get an auth token
-        token, _ = AuthService.create_access_token_for_user(user_id=user.uuid)
-        headers = {"Authorization": f"Bearer {token}"}
-
-        async_client.headers.update(headers)
-        return async_client
-
-    @pytest.fixture
     async def transaction_data(self, account, expense_category):
         """Create valid transaction data for testing"""
         return TransactionCreateSchema(
