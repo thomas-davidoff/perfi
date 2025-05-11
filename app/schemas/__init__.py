@@ -3,8 +3,6 @@ from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
 
-# PerfiSchema: TypeAlias = BaseModel
-
 
 class PerfiSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -27,14 +25,14 @@ from .refresh_token import (
 )
 from .account import (
     AccountType,
-    AccountSchema,
-    AccountCreateSchema,
-    AccountUpdateSchema,
+    DbAccountSchema,
+    DbAccountCreateSchema,
+    DbAccountUpdateSchema,
 )
 from .transaction import (
-    TransactionSchema,
-    TransactionCreateSchema,
-    TransactionUpdateSchema,
+    DbTransactionSchema,
+    DbTransactionCreateSchema,
+    DbTransactionUpdateSchema,
 )
 from .category import (
     CategoryType,

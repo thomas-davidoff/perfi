@@ -41,6 +41,7 @@ async def sessionmanager_for_tests(test_alembic_cfg):
     async with tmp_postgres_db(suffix="pytest") as tmp_url:
         db_manager.init(db_url=tmp_url, lock=True)
         async with db_manager.connect() as conn:
+            logger.debug(f"Running migrations against database {tmp_url.database}")
             await conn.run_sync(run_upgrade, test_alembic_cfg)
             try:
                 await conn.run_sync(check_migrations, test_alembic_cfg, silent=True)

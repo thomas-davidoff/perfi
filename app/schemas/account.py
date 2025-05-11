@@ -4,7 +4,7 @@ from app.models import AccountType
 from app.schemas import PerfiSchema, UuidMixinSchema, TimestampMixinSchema
 
 
-class AccountBaseSchema(PerfiSchema):
+class DbAccountBaseSchema(PerfiSchema):
     name: str
     account_type: AccountType
     balance: Decimal = Decimal("0.00")
@@ -13,15 +13,15 @@ class AccountBaseSchema(PerfiSchema):
     is_active: bool = True
 
 
-class AccountSchema(AccountBaseSchema, UuidMixinSchema, TimestampMixinSchema):
+class DbAccountSchema(DbAccountBaseSchema, UuidMixinSchema, TimestampMixinSchema):
     user_id: UUID
 
 
-class AccountCreateSchema(AccountBaseSchema):
+class DbAccountCreateSchema(DbAccountBaseSchema):
     user_id: UUID
 
 
-class AccountUpdateSchema(PerfiSchema):
+class DbAccountUpdateSchema(PerfiSchema):
     name: str | None = None
     account_type: AccountType | None = None
     balance: Decimal | None = None

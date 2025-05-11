@@ -4,14 +4,14 @@ from decimal import Decimal
 from datetime import date, timedelta
 from app.exc import IntegrityConflictException, NotFoundException
 from app.repositories import TransactionRepository
-from app.schemas import TransactionCreateSchema, TransactionUpdateSchema
+from app.schemas import DbTransactionCreateSchema, DbTransactionUpdateSchema
 from tests.utils import faker
 from uuid import uuid4
 
 
 class TestTransactionRepository:
     async def test_create_transaction(self, session, account, expense_category):
-        test_transaction = TransactionCreateSchema(
+        test_transaction = DbTransactionCreateSchema(
             account_id=account.uuid,
             category_id=expense_category.uuid,
             amount=Decimal("50.25"),
@@ -35,7 +35,7 @@ class TestTransactionRepository:
         assert transaction.notes == test_transaction.notes
 
     async def test_create_transaction_invalid_account(self, session, expense_category):
-        test_transaction = TransactionCreateSchema(
+        test_transaction = DbTransactionCreateSchema(
             account_id=uuid4(),  # Invalid account ID
             category_id=expense_category.uuid,
             amount=Decimal("50.25"),
@@ -47,7 +47,7 @@ class TestTransactionRepository:
             await TransactionRepository.create(session, test_transaction)
 
     async def test_create_transaction_invalid_category(self, session, account):
-        test_transaction = TransactionCreateSchema(
+        test_transaction = DbTransactionCreateSchema(
             account_id=account.uuid,
             category_id=uuid4(),  # Invalid category ID
             amount=Decimal("50.25"),
@@ -75,7 +75,7 @@ class TestTransactionRepository:
         new_description = faker.sentence()
         new_date = date.today() - timedelta(days=1)
 
-        update_data = TransactionUpdateSchema(
+        update_data = DbTransactionUpdateSchema(
             amount=new_amount,
             description=new_description,
             date=new_date,
@@ -95,7 +95,7 @@ class TestTransactionRepository:
         assert updated.updated_at is not None
 
     async def test_update_nonexistent_transaction(self, session):
-        update_data = TransactionUpdateSchema(amount=Decimal("100.00"))
+        update_data = DbTransactionUpdateSchema(amount=Decimal("100.00"))
 
         with pytest.raises(NotFoundException):
             await TransactionRepository.update_by_id(
@@ -117,7 +117,7 @@ class TestTransactionRepository:
         self, session, account, expense_category, income_category
     ):
         transactions_data = [
-            TransactionCreateSchema(
+            DbTransactionCreateSchema(
                 account_id=account.uuid,
                 category_id=(
                     expense_category.uuid if i % 2 == 0 else income_category.uuid

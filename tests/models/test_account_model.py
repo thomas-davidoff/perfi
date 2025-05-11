@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import Account, User
 from app.models.account import AccountType
-from app.schemas import AccountSchema, AccountCreateSchema, AccountUpdateSchema
+from app.schemas import DbAccountSchema, DbAccountCreateSchema, DbAccountUpdateSchema
 from decimal import Decimal
 import uuid
 from datetime import datetime, timezone
@@ -17,7 +17,7 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             user_id=user.uuid,
             name="Main Checking",
             account_type=AccountType.CHECKING,
@@ -43,7 +43,7 @@ class TestAccount:
         assert account.user_id == user.uuid
 
     async def test_account_requires_user(self, session):
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             name="Main Checking",
             account_type=AccountType.CHECKING,
             balance=Decimal("1000.50"),
@@ -63,7 +63,7 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             name="Main Checking",
             user_id=user.uuid,
             account_type=AccountType.CHECKING,
@@ -83,7 +83,7 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             user_id=user.uuid,
             name="Test Account",
             account_type=AccountType.CHECKING,
@@ -103,7 +103,7 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             user_id=user.uuid,
             name="Main Checking",
             account_type=AccountType.CHECKING,
@@ -116,7 +116,7 @@ class TestAccount:
         initial_created_at = account.created_at
         assert account.updated_at is None
 
-        update_data = AccountUpdateSchema(
+        update_data = DbAccountUpdateSchema(
             balance=Decimal("2000.75"), name="Updated Checking"
         )
 
@@ -140,7 +140,7 @@ class TestAccount:
         session.add(user)
         await session.flush()
 
-        account_data = AccountCreateSchema(
+        account_data = DbAccountCreateSchema(
             user_id=user.uuid,
             name="Minimal Account",
             account_type=AccountType.SAVINGS,
@@ -156,7 +156,7 @@ class TestAccount:
         assert account.is_active is True
 
     def test_schema_validation(self):
-        account_schema = AccountSchema(
+        account_schema = DbAccountSchema(
             uuid=uuid.uuid4(),
             user_id=uuid.uuid4(),
             name="Schema Test Account",
@@ -165,7 +165,7 @@ class TestAccount:
             created_at=datetime.now(timezone.utc),
         )
         account_dict = account_schema.model_dump()
-        account_schema2 = AccountSchema(**account_dict)
+        account_schema2 = DbAccountSchema(**account_dict)
         assert account_schema.name == account_schema2.name
         assert account_schema.account_type == account_schema2.account_type
         assert account_schema.balance == account_schema2.balance

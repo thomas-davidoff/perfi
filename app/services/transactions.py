@@ -2,7 +2,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.repositories.transaction import TransactionRepository
-from app.schemas import TransactionCreateSchema
+from app.schemas import DbTransactionCreateSchema
 from app.exc import IntegrityConflictException, UserExistsException
 from pydantic import EmailStr, TypeAdapter
 from app.services.accounts import AccountService
@@ -11,7 +11,7 @@ from app.services.accounts import AccountService
 class TransactionService:
     @classmethod
     async def create_transaction(
-        cls, session: AsyncSession, data: TransactionCreateSchema
+        cls, session: AsyncSession, data: DbTransactionCreateSchema
     ):
         try:
             user = await TransactionRepository.create(session=session, data=data)

@@ -2,9 +2,9 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from app.models import Transaction, Account, User, Category
 from app.schemas import (
-    TransactionSchema,
-    TransactionCreateSchema,
-    TransactionUpdateSchema,
+    DbTransactionSchema,
+    DbTransactionCreateSchema,
+    DbTransactionUpdateSchema,
 )
 from app.models.account import AccountType
 from app.models.category import CategoryType
@@ -17,7 +17,7 @@ class TestTransaction:
     async def test_create_transaction_from_schema(
         self, session, account, expense_category
     ):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             account_id=account.uuid,
             category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
@@ -43,7 +43,7 @@ class TestTransaction:
         assert transaction.notes == "Weekly groceries"
 
     async def transaction_requires_valid_category(self, session, category):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             category_id=category.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
@@ -67,7 +67,7 @@ class TestTransaction:
                 await session.flush()
 
     async def test_transaction_requires_valid_account(self, session, expense_category):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
@@ -91,7 +91,7 @@ class TestTransaction:
                 await session.flush()
 
     async def test_transaction_requires_amount(self, session, account):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             account_id=account.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
@@ -105,7 +105,7 @@ class TestTransaction:
             await session.flush()
 
     async def test_transaction_requires_description(self, session, account):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             account_id=account.uuid,
             amount=Decimal("-50.25"),
             date=date(2023, 1, 15),
@@ -121,7 +121,7 @@ class TestTransaction:
             await session.flush()
 
     async def test_transaction_requires_date(self, session, account):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             account_id=account.uuid,
             amount=Decimal("-50.25"),
             description="Grocery shopping",
@@ -137,7 +137,7 @@ class TestTransaction:
     async def test_transaction_update_with_schema(
         self, session, account, expense_category
     ):
-        transaction_data = TransactionCreateSchema(
+        transaction_data = DbTransactionCreateSchema(
             account_id=account.uuid,
             category_id=expense_category.uuid,
             amount=Decimal("-50.25"),
@@ -153,7 +153,7 @@ class TestTransaction:
         initial_created_at = transaction.created_at
         assert transaction.updated_at is None
 
-        update_data = TransactionUpdateSchema(
+        update_data = DbTransactionUpdateSchema(
             amount=Decimal("-75.50"), is_pending=False, notes="Updated notes"
         )
 
@@ -171,7 +171,7 @@ class TestTransaction:
         assert transaction.created_at == initial_created_at
 
     async def test_schema_validation(self):
-        transaction_schema = TransactionSchema(
+        transaction_schema = DbTransactionSchema(
             uuid=uuid.uuid4(),
             account_id=uuid.uuid4(),
             amount=Decimal("-100.00"),
@@ -182,7 +182,7 @@ class TestTransaction:
         )
 
         transaction_dict = transaction_schema.model_dump()
-        transaction_schema2 = TransactionSchema(**transaction_dict)
+        transaction_schema2 = DbTransactionSchema(**transaction_dict)
         assert transaction_schema.account_id == transaction_schema2.account_id
         assert transaction_schema.amount == transaction_schema2.amount
         assert transaction_schema.description == transaction_schema2.description

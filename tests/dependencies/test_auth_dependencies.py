@@ -219,28 +219,22 @@ class TestGetCurrentUserEdgeCases:
         assert result == user
 
 
-# Integration-style test that uses the actual JWT process
 class TestGetCurrentUserIntegration:
     """Integration tests that use actual JWT encoding/decoding"""
 
     async def test_full_jwt_flow(self, mocker, session, user):
         """Test the full JWT flow from creation to validation"""
-        # Create a real token (similar to how AuthService.create_access_token_for_user works)
         token_data = TokenData(sub=user.uuid)
         token = jwt.encode(
             token_data.model_dump(),
             settings.jwt.SECRET_KEY,
             algorithm=settings.jwt.ALGO,
         )
-
-        # Mock UserRepository.get_one_by_id
         mock_get_user = mocker.patch.object(
             UserRepository, "get_one_by_id", return_value=user
         )
 
-        # Call get_current_user with our real token
         result = await get_current_user(token=token, session=session)
 
-        # Verify the result
         assert result == user
         mock_get_user.assert_called_once_with(session, user.uuid)

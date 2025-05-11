@@ -51,7 +51,7 @@ async def tmp_postgres_db(
     Create a temporary test database and yield the connection URL.
     """
 
-    tmp_db_name = f"{uuid.uuid4().hex}_test{f'_{suffix}' if suffix else ''}"
+    tmp_db_name = f"{uuid.uuid4().hex[:8]}{f'_{suffix}' if suffix else ''}"
 
     tmp_db_url = SQLAlchemyURL.create(
         username=settings.db.USER,
@@ -71,5 +71,6 @@ async def tmp_postgres_db(
 
         yield tmp_db_url
     finally:
+        logger.debug(f"Dropping database {tmp_db_name}")
         await drop_postgres_db(engine, tmp_db_name)
         await engine.dispose()

@@ -5,12 +5,12 @@ from app.repositories import AccountRepository
 from app.models import AccountType
 from tests.utils import faker
 from uuid import uuid4
-from app.schemas import AccountCreateSchema, AccountUpdateSchema
+from app.schemas import DbAccountCreateSchema, DbAccountUpdateSchema
 
 
 class TestAccountRepository:
     async def test_create_account(self, session, user):
-        test_account = AccountCreateSchema(
+        test_account = DbAccountCreateSchema(
             user_id=user.uuid,
             name=faker.company(),
             account_type=AccountType.CHECKING,
@@ -57,7 +57,7 @@ class TestAccountRepository:
     async def test_update_account(self, session, account):
         new_name = faker.company()
         new_balance = Decimal("250.75")
-        update_data = AccountUpdateSchema(
+        update_data = DbAccountUpdateSchema(
             name=new_name, balance=new_balance, is_active=False
         )
 
@@ -72,7 +72,7 @@ class TestAccountRepository:
         assert updated.updated_at is not None
 
     async def test_update_nonexistent_account(self, session):
-        update_data = AccountUpdateSchema(name=faker.company())
+        update_data = DbAccountUpdateSchema(name=faker.company())
 
         with pytest.raises(NotFoundException):
             await AccountRepository.update_by_id(session, id_=uuid4(), data=update_data)
@@ -90,8 +90,8 @@ class TestAccountRepository:
 
     async def test_update_many_by_ids(self, session, account, second_account):
         updates = {
-            account.uuid: AccountUpdateSchema(name="Updated First Account"),
-            second_account.uuid: AccountUpdateSchema(name="Updated Second Account"),
+            account.uuid: DbAccountUpdateSchema(name="Updated First Account"),
+            second_account.uuid: DbAccountUpdateSchema(name="Updated Second Account"),
         }
 
         result = await AccountRepository.update_many_by_ids(

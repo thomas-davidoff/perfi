@@ -12,8 +12,12 @@ class ApiResponse(PerfiSchema, Generic[T]):
     data: T
 
 
-from app.schemas import TransactionSchema
+from app.schemas.transaction import DbTransactionSchema
+from app.schemas.account import DbAccountSchema
 
 # Type aliases for common responses
-SingleTransactionResponse = ApiResponse[TransactionSchema]
-ListTransactionResponse = ApiResponse[list[TransactionSchema]]
+SingleTransactionResponse = ApiResponse[DbTransactionSchema]
+ListTransactionResponse = ApiResponse[list[DbTransactionSchema]]
+
+SingleAccountResponse = ApiResponse[DbAccountSchema]
+ListAccountResponse = ApiResponse[list[DbAccountSchema]]

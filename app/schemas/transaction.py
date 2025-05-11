@@ -4,7 +4,7 @@ from uuid import UUID
 from app.schemas import PerfiSchema, UuidMixinSchema, TimestampMixinSchema
 
 
-class TransactionBaseSchema(PerfiSchema):
+class DbTransactionBaseSchema(PerfiSchema):
     account_id: UUID
     amount: Decimal
     description: str
@@ -14,15 +14,17 @@ class TransactionBaseSchema(PerfiSchema):
     category_id: UUID = None
 
 
-class TransactionSchema(TransactionBaseSchema, UuidMixinSchema, TimestampMixinSchema):
+class DbTransactionSchema(
+    DbTransactionBaseSchema, UuidMixinSchema, TimestampMixinSchema
+):
     pass
 
 
-class TransactionCreateSchema(TransactionBaseSchema):
+class DbTransactionCreateSchema(DbTransactionBaseSchema):
     pass
 
 
-class TransactionUpdateSchema(PerfiSchema):
+class DbTransactionUpdateSchema(PerfiSchema):
     amount: Decimal | None = None
     description: str | None = None
     date: dt | None = None

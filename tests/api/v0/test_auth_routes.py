@@ -2,11 +2,8 @@ from fastapi import status
 import pytest
 from app.schemas import UserCreateSchema, UserSchema
 from tests.utils import faker
-from app.main import app
 from pytest_mock import MockerFixture
 import pydantic
-
-from app.api import exception_handlers
 
 
 class TestAuthRoutes:
