@@ -19,6 +19,30 @@ async def user(session: AsyncSession):
 
 
 @pytest.fixture
+async def second_user(session: AsyncSession):
+    user = User(
+        email=faker.email(),
+        hashed_password=b"not_real_hash2",
+    )
+    session.add(user)
+    await session.flush()
+    return user
+
+
+@pytest.fixture
+async def account_for_second_user(session: AsyncSession, second_user: User):
+    account = Account(
+        user_id=second_user.uuid,
+        name="First Account Checking",
+        account_type=AccountType.CHECKING,
+        balance=Decimal("1000.00"),
+    )
+    session.add(account)
+    await session.flush()
+    return account
+
+
+@pytest.fixture
 async def account(session: AsyncSession, user: User):
     account = Account(
         user_id=user.uuid,

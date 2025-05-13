@@ -1,3 +1,4 @@
+from http.client import UNAUTHORIZED
 from typing import Annotated
 from fastapi import Depends, status, APIRouter
 from db.session_manager import get_session
@@ -11,6 +12,10 @@ from app.api.v0.schemas.transaction import (
     ApiTransactionCreateRequest,
 )
 from app.schemas.transaction import DbTransactionCreateSchema
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 # routes can double inject this auth dep m8
 # don't forget it
@@ -23,6 +28,32 @@ router = APIRouter(
 )
 
 
+from app.models import Account
+from app.repositories import AccountRepository
+from app.exc import NotFoundException, AuthorizationException
+
+
+async def verify_account_ownership(
+    transaction_data: ApiTransactionCreateRequest,
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> Account:
+    """Verify that the user owns the account specified in the transaction request."""
+    account = await AccountRepository.get_one_by_id(
+        session, transaction_data.account_id
+    )
+
+    if not account:
+        raise NotFoundException("Account not found")
+
+    if account.user_id != current_user.uuid:
+        logger.warning("Unauthorized access attempted")
+        raise AuthorizationException("You do not have access to this resource.")
+        # raise NotFoundException("Account not found")  # use 404 instead of 403
+
+    return account
+
+
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
@@ -31,14 +62,14 @@ router = APIRouter(
 async def create_transaction(
     transaction_data: ApiTransactionCreateRequest,
     session: AsyncSession = Depends(get_session),
+    account: Account = Depends(verify_account_ownership),
 ):
     """Create a new transaction"""
 
-    print(transaction_data)
-
     # translate creation request to db create model
-    transaction_create = DbTransactionCreateSchema.model_validate(
-        transaction_data, from_attributes=True
+    transaction_create = DbTransactionCreateSchema(
+        account_id=account.uuid,
+        **transaction_data.model_dump(exclude_none=True, exclude={"account_id"})
     )
 
     transaction = await TransactionService.create_transaction(

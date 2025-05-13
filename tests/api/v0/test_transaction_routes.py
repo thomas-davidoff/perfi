@@ -65,7 +65,7 @@ class TestTransactionRoutes:
             )
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-        async def test_invalid_account_returns_400_bad_request(
+        async def test_non_existent_account_returns_404_not_found(
             self,
             authenticated_client: AsyncClient,
             transaction_data: ApiTransactionCreateRequest,
@@ -77,7 +77,23 @@ class TestTransactionRoutes:
                 "/v0/transactions/", json=data_dict
             )
 
-            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        async def test_another_user_account_returns_403_unauthorized(
+            self,
+            authenticated_client: AsyncClient,
+            transaction_data: ApiTransactionCreateRequest,
+            account_for_second_user,
+        ):
+
+            data_dict = transaction_data.model_dump(mode="json")
+            data_dict.update(account_id=str(account_for_second_user.uuid))
+
+            response = await authenticated_client.post(
+                "/v0/transactions/", json=data_dict
+            )
+
+            assert response.status_code == status.HTTP_403_FORBIDDEN
 
     class TestListTransactions:
         endpoint = "/v0/transactions/"

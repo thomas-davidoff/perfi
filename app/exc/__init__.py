@@ -1,3 +1,6 @@
+from fastapi import status
+
+
 class PerfiBaseException(Exception):
     """Base exception for all custom application exceptions"""
 
@@ -14,13 +17,13 @@ class RepositoryException(PerfiBaseException):
 class IntegrityConflictException(RepositoryException):
     """Exception for database integrity conflicts like duplicate entries."""
 
-    pass
+    status_code = status.HTTP_409_CONFLICT
 
 
 class NotFoundException(RepositoryException):
     """Exception for when a requested resource doesn't exist."""
 
-    pass
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 # Service layer exceptions
@@ -33,14 +36,14 @@ class ServiceException(PerfiBaseException):
 class ValidationException(ServiceException):
     """Exception for validation errors in the service layer."""
 
-    pass
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
 # Authentication exceptions
 class AuthenticationException(PerfiBaseException):
     """Base exception for authentication errors."""
 
-    pass
+    status_code = status.HTTP_401_UNAUTHORIZED
 
 
 class InvalidCredentialsException(AuthenticationException):
@@ -83,10 +86,16 @@ class UserException(PerfiBaseException):
 class UserExistsException(UserException):
     """Exception for when trying to create a user that already exists."""
 
-    pass
+    status_code = status.HTTP_409_CONFLICT
 
 
 class InactiveUserException(UserException):
     """Exception for when an inactive user attempts to authenticate."""
 
-    pass
+    status_code = status.HTTP_403_FORBIDDEN
+
+
+class AuthorizationException(PerfiBaseException):
+    """Use for errors related to attempts to access data outside of the users scope"""
+
+    status_code = status.HTTP_403_FORBIDDEN
