@@ -1,22 +1,22 @@
 from config.initializers import initialize_all
-
-# initialize_all()
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from app.api.v0 import router as v0Router
 from app.api.exception_handlers import register_exception_handlers
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_all()
+    yield
+
 def create_app():
-    app = FastAPI(title="Perfi")
+    app = FastAPI(title="Perfi", lifespan=lifespan)
     app.include_router(router=v0Router)
     register_exception_handlers(app)
 
     return app
 
 
-if __name__ == "__main__":
-    initialize_all()
-    app = create_app()
-else:
-    app = create_app()
+app = create_app()

@@ -1,4 +1,3 @@
-from http.client import UNAUTHORIZED
 from typing import Annotated
 from fastapi import Depends, status, APIRouter
 from db.session_manager import get_session
@@ -13,6 +12,7 @@ from app.api.v0.schemas.transaction import (
 )
 from app.schemas.transaction import DbTransactionCreateSchema
 import logging
+from app.dependencies.resource_ownership import get_owned_account_for
 
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,9 @@ async def verify_account_ownership(
 async def create_transaction(
     transaction_data: ApiTransactionCreateRequest,
     session: AsyncSession = Depends(get_session),
-    account: Account = Depends(verify_account_ownership),
+    account: Account = Depends(
+        get_owned_account_for(ApiTransactionCreateRequest, "account_id")
+    ),
 ):
     """Create a new transaction"""
 

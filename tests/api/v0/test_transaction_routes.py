@@ -37,6 +37,9 @@ class TestTransactionRoutes:
             response = await authenticated_client.post(
                 "/v0/transactions/", json=data_dict
             )
+            from pprint import pprint
+
+            pprint(response.json())
 
             assert response.status_code == status.HTTP_201_CREATED
 

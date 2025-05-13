@@ -1,11 +1,11 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 from uuid import uuid4, UUID
 import jwt
 from datetime import datetime, timezone, timedelta
 
 from app.dependencies.auth import get_current_user, get_current_active_user
-from app.services.auth import oauth2_scheme, TokenData
+from app.services.auth import TokenData
 from app.models import User
 from app.exc import InvalidTokenException, InactiveUserException
 from config.settings import settings

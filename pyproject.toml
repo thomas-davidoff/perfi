@@ -4,6 +4,7 @@ version = "0.0.1"
 description = "Personal finances API"
 authors = ["Thomas Davidoff <thomas.davidoff@gmail.com>"]
 license = "MIT"
+package-mode = false
 
 
 [tool.poetry.dependencies]
@@ -39,3 +40,4 @@ pytest-mock = "^3.14.0"
 [tool.pytest.ini_options]
 addopts = "--capture=tee-sys -rP -v"
 testpaths = ["tests"]
+pythonpath = ["."]

@@ -78,6 +78,7 @@ class DatabaseSessionManager:
 db_manager = DatabaseSessionManager()
 
 
+# TODO: Move this to app/dependencies/db.py or app/dependencies/session.py
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with db_manager.session() as session:
         yield session
