@@ -1,85 +1,24 @@
 name: pf
 
 services:
-  backend:
-    build:
-      context: ./server
-      target: development
-      args:
-        - POETRY_VERSION=2.0.1
-        - PYTHON_VERSION=3.13.1
-        - APP_USER=perfi
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./server/perfi:/opt/perfi/perfi
-      - ./server/cli:/opt/perfi/cli
-      - ./server/config:/opt/perfi/config
-      - ./server/migrations:/opt/perfi/migrations
-      - ./server/alembic.ini:/opt/perfi/alembic.ini
-    env_file:
-      - ./server/.env.development
-    environment:
-      APP_PORT: 8000
-      APP_HOST: 0.0.0.0
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: perfi_dev
-      DB_NAME: perfi
-      DEBUG: true
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 1
-    container_name: backend
-
-  frontend:
-    build:
-      context: ./client
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./client/src:/opt/perfi/src
-      - ./client/public:/opt/perfi/public
-      - ./client/next.config.ts:/opt/perfi/next.config.ts
-      - ./client/tailwind.config.ts:/opt/perfi/tailwind.config.ts
-      - ./client/postcss.config.mjs:/opt/perfi/postcss.config.mjs
-      - ./client/next-env.d.ts:/opt/perfi/next-env.d.ts
-      - ./client/tsconfig.json:/opt/perfi/tsconfig.json
-      - ./client/components.json:/opt/perfi/components.json
-    env_file:
-      - ./client/.env.local
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
-      NEXT_PUBLIC_BASE_URL: http://localhost:3000
-      NEXTAUTH_URL: http://localhost:3000
-      HOST: 0.0.0.0
-      PORT: 3000
-      NODE_ENV: development
-    entrypoint: yarn run dev
-    healthcheck:
-      # TODO: replace healthcheck with dedicated /health once implemented
-      test: [ "CMD", "curl", "-f", "http://localhost:3000/login" ]
-      interval: 10s
-      timeout: 5s
-      retries: 1
-    container_name: frontend
-
   db:
+    profiles:
+      - dev
     image: postgres:17
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: perfi_dev
       POSTGRES_DB: perfi
-    env_file:
-      - .env.db
+      POSTGRES_PASSWORD: perfi_dev_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
     container_name: db
 
   test_db:
+    profiles:
+      - test
+      - dev
     image: postgres:17
     ports:
       - "5433:5432"
